@@ -1,0 +1,69 @@
+# Local Codex/agent workspace files
+.agents/
+.codex/
+
+# Dependencies
+**/node_modules/
+**/.pnp
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches/
+!**/.yarn/plugins/
+!**/.yarn/releases/
+!**/.yarn/sdks/
+!**/.yarn/versions/
+
+# Build output
+**/.next/
+**/.medusa/
+**/dist/
+**/build/
+**/out/
+**/.cache/
+**/coverage/
+**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
+
+# Environment and secret files
+**/.env
+**/.env.local
+**/.env.development
+**/.env.development.local
+**/.env.production
+**/.env.production.local
+**/.env.test
+**/.env.test.local
+!**/.env.example
+!**/.env.template
+
+# Logs and local dumps
+**/*.log
+**/logs/
+**/medusa-db.sql
+**/startup.log
+**/create_log.txt
+**/delete_log.txt
+**/inventory_debug_log.txt
+**/curl_output.json
+**/tsc_errors.txt
+**/tsc_widget_errors.txt
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Credentials
+**/keys.json
+**/*.pem
+**/*.key
+
+# Additional local environment and editor files
+**/.env.*
+!**/.env.example
+!**/.env.template
+**/.vscode/
+**/.idea/
+**/.DS_Store
+**/Thumbs.db

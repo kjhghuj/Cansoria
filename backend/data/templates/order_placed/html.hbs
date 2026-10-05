@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cansoria Studio Order Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #332d28; line-height: 1.6; background: #f7f4ef; }
+        .container { max-width: 600px; margin: 0 auto; padding: 28px; background: #fff; border: 1px solid #eee6dc; }
+        .header { border-bottom: 1px solid #eee6dc; padding-bottom: 20px; margin-bottom: 20px; }
+        .header h1 { margin: 0; color: #2d2926; }
+        .details { background: #f7f2ec; padding: 15px; margin-bottom: 20px; }
+        .details p { margin: 5px 0; }
+        .footer { font-size: 12px; color: #8a8178; text-align: center; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your artwork order is confirmed</h1>
+        </div>
+        <p>Hi there,</p>
+        <p>We have received your Cansoria Studio order and are preparing the details for production.</p>
+
+        <div class="details">
+            <p><strong>Order ID:</strong> {{id}}</p>
+            <p><strong>Total Amount:</strong> {{total}}</p>
+        </div>
+
+        <p>You will receive updates as your artwork moves through studio review, production, and shipping.</p>
+
+        <div class="footer">
+            <p>&copy; Cansoria Studio. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

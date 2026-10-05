@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to Cansoria Studio</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #332d28; background: #f7f4ef; margin: 0; padding: 24px;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #eee6dc;">
+    <h1 style="color: #2d2926;">Welcome to Cansoria Studio</h1>
+    <p>Hi {{first_name}},</p>
+    <p>Thank you for creating an account with Cansoria. Your studio account helps you track custom portraits, canvas artwork, shipping updates, and private offers.</p>
+    <p>Every Cansoria piece is hand-painted to order, with careful attention to reference photos, size, framing, and the story behind the artwork.</p>
+    {{#if discountCode}}
+      <div style="margin: 24px 0; padding: 20px; background: #f7f2ec; border: 1px solid #eadfd3; text-align: center;">
+        <p style="margin: 0 0 8px;">Your studio welcome code:</p>
+        <strong style="font-size: 22px; letter-spacing: 2px;">{{discountCode}}</strong>
+        {{#if validUntil}}<p style="margin: 8px 0 0; font-size: 13px;">Valid until {{validUntil}}</p>{{/if}}
+      </div>
+    {{/if}}
+    <p>If you have questions about reference photos, artwork sizes, or timelines, feel free to reply to this email.</p>
+    <br>
+    <p>Best regards,</p>
+    <p>The Cansoria Studio Team</p>
+  </div>
+</body>
+</html>

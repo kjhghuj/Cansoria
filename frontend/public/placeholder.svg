@@ -1,0 +1,9 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="800" fill="#FBF7EF"/>
+  <rect x="230" y="150" width="340" height="430" rx="6" fill="#F3E7D3" stroke="#B9904A" stroke-width="8"/>
+  <rect x="270" y="195" width="260" height="340" fill="#FFF9EF" stroke="#D8C5A6" stroke-width="4"/>
+  <path d="M300 470 C355 405 395 430 430 375 C460 330 500 330 525 300" stroke="#A97842" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <circle cx="350" cy="280" r="48" fill="#D8B17A" opacity="0.55"/>
+  <text x="400" y="650" font-family="Georgia, serif" font-size="28" fill="#6B6258" text-anchor="middle">CANSORIA</text>
+  <text x="400" y="684" font-family="Arial, sans-serif" font-size="14" fill="#8A7658" text-anchor="middle">Hand-Painted Canvas Art</text>
+</svg>

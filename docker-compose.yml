@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cansoria-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cansoria
+      POSTGRES_PASSWORD: cansoria
+      POSTGRES_DB: cansoria_medusa_v2
+    ports:
+      - "5433:5432"
+    volumes:
+      - cansoria_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cansoria -d cansoria_medusa_v2"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: cansoria-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6480:6379"
+    volumes:
+      - cansoria_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cansoria_postgres_data:
+  cansoria_redis_data:

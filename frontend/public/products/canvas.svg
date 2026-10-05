@@ -1,0 +1,8 @@
+<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="800" fill="#F3E7D3"/>
+  <rect x="190" y="155" width="420" height="360" rx="8" fill="#FFF9EF" stroke="#76512C" stroke-width="10"/>
+  <path d="M230 455 L340 330 L420 410 L485 290 L570 455" stroke="#A97842" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="505" cy="245" r="34" fill="#B9904A" opacity="0.6"/>
+  <rect x="320" y="540" width="160" height="12" rx="6" fill="#8A7658" opacity="0.5"/>
+  <text x="400" y="650" font-family="Georgia, serif" font-size="24" fill="#6B6258" text-anchor="middle">Wall Art</text>
+</svg>

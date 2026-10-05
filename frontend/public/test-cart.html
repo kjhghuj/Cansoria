@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cansoria Cart API Test</title>
+    <script>
+        const BACKEND_URL = "http://localhost:9030";
+        const PUBLISHABLE_API_KEY = "";
+
+        function getCartId() {
+            return localStorage.getItem("cansoria_cart_id");
+        }
+
+        function setCartId(cartId) {
+            localStorage.setItem("cansoria_cart_id", cartId);
+            console.log("Cart ID set:", cartId);
+            alert("Cart ID set to: " + cartId);
+        }
+
+        function headers() {
+            return {
+                "Content-Type": "application/json",
+                "x-publishable-api-key": PUBLISHABLE_API_KEY,
+            };
+        }
+
+        async function addToCartAPI(variantId, quantity) {
+            const cartId = getCartId();
+            if (!cartId) {
+                alert("No cart ID found. Please navigate to cart page first.");
+                return;
+            }
+
+            const response = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items`, {
+                method: "POST",
+                headers: headers(),
+                body: JSON.stringify({ variant_id: variantId, quantity }),
+            });
+
+            const data = await response.json();
+            console.log("Add to cart response:", data);
+            alert(response.ok ? "Successfully added to cart." : "Failed to add item.");
+            return data;
+        }
+
+        async function refreshCart() {
+            const cartId = getCartId();
+            if (!cartId) return;
+
+            const response = await fetch(`${BACKEND_URL}/store/carts/${cartId}`, {
+                method: "GET",
+                headers: headers(),
+            });
+
+            const data = await response.json();
+            console.log("Cart refreshed:", data);
+            document.getElementById("status").textContent = response.ok ? "Cart loaded" : "Failed to load cart";
+            return data;
+        }
+
+        async function removeFromCartAPI(lineItemId) {
+            const cartId = getCartId();
+            if (!cartId) return;
+
+            const response = await fetch(`${BACKEND_URL}/store/carts/${cartId}/line-items/${lineItemId}`, {
+                method: "DELETE",
+                headers: headers(),
+            });
+
+            console.log("Remove response:", await response.json().catch(() => ({})));
+            alert(response.ok ? "Successfully removed from cart." : "Failed to remove item.");
+        }
+    </script>
+</head>
+<body>
+    <h1>Cansoria Cart API Test</h1>
+    <p id="status">Idle</p>
+    <p>This page is for local development only. Set `PUBLISHABLE_API_KEY` before using it.</p>
+    <button onclick="refreshCart()">Refresh Cart</button>
+</body>
+</html>
