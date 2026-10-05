@@ -1,37 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cansoria Frontend
 
-## Getting Started
+Cansoria Studio oil painting storefront, built with Next.js and connected to the Cansoria Medusa backend.
 
-First, run the development server:
+## Local development
 
-```bash
+Run these commands from the frontend directory:
+
+```powershell
+npm ci
+if (!(Test-Path .env.local)) { Copy-Item .env.example .env.local }
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Configure `.env.local` for your environment and start the backend before using store features.
+The development server runs at http://localhost:3030.
+Keep real credentials in local environment files.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev`: start the development server.
+- `npm run lint`: run ESLint.
+- `npm run build`: create the production build.
+- `npm run start`: serve the production build.
 
-## Learn More
+## Source directories
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app`: pages, layouts, and application routes.
+- `src/components`: storefront components.
+- `src/lib`: API clients and shared utilities.
+- `public`: public static assets.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"# cansoria-frontend" 
+The backend source and its documentation are in `../backend`.

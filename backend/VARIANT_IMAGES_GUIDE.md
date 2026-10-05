@@ -15,7 +15,7 @@ GET /store/products/{productId}
 {
   product: {
     id: "prod_123",
-    title: "The Rose",
+    title: "Sunset Landscape",
     thumbnail: "https://...",
     images: [...],  // 产品级别图片
     variants: [
