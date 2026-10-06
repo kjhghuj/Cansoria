@@ -147,7 +147,7 @@ export function PetFrameCustomizerPreview() {
                       aria-pressed={active}
                       className={`group text-left rounded-2xl border p-4 transition-all ${
                         active
-                          ? "border-toffee bg-cream-light shadow-[0_8px_24px_rgba(200,122,62,0.16)]"
+                          ? "border-toffee bg-cream-light shadow-[0_8px_24px_rgba(176,141,79,0.16)]"
                           : "border-border-subtle bg-cream-light/60 hover:border-toffee/50"
                       }`}
                     >
@@ -229,7 +229,7 @@ export function PetFrameCustomizerPreview() {
                 </div>
                 <Link
                   href="/shop?category=pet-portraits"
-                  className="shrink-0 inline-flex items-center bg-toffee text-white px-6 py-3.5 text-[11px] uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(200,122,62,0.30)]"
+                  className="shrink-0 inline-flex items-center bg-toffee text-white px-6 py-3.5 text-[11px] uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(176,141,79,0.30)]"
                 >
                   Customize This Look
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

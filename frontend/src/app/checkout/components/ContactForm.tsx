@@ -22,61 +22,103 @@ interface ContactFormProps {
   setCardData: (data: CardData) => void;
 }
 
+const inputClass =
+  "w-full rounded-xl border border-border bg-white px-4 py-3 text-charcoal placeholder:text-charcoal-muted focus:outline-none focus:border-toffee focus:ring-2 focus:ring-toffee/15 transition-colors";
+
+const labelClass =
+  "block text-xs uppercase tracking-widest text-charcoal mb-2";
+
+function NumberedCard({
+  step,
+  title,
+  subtitle,
+  children,
+}: {
+  step: number;
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-border-subtle bg-cream-light p-6 sm:p-8 shadow-[0_4px_20px_rgba(38,34,30,0.05)]">
+      <div className="mb-6 flex items-center gap-4">
+        <span
+          aria-hidden="true"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-toffee font-serif text-lg font-semibold text-white shadow-[0_6px_16px_rgba(176,141,79,0.30)]"
+        >
+          {step}
+        </span>
+        <div>
+          <h2 className="font-serif text-xl text-charcoal leading-tight">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-1 text-xs leading-5 text-charcoal-light">
+              {subtitle}
+            </p>
+          )}
+        </div>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export function ContactForm({ billingData, setBillingData, cardData, setCardData }: ContactFormProps) {
   return (
-    <>
-      <div className="mb-8">
-        <h2 className="font-serif text-xl text-charcoal mb-4">Contact Information</h2>
-        <p className="mb-5 text-sm leading-6 text-charcoal-light">
-          We will use this email to send your order updates and artwork preview.
-        </p>
-        <div className="space-y-4 mb-8">
+    <div className="space-y-6">
+      <NumberedCard
+        step={1}
+        title="Contact"
+        subtitle="We will use this email to send your order updates and artwork preview."
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={labelClass}>Email</label>
+            <input
+              type="email"
+              value={billingData.email}
+              onChange={(e) => setBillingData({ ...billingData, email: e.target.value })}
+              className={inputClass}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Name</label>
+              <label className={labelClass}>Name</label>
               <input
                 type="text"
                 value={billingData.name}
                 onChange={(e) => setBillingData({ ...billingData, name: e.target.value })}
-                className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
+                className={inputClass}
                 placeholder="Full Name"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Phone Number</label>
+              <label className={labelClass}>Phone Number</label>
               <input
                 type="tel"
                 value={billingData.phone}
                 onChange={(e) => setBillingData({ ...billingData, phone: e.target.value })}
-                className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
+                className={inputClass}
                 placeholder="+1 (555) 000-0000"
                 required
               />
             </div>
           </div>
-          <div>
-            <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Email</label>
-            <input
-              type="email"
-              value={billingData.email}
-              onChange={(e) => setBillingData({ ...billingData, email: e.target.value })}
-              className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
         </div>
+      </NumberedCard>
 
-        <h2 className="font-serif text-xl text-charcoal mb-4">Delivery Address</h2>
-
+      <NumberedCard step={2} title="Shipping Address">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Address</label>
+            <label className={labelClass}>Address</label>
             <textarea
               value={billingData.address}
               onChange={(e) => setBillingData({ ...billingData, address: e.target.value })}
-              className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta min-h-[80px]"
+              className={`${inputClass} min-h-[80px]`}
               placeholder="Street address"
               rows={2}
               required
@@ -85,29 +127,29 @@ export function ContactForm({ billingData, setBillingData, cardData, setCardData
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">City</label>
+              <label className={labelClass}>City</label>
               <input
                 type="text"
                 value={billingData.city}
                 onChange={(e) => setBillingData({ ...billingData, city: e.target.value })}
-                className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
+                className={inputClass}
                 required
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Postal Code</label>
+              <label className={labelClass}>Postal Code</label>
               <input
                 type="text"
                 value={billingData.postalCode}
                 onChange={(e) => setBillingData({ ...billingData, postalCode: e.target.value })}
-                className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
+                className={inputClass}
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Country</label>
+            <label className={labelClass}>Country</label>
             <CountrySelect
               value={billingData.country}
               onChange={(val) => setBillingData({ ...billingData, country: val })}
@@ -115,25 +157,25 @@ export function ContactForm({ billingData, setBillingData, cardData, setCardData
             />
           </div>
         </div>
+      </NumberedCard>
 
-        <h2 className="font-serif text-xl text-charcoal mb-4 mt-8">Secure Payment</h2>
-        <p className="mb-5 text-sm leading-6 text-charcoal-light">
-          Your payment is processed securely. Your painting preview is sent
-          before the artwork ships.
-        </p>
-
+      <NumberedCard
+        step={3}
+        title="Payment"
+        subtitle="Your payment is processed securely. Your painting preview is sent before the artwork ships."
+      >
         <div className="space-y-4">
           <div>
-            <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Card Information</label>
-            <div className="w-full border border-border px-4 py-3 focus-within:border-terracotta bg-white">
+            <label className={labelClass}>Card Information</label>
+            <div className="rounded-xl border border-border bg-white px-4 py-3 focus-within:border-toffee focus-within:ring-2 focus-within:ring-toffee/15 transition-colors">
               <CardElement
                 options={{
                   hidePostalCode: true,
                   style: {
                     base: {
-                      fontSize: '16px',
-                      color: '#2c2c2c',
-                      '::placeholder': { color: '#9ca3af' },
+                      fontSize: "16px",
+                      color: "#26221E",
+                      "::placeholder": { color: "#9C8E7F" },
                     },
                   },
                 }}
@@ -142,18 +184,18 @@ export function ContactForm({ billingData, setBillingData, cardData, setCardData
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Cardholder Name</label>
+            <label className={labelClass}>Cardholder Name</label>
             <input
               type="text"
               value={cardData.name}
               onChange={(e) => setCardData({ ...cardData, name: e.target.value })}
-              className="w-full border border-border px-4 py-3 focus:outline-none focus:border-terracotta"
+              className={inputClass}
               placeholder="Name on card"
               required
             />
           </div>
         </div>
-      </div>
-    </>
+      </NumberedCard>
+    </div>
   );
 }

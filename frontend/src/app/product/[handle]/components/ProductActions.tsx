@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Loader2, Minus, Plus, ShoppingBag, Zap } from "lucide-react";
+import { Brush, Check, Eye, Globe, Loader2, Minus, Plus, ShoppingBag, UploadCloud, Zap } from "lucide-react";
 import { useCart } from "@/lib/providers";
 import { formatPrice } from "@/lib/medusa";
 import { StoreProduct, StoreProductVariant } from "@/lib/types";
@@ -26,6 +26,12 @@ function isVariantInStock(variant: StoreProductVariant | null) {
   return (variant.inventory_quantity ?? 0) > 0;
 }
 
+const panelTrustPoints = [
+  { icon: <Brush size={16} />, label: "Hand-Painted" },
+  { icon: <Eye size={16} />, label: "Free Preview" },
+  { icon: <Globe size={16} />, label: "Worldwide Shipping" },
+];
+
 export default function ProductActions({
   product,
   selectedOptions,
@@ -39,6 +45,8 @@ export default function ProductActions({
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [photoName, setPhotoName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const variants = useMemo(() => product.variants ?? [], [product.variants]);
   const options = useMemo(() => product.options ?? [], [product.options]);
@@ -98,6 +106,11 @@ export default function ProductActions({
     setQuantity((current) => Math.min(10, current + 1));
   };
 
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) setPhotoName(file.name);
+  };
+
   const addToCartLabel = (() => {
     if (!hasVariants) return "Unavailable";
     if (justAdded) return "Added to Cart";
@@ -133,9 +146,9 @@ export default function ProductActions({
                       type="button"
                       key={value.id}
                       onClick={() => onOptionChange(option.id, value.value)}
-                      className={`min-h-11 rounded-xl border px-4 py-2 text-sm transition-colors ${
+                      className={`min-h-11 rounded-full border px-5 py-2 text-sm transition-colors ${
                         isSelected
-                          ? "border-toffee bg-toffee text-white shadow-[0_4px_14px_rgba(200,122,62,0.28)]"
+                          ? "border-toffee bg-toffee/10 font-medium text-charcoal ring-1 ring-toffee/30"
                           : "border-border bg-white text-charcoal hover:border-toffee hover:text-toffee"
                       }`}
                     >
@@ -151,7 +164,7 @@ export default function ProductActions({
 
       {selectedPrice !== undefined && (
         <div className="flex items-baseline gap-3 rounded-xl bg-white border border-border-subtle px-4 py-3">
-          <span className="text-xl font-medium text-charcoal">
+          <span className="text-xl font-medium text-toffee">
             {formatPrice(selectedPrice, selectedCurrency)}
           </span>
           {isSelectedVariantOnSale && selectedOriginalPrice && (
@@ -162,16 +175,60 @@ export default function ProductActions({
         </div>
       )}
 
+      {/* Photo upload dropzone */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-charcoal">
+          Upload Your Pet&rsquo;s Photo
+        </h3>
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-toffee/50 bg-cream-card/60 px-6 py-8 text-center transition-colors hover:border-toffee hover:bg-cream-card"
+        >
+          <UploadCloud className="h-8 w-8 text-toffee" aria-hidden="true" />
+          {photoName ? (
+            <>
+              <span className="text-sm font-medium text-charcoal">{photoName}</span>
+              <span className="text-xs text-charcoal-light">
+                Great choice — click to replace
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium text-charcoal">
+                Upload Your Photo
+              </span>
+              <span className="text-xs leading-5 text-charcoal-light">
+                JPG, PNG or HEIC (max 10MB) — a clear phone snapshot works
+                beautifully
+              </span>
+            </>
+          )}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/heic"
+          className="hidden"
+          onChange={handlePhotoChange}
+          aria-label="Upload your pet photo"
+        />
+        <p className="mt-2 text-xs leading-5 text-charcoal-muted">
+          Prefer to decide later? You can also email your favourite shots after
+          checkout — your artist will help pick the best one.
+        </p>
+      </div>
+
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-charcoal">
           Quantity
         </h3>
-        <div className="inline-flex h-12 items-center rounded-xl border border-border bg-white">
+        <div className="inline-flex h-12 items-center rounded-full border border-border bg-white">
           <button
             type="button"
             onClick={decreaseQuantity}
             disabled={quantity <= 1}
-            className="flex h-full w-12 items-center justify-center text-charcoal transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-full w-12 items-center justify-center rounded-l-full text-charcoal transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Decrease quantity"
           >
             <Minus className="h-4 w-4" aria-hidden="true" />
@@ -183,7 +240,7 @@ export default function ProductActions({
             type="button"
             onClick={increaseQuantity}
             disabled={quantity >= 10}
-            className="flex h-full w-12 items-center justify-center text-charcoal transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-full w-12 items-center justify-center rounded-r-full text-charcoal transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Increase quantity"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -196,11 +253,11 @@ export default function ProductActions({
           type="button"
           onClick={handleAddToCart}
           disabled={!canAddToCart && !justAdded}
-          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
+          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
             justAdded
               ? "bg-sage text-white"
               : canAddToCart
-                ? "bg-toffee text-white hover:bg-toffee-dark shadow-[0_8px_24px_rgba(200,122,62,0.30)]"
+                ? "bg-toffee text-white hover:bg-toffee-dark shadow-[0_8px_24px_rgba(176,141,79,0.30)]"
                 : "cursor-not-allowed border border-border bg-white text-charcoal-light"
           }`}
         >
@@ -218,9 +275,9 @@ export default function ProductActions({
           type="button"
           onClick={handleBuyNow}
           disabled={!canAddToCart}
-          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
+          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-full border-2 px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
             canAddToCart
-              ? "bg-charcoal text-white hover:bg-oil-brown"
+              ? "border-toffee bg-transparent text-toffee hover:bg-toffee hover:text-white"
               : "cursor-not-allowed border border-border bg-white text-charcoal-light"
           }`}
         >
@@ -233,10 +290,27 @@ export default function ProductActions({
         </button>
       </div>
 
+      {/* Panel trust row */}
+      <div className="flex items-center justify-between gap-2 rounded-2xl border border-border-subtle bg-cream-light px-5 py-4">
+        {panelTrustPoints.map((point, index) => (
+          <div key={point.label} className="flex items-center gap-3">
+            {index > 0 && (
+              <span className="h-6 w-px bg-border" aria-hidden="true" />
+            )}
+            <span className="flex items-center gap-2 text-toffee">
+              {point.icon}
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-charcoal-light">
+                {point.label}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+
       {justAdded && (
         <Link
           href="/cart"
-          className="block rounded-xl border border-charcoal px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.22em] text-charcoal transition-colors hover:bg-charcoal hover:text-white"
+          className="block rounded-full border border-charcoal px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.22em] text-charcoal transition-colors hover:bg-charcoal hover:text-white"
         >
           View Cart
         </Link>
@@ -288,11 +362,11 @@ export default function ProductActions({
             type="button"
             onClick={handleAddToCart}
             disabled={!canAddToCart && !justAdded}
-            className={`flex min-h-12 shrink-0 items-center justify-center gap-2 px-5 text-xs font-semibold uppercase tracking-[0.18em] transition-colors ${
+            className={`flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-xs font-semibold uppercase tracking-[0.18em] transition-colors ${
               justAdded
                 ? "bg-sage text-white"
                 : canAddToCart
-                  ? "bg-terracotta text-white"
+                  ? "bg-toffee text-white"
                   : "cursor-not-allowed border border-border bg-white text-charcoal-light"
             }`}
           >

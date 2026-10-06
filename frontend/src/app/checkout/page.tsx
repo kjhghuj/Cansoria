@@ -13,6 +13,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { useCart } from "@/lib/providers";
+import { formatPrice } from "@/lib/medusa";
 import { CheckoutError } from "./components/CheckoutError";
 import { BillingData, CardData, ContactForm } from "./components/ContactForm";
 import { SubmitButton } from "./components/SubmitButton";
@@ -58,13 +59,6 @@ const checkoutTrustItems: TrustBadgeItem[] = [
   { kind: "preview", title: "Free preview before shipping" },
   { kind: "guarantee", title: "Satisfaction guarantee" },
   { kind: "shipping", title: "Worldwide shipping" },
-];
-
-const postCheckoutSteps = [
-  "Place your secure order",
-  "Upload your photo reference",
-  "Review your digital preview",
-  "Approve shipping for your canvas",
 ];
 
 function getErrorMessage(error: unknown) {
@@ -310,29 +304,128 @@ function CheckoutForm() {
     }
   };
 
+  const cartItems = cart?.items ?? [];
+  const currencyCode = cart?.currency_code?.toUpperCase() || "GBP";
+  const subtotal = cart?.item_subtotal || 0;
+  const shipping = typeof cart?.shipping_total === "number" ? cart.shipping_total : null;
+  const tax = cart?.tax_total || 0;
+  const discount = cart?.discount_total || 0;
+  const total = cart?.total || subtotal;
+
   return (
     <>
       <CheckoutError error={error} onClear={() => setError(null)} />
       <form onSubmit={handleSubmit}>
         {!isStripeConfigured && (
-          <div className="mb-6 border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
             <p className="font-medium">Payment is unavailable locally.</p>
             <p className="mt-1 text-sm leading-6">
               {PAYMENT_NOT_CONFIGURED_MESSAGE}
             </p>
           </div>
         )}
-        <ContactForm
-          billingData={billingData}
-          setBillingData={setBillingData}
-          cardData={cardData}
-          setCardData={setCardData}
-        />
-        <SubmitButton
-          processing={processing}
-          disabled={processing || !stripe || !elements}
-          label={isStripeConfigured ? "Pay Securely" : "Payment Unavailable"}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] gap-8 items-start">
+          <ContactForm
+            billingData={billingData}
+            setBillingData={setBillingData}
+            cardData={cardData}
+            setCardData={setCardData}
+          />
+
+          {/* Order summary sidebar */}
+          <aside className="rounded-2xl border border-border-subtle bg-cream-light p-6 sm:p-8 shadow-[0_8px_28px_rgba(38,34,30,0.06)] lg:sticky lg:top-28">
+            <h2 className="mb-6 font-serif text-xl text-charcoal">
+              Order Summary
+            </h2>
+
+            {cartItems.length > 0 ? (
+              <ul className="mb-6 space-y-4">
+                {cartItems.map((item) => (
+                  <li key={item.id} className="flex items-center gap-3">
+                    <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-canvas">
+                      {item.thumbnail && (
+                        <img
+                          src={item.thumbnail}
+                          alt={item.product_title || "Custom artwork"}
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-charcoal">
+                        {item.product_title || "Custom artwork"}
+                      </span>
+                      <span className="block text-xs text-charcoal-light">
+                        {item.variant_title ? `${item.variant_title} · ` : ""}
+                        Qty {item.quantity}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-sm font-medium text-toffee">
+                      {formatPrice(item.total ?? (item.unit_price || 0) * item.quantity, currencyCode)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="mb-6 rounded-xl border border-dashed border-border bg-cream-card px-4 py-5 text-sm leading-6 text-charcoal-light">
+                Your cart is empty. Add a bespoke pet portrait to see your
+                order details here.
+              </div>
+            )}
+
+            <div className="space-y-3 border-t border-border-subtle pt-5">
+              <div className="flex justify-between text-sm">
+                <span className="text-charcoal-light">Subtotal</span>
+                <span className="font-medium text-charcoal">
+                  {formatPrice(subtotal, currencyCode)}
+                </span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-green-700">
+                  <span>Discount</span>
+                  <span className="font-medium">
+                    -{formatPrice(discount, currencyCode)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-charcoal-light">Shipping</span>
+                <span className="font-medium text-charcoal">
+                  {shipping === null
+                    ? "Calculated at payment"
+                    : shipping === 0
+                      ? "Free"
+                      : formatPrice(shipping, currencyCode)}
+                </span>
+              </div>
+              {tax > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-charcoal-light">Tax</span>
+                  <span className="font-medium text-charcoal">
+                    {formatPrice(tax, currencyCode)}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-baseline justify-between border-t border-border-subtle pt-4">
+                <span className="font-serif text-lg text-charcoal">Total</span>
+                <span className="font-serif text-2xl font-medium text-charcoal">
+                  {formatPrice(total, currencyCode)}
+                </span>
+              </div>
+            </div>
+
+            <SubmitButton
+              processing={processing}
+              disabled={processing || !stripe || !elements}
+              label={isStripeConfigured ? "Place Order →" : "Payment Unavailable"}
+            />
+
+            <p className="mt-4 text-center text-xs leading-5 text-charcoal-light">
+              After checkout we request your photo reference and send a free
+              preview before anything ships.
+            </p>
+          </aside>
+        </div>
       </form>
     </>
   );
@@ -341,48 +434,34 @@ function CheckoutForm() {
 export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-cream pb-16 pt-24">
-      <div className="mx-auto max-w-[920px] px-4 sm:px-6">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
         <Link
           href="/cart"
-          className="mb-6 inline-block text-charcoal-light hover:text-terracotta"
+          className="mb-6 inline-block text-sm text-charcoal-light hover:text-toffee transition-colors"
         >
-          Back to Cart
+          ← Back to Cart
         </Link>
 
-        <div className="mb-8">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
+        <div className="mb-10">
+          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-toffee">
             Cansoria Checkout
           </p>
-          <h1 className="font-serif text-4xl text-charcoal">Secure Checkout</h1>
+          <h1 className="font-serif text-4xl lg:text-5xl text-charcoal">
+            Checkout
+          </h1>
           <p className="mt-4 leading-7 text-charcoal-light">
-            Your artwork is protected by our satisfaction guarantee.
+            Your artwork is protected by our satisfaction guarantee — you will
+            receive a free preview before your painting ships.
           </p>
-          <p className="mt-2 leading-7 text-charcoal-light">
-            You will receive a preview before your painting ships.
-          </p>
-          <TrustBadgeGrid items={checkoutTrustItems} compact className="mt-6" />
         </div>
 
-        <div className="border border-border bg-white p-5 sm:p-8">
-          <div className="mb-8 border-b border-border pb-6">
-            <h2 className="font-serif text-xl text-charcoal">
-              What Happens After Checkout
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-4">
-              {postCheckoutSteps.map((step, index) => (
-                <div key={step} className="text-sm leading-6 text-charcoal-light">
-                  <span className="mb-2 block text-xs uppercase tracking-[0.22em] text-terracotta">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  {step}
-                </div>
-              ))}
-            </div>
-          </div>
+        <Elements stripe={stripePromise}>
+          <CheckoutForm />
+        </Elements>
 
-          <Elements stripe={stripePromise}>
-            <CheckoutForm />
-          </Elements>
+        {/* Bottom trust strip */}
+        <div className="mt-14 border-t border-border pt-10">
+          <TrustBadgeGrid items={checkoutTrustItems} compact />
         </div>
       </div>
     </div>

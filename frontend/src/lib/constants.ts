@@ -372,11 +372,9 @@ Boundaries:
 `;
 
 export const NAV_LINKS = [
-  { name: "Home", path: "/" },
-  { name: "Custom Pet Portrait", path: "/shop?category=pet-portraits" },
-  { name: "Dog Portraits", path: "/shop?category=dogs" },
-  { name: "Cat Portraits", path: "/shop?category=cats" },
+  { name: "Shop", path: "/shop" },
   { name: "How It Works", path: "/#process" },
+  { name: "Our Story", path: "/about" },
   { name: "Reviews", path: "/#reviews" },
 ];
 

@@ -9,7 +9,7 @@ export function SubmitButton({ processing, disabled, label = "Pay Securely" }: S
     <button
       type="submit"
       disabled={disabled}
-      className="w-full mt-8 bg-terracotta text-white py-4 hover:bg-terracotta-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-sm uppercase tracking-[0.2em]"
+      className="w-full rounded-full bg-toffee text-white py-4 hover:bg-toffee-dark disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-sm uppercase tracking-[0.18em] shadow-[0_8px_24px_rgba(176,141,79,0.30)] transition-colors"
     >
       {processing ? (
         <>

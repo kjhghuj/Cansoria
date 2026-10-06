@@ -33,9 +33,9 @@ export default function CartItem({
   const lineTotal = item.total ?? unitPrice * item.quantity;
 
   return (
-    <div className={`flex gap-4 py-6 border-b border-border ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`flex gap-4 py-5 sm:py-6 ${isUpdating ? 'opacity-50' : ''}`}>
       {/* Product Image */}
-      <div className="relative w-24 h-28 sm:w-32 sm:h-36 flex-shrink-0 bg-canvas overflow-hidden border border-border">
+      <div className="relative w-24 h-28 sm:w-32 sm:h-36 flex-shrink-0 bg-canvas overflow-hidden rounded-xl border border-border-subtle">
         <Image
           src={imageSrc}
           alt={productTitle}
@@ -58,7 +58,7 @@ export default function CartItem({
                 {variantTitle}
               </p>
             )}
-            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-terracotta">
+            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-toffee">
               Custom artwork
             </p>
           </div>
@@ -67,7 +67,7 @@ export default function CartItem({
           <button
             onClick={onRemove}
             disabled={isUpdating}
-            className="hidden sm:flex items-center justify-center w-8 h-8 text-charcoal-light hover:text-terracotta transition-colors disabled:opacity-50"
+            className="hidden sm:flex items-center justify-center w-8 h-8 text-charcoal-light hover:text-toffee transition-colors disabled:opacity-50"
             aria-label="Remove item"
           >
             <TrashIcon />
@@ -81,22 +81,22 @@ export default function CartItem({
 
         {/* Quantity Controls & Mobile Remove */}
         <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-3">
+          <div className="inline-flex h-9 items-center rounded-full border border-border bg-white">
             <button
               onClick={() => onUpdateQuantity(item.quantity - 1)}
               disabled={isUpdating || item.quantity <= 1}
-              className="w-8 h-8 flex items-center justify-center border border-border hover:border-charcoal transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-9 h-9 flex items-center justify-center rounded-l-full text-charcoal hover:bg-canvas transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Decrease quantity"
             >
               <MinusIcon />
             </button>
-            <span className="w-8 text-center font-medium text-charcoal">
+            <span className="w-8 text-center text-sm font-medium text-charcoal">
               {item.quantity}
             </span>
             <button
               onClick={() => onUpdateQuantity(item.quantity + 1)}
               disabled={isUpdating}
-              className="w-8 h-8 flex items-center justify-center border border-border hover:border-charcoal transition-colors disabled:opacity-50"
+              className="w-9 h-9 flex items-center justify-center rounded-r-full text-charcoal hover:bg-canvas transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Increase quantity"
             >
               <PlusIcon />
@@ -105,13 +105,13 @@ export default function CartItem({
 
           {/* Line Total & Mobile Remove */}
           <div className="flex items-center gap-4">
-            <p className="font-serif text-lg text-charcoal">
+            <p className="font-serif text-lg text-toffee">
               {formatPrice(lineTotal, currencyCode)}
             </p>
             <button
               onClick={onRemove}
               disabled={isUpdating}
-              className="sm:hidden flex items-center justify-center w-8 h-8 text-charcoal-light hover:text-terracotta transition-colors disabled:opacity-50"
+              className="sm:hidden flex items-center justify-center w-8 h-8 text-charcoal-light hover:text-toffee transition-colors disabled:opacity-50"
               aria-label="Remove item"
             >
               <TrashIcon />

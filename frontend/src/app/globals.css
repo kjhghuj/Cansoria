@@ -14,9 +14,9 @@
   --color-charcoal-light: #6E6357;
   --color-charcoal-muted: #9C8E7F;
 
-  /* Core Conversion & Accent Colors */
-  --color-toffee: #C87A3E;             /* Primary CTA: warm caramel amber */
-  --color-toffee-dark: #A55F28;        /* Hover state: deep-roast caramel */
+  /* Core Conversion & Accent Colors (Antique Gold per design mockups) */
+  --color-toffee: #B08D4F;             /* Primary CTA: antique gold */
+  --color-toffee-dark: #8F6F35;        /* Hover state: deep antique gold */
   --color-champagne-gold: #C5A059;     /* Hand-painted seal: brushed champagne gold */
 
   /* Borders & Soft Dividers */

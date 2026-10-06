@@ -243,7 +243,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
 
           <div className="mt-auto flex items-end justify-between gap-4 pt-5">
             <div>
-              <span className="block text-base font-medium text-charcoal">
+              <span className="block text-base font-semibold text-toffee">
                 {priceLabel}
               </span>
               {compareAtPrice && lowestPrice !== undefined && (
@@ -252,8 +252,8 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
                 </span>
               )}
             </div>
-            <span className="shrink-0 border-b border-charcoal pb-1 text-xs uppercase tracking-[0.22em] text-charcoal transition-colors group-hover:border-toffee group-hover:text-toffee">
-              View Details
+            <span className="shrink-0 inline-flex items-center rounded-full border border-toffee px-5 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-toffee transition-colors group-hover:bg-toffee group-hover:text-white">
+              Choose Options
             </span>
           </div>
         </div>

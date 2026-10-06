@@ -45,8 +45,8 @@ export default function ShopFilters({
               aria-pressed={!currentCategory}
               className={`rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-all ${
                 !currentCategory
-                  ? "bg-toffee text-white shadow-[0_4px_16px_rgba(200,122,62,0.30)]"
-                  : "border border-border bg-white/80 text-charcoal hover:border-toffee hover:text-toffee"
+                  ? "bg-toffee text-white shadow-[0_4px_16px_rgba(176,141,79,0.30)]"
+                  : "border border-transparent bg-cream-dark/60 text-charcoal hover:bg-cream-dark hover:text-toffee"
               }`}
             >
               All Pet Portraits
@@ -58,8 +58,8 @@ export default function ShopFilters({
                 aria-pressed={currentCategory === cat.value}
                 className={`rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-all ${
                   currentCategory === cat.value
-                    ? "bg-toffee text-white shadow-[0_4px_16px_rgba(200,122,62,0.30)]"
-                    : "border border-border bg-white/80 text-charcoal hover:border-toffee hover:text-toffee"
+                    ? "bg-toffee text-white shadow-[0_4px_16px_rgba(176,141,79,0.30)]"
+                    : "border border-transparent bg-cream-dark/60 text-charcoal hover:bg-cream-dark hover:text-toffee"
                 }`}
               >
                 {cat.label}

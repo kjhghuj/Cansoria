@@ -11,7 +11,7 @@ export function HeroSection() {
         className="absolute -top-32 -right-24 w-[560px] h-[560px] rounded-full opacity-60 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(200,122,62,0.14) 0%, rgba(250,248,245,0) 68%)",
+            "radial-gradient(circle, rgba(176,141,79,0.14) 0%, rgba(250,248,245,0) 68%)",
         }}
       />
       <div
@@ -43,7 +43,7 @@ export function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-9">
               <Link
                 href="/shop?category=pet-portraits"
-                className="inline-flex justify-center items-center bg-toffee text-white px-8 py-4 text-xs uppercase tracking-widest font-bold rounded-xl shadow-[0_10px_28px_rgba(200,122,62,0.32)] hover:bg-toffee-dark hover:shadow-[0_10px_24px_rgba(165,95,40,0.30)] transition-all"
+                className="inline-flex justify-center items-center bg-toffee text-white px-8 py-4 text-xs uppercase tracking-widest font-bold rounded-xl shadow-[0_10px_28px_rgba(176,141,79,0.32)] hover:bg-toffee-dark hover:shadow-[0_10px_24px_rgba(143,111,53,0.30)] transition-all"
               >
                 Start Custom Portrait
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

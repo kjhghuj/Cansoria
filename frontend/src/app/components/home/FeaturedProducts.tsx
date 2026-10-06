@@ -65,7 +65,7 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
                 </p>
                 <Link
                   href="/shop?category=pet-portraits"
-                  className="inline-flex bg-toffee text-white px-7 py-3.5 text-xs uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(200,122,62,0.30)]"
+                  className="inline-flex bg-toffee text-white px-7 py-3.5 text-xs uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(176,141,79,0.30)]"
                 >
                   Commission Your Pet Portrait
                 </Link>

@@ -148,10 +148,18 @@ const trustItems: TrustBadgeItem[] = [
 ];
 
 const customSteps = [
-  "Upload your photo after placing the order",
-  "Our artist prepares your painting",
-  "You receive a preview for approval",
-  "We ship your finished canvas",
+  {
+    title: "Upload Photo",
+    text: "A clear phone snapshot is all it takes — single pet or the whole family.",
+  },
+  {
+    title: "We Paint",
+    text: "A master artist hand-paints your portrait in layered museum-grade oils.",
+  },
+  {
+    title: "Preview & Ship",
+    text: "Approve your free sketch proof, then it arrives framed and gift-boxed.",
+  },
 ];
 
 const conversionAnswers = [
@@ -260,7 +268,7 @@ export default function ProductClient({
             </div>
 
             <div className="flex flex-wrap items-baseline gap-3 border-y border-border py-5">
-              <p className="text-3xl font-medium text-charcoal">
+              <p className="font-serif text-3xl font-medium text-toffee">
                 {priceSummary.label}
               </p>
               {priceSummary.compareAtLabel && (
@@ -269,7 +277,7 @@ export default function ProductClient({
                 </p>
               )}
               {priceSummary.salePercent && (
-                <span className="bg-terracotta/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-terracotta">
+                <span className="rounded-full bg-toffee/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-toffee">
                   Save {priceSummary.salePercent}%
                 </span>
               )}
@@ -303,7 +311,7 @@ export default function ProductClient({
       </div>
 
       <section className="mt-20 border-y border-border py-14">
-        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
           <div>
             <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
               Custom Order
@@ -312,15 +320,24 @@ export default function ProductClient({
               How Custom Painting Works
             </h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="relative grid gap-6 sm:grid-cols-3">
+            {/* Gold connector line (desktop) */}
+            <div
+              aria-hidden="true"
+              className="hidden sm:block absolute top-7 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-toffee/15 via-toffee/50 to-toffee/15"
+            />
             {customSteps.map((step, index) => (
-              <div key={step} className="border border-border bg-white p-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.22em] text-gold">
-                  Step {index + 1}
+              <div key={step.title} className="relative text-center sm:text-left">
+                <span
+                  aria-hidden="true"
+                  className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-toffee bg-cream-light font-serif text-lg font-semibold text-toffee shadow-[0_6px_18px_rgba(176,141,79,0.25)] sm:mx-0 mx-auto"
+                >
+                  {index + 1}
+                </span>
+                <h3 className="font-serif text-xl text-charcoal">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-charcoal-light">
+                  {step.text}
                 </p>
-                <h3 className="font-serif text-2xl leading-snug text-charcoal">
-                  {step}
-                </h3>
               </div>
             ))}
           </div>
@@ -354,27 +371,27 @@ export default function ProductClient({
 
       <section className="mt-16 grid gap-8 border-y border-border py-12 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div className="relative aspect-[4/5] overflow-hidden border border-border bg-white">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="/placeholder.svg"
-              alt="Reference photo placeholder before custom painting"
+              src="https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=80&w=700"
+              alt="Casual reference photo of a pet before custom painting"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
-            <span className="absolute left-3 top-3 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
               Photo
             </span>
           </div>
-          <div className="relative aspect-[4/5] overflow-hidden border border-border bg-white">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="/products/portrait.svg"
-              alt="Oil painting transformation placeholder"
+              src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=700"
+              alt="Hand-painted oil portrait transformation of the same pet"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
-            <span className="absolute left-3 top-3 bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
+            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
               Painting
             </span>
           </div>

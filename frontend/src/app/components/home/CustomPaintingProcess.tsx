@@ -52,7 +52,7 @@ export function CustomPaintingProcess() {
                 className="relative rounded-2xl bg-white border border-border-subtle p-8 shadow-[0_6px_24px_rgba(38,34,30,0.05)]"
               >
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="relative flex items-center justify-center w-14 h-14 rounded-full bg-toffee text-white shadow-[0_8px_20px_rgba(200,122,62,0.35)]">
+                  <span className="relative flex items-center justify-center w-14 h-14 rounded-full bg-toffee text-white shadow-[0_8px_20px_rgba(176,141,79,0.35)]">
                     {step.icon}
                     <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-charcoal text-champagne-gold text-[11px] font-bold font-sans">
                       {index + 1}

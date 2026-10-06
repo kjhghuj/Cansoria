@@ -171,23 +171,56 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   }
 
   return (
-    <div className="pt-24 pb-16">
+    <div className="pb-16">
       <ShopHeader />
 
-      <Suspense fallback={<div className="h-12" />}>
-        <ShopFilters
-          categories={SHOP_CATEGORIES.map(({ label, value }) => ({ label, value }))}
-          currentCategory={selectedCategory?.value}
-          currentSort={sort}
-          productCount={filteredProducts.length}
-        />
-      </Suspense>
+      <div id="collection" className="scroll-mt-24 pt-10">
+        <Suspense fallback={<div className="h-12" />}>
+          <ShopFilters
+            categories={SHOP_CATEGORIES.map(({ label, value }) => ({ label, value }))}
+            currentCategory={selectedCategory?.value}
+            currentSort={sort}
+            productCount={filteredProducts.length}
+          />
+        </Suspense>
+      </div>
 
       <ProductGrid
         products={filteredProducts}
         region={region}
         category={selectedCategory?.label}
       />
+
+      {/* Collection trust strip */}
+      <section className="mt-16 border-t border-border pt-12">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+            {[
+              {
+                title: "Hand-Painted by Real Artists",
+                text: "Every portrait is 100% brush-painted in oils — never a digital print.",
+              },
+              {
+                title: "Free Preview Before Shipping",
+                text: "Approve your sketch online with unlimited revisions before we frame it.",
+              },
+              {
+                title: "Worldwide Insured Shipping",
+                text: "Gift-boxed, damage-free delivery to pet families everywhere.",
+              },
+            ].map((item) => (
+              <div key={item.title} className="text-center">
+                <h3 className="mb-3 font-serif text-lg text-charcoal">
+                  {item.title}
+                </h3>
+                <p className="mx-auto max-w-xs text-sm leading-6 text-charcoal-light">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

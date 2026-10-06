@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCart, useRegion, useAuth } from "@/lib/providers";
 import { applyPromoCode, removePromoCode as removePromoCodeApi } from "@/lib/medusa";
@@ -247,26 +248,52 @@ function CartContent() {
     .filter((code): code is string => Boolean(code));
 
   return (
-    <div className="pt-24 pb-16 min-h-screen bg-cream">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-8 lg:mb-12">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-            Cansoria Order
-          </p>
-          <h1 className="font-serif text-4xl lg:text-5xl text-charcoal">
-            Your Cart
-          </h1>
-          <p className="text-charcoal-light mt-3 max-w-2xl">
-            Review your custom artwork before checkout.
-          </p>
-          <TrustBadgeGrid items={cartTrustItems} compact className="mt-6" />
-          {cartCount > 0 && !cartLoading && (
-            <p className="text-charcoal-light mt-4 text-sm">
-              {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your cart
-            </p>
-          )}
+    <div className="pb-16 min-h-screen bg-cream">
+      {/* Photo banner header */}
+      <div className="relative w-full overflow-hidden">
+        <div className="relative h-[240px] sm:h-[280px] lg:h-[320px] w-full">
+          <Image
+            src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=2000"
+            alt="Sunlit cream living room with framed hand-painted pet portraits"
+            fill
+            priority
+            className="object-cover object-[70%_center] lg:object-center"
+            sizes="100vw"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(250,248,245,0.97) 0%, rgba(250,248,245,0.92) 34%, rgba(250,248,245,0.55) 52%, rgba(250,248,245,0) 72%)",
+            }}
+          />
+          <div className="absolute inset-0 flex items-center">
+            <div className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8">
+              <div className="max-w-xl">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-toffee">
+                  Cansoria Order
+                </p>
+                <h1 className="font-serif text-4xl lg:text-5xl text-charcoal">
+                  Your Cart
+                </h1>
+                <p className="text-charcoal-light mt-3 max-w-md">
+                  Review your custom artwork before checkout — every piece
+                  still includes a free sketch proof.
+                </p>
+                {cartCount > 0 && !cartLoading && (
+                  <p className="text-charcoal-light mt-3 text-sm">
+                    {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your cart
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <TrustBadgeGrid items={cartTrustItems} compact className="mt-8 mb-10" />
 
         {/* Loading State */}
         {cartLoading && <CartLoading />}
@@ -280,11 +307,13 @@ function CartContent() {
         {!cartLoading && cart && cart.items && cart.items.length > 0 && (
           <div className="lg:grid lg:grid-cols-3 lg:gap-12">
             {/* Cart Items */}
-            <div className="lg:col-span-2">
-              <div className="border border-border bg-white px-4 sm:px-6">
-                {cart.items.map((item) => (
+            <div className="lg:col-span-2 space-y-4">
+              {cart.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-border-subtle bg-cream-light px-4 sm:px-6 shadow-[0_4px_20px_rgba(38,34,30,0.05)]"
+                >
                   <CartItem
-                    key={item.id}
                     item={item}
                     currencyCode={currencyCode}
                     onUpdateQuantity={(qty) => handleUpdateQuantity(item.id, qty)}
@@ -293,8 +322,8 @@ function CartContent() {
                     variantImage={item.variant_id ? variantImageMap[item.variant_id] : undefined}
                     fallbackImage={item.product_id ? (resolvedImages[item.product_id] || productImageCache[item.product_id]) : null}
                   />
-                ))}
-              </div>
+                </div>
+              ))}
 
               {/* Coupon Section - Mobile Only (Below items) */}
               <div className="lg:hidden mt-6">

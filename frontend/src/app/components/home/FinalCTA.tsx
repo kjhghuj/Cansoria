@@ -10,7 +10,7 @@ export function FinalCTA() {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[720px] rounded-full pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(200,122,62,0.16) 0%, rgba(38,34,30,0) 65%)",
+            "radial-gradient(circle, rgba(176,141,79,0.16) 0%, rgba(38,34,30,0) 65%)",
         }}
       />
       <div className="relative max-w-4xl mx-auto px-6 text-center">
@@ -27,7 +27,7 @@ export function FinalCTA() {
         </p>
         <Link
           href="/shop?category=pet-portraits"
-          className="inline-flex items-center justify-center bg-toffee text-white px-9 py-4 text-xs uppercase tracking-widest font-bold rounded-xl shadow-[0_12px_32px_rgba(200,122,62,0.40)] hover:bg-toffee-dark transition-all"
+          className="inline-flex items-center justify-center bg-toffee text-white px-9 py-4 text-xs uppercase tracking-widest font-bold rounded-xl shadow-[0_12px_32px_rgba(176,141,79,0.40)] hover:bg-toffee-dark transition-all"
         >
           Start Your Custom Portrait Today
           <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />

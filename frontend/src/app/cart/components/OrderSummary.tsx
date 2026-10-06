@@ -122,9 +122,9 @@ export default function OrderSummary({
   const isLoading = isParentLoading || updatingShipping;
 
   return (
-    <div className="bg-white p-6 lg:p-8 sticky top-24 border border-border">
+    <div className="rounded-2xl bg-cream-light p-6 lg:p-8 sticky top-24 border border-border-subtle shadow-[0_8px_28px_rgba(38,34,30,0.06)]">
       <h2 className="font-serif text-xl text-charcoal mb-6 flex items-center gap-2">
-        Artwork Summary
+        Order Summary
       </h2>
 
       {/* Shipping Selector */}
@@ -275,7 +275,7 @@ export default function OrderSummary({
         <Link href="/checkout">
           <button
             disabled={isLoading || itemCount === 0 || !selectedOption || loadingMethods}
-            className="w-full bg-charcoal text-white py-4 hover:bg-oil-brown transition-all duration-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-charcoal/10 hover:shadow-xl hover:shadow-charcoal/20 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md"
+            className="w-full rounded-full bg-toffee text-white py-4 hover:bg-toffee-dark transition-all duration-300 font-semibold uppercase tracking-[0.18em] text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(176,141,79,0.30)] hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
           >
             {isLoading || loadingMethods ? (
               <>
@@ -285,7 +285,7 @@ export default function OrderSummary({
             ) : !selectedOption ? (
               <span>Select Delivery to Checkout</span>
             ) : (
-              <span>Secure Checkout</span>
+              <span>Proceed to Checkout →</span>
             )}
           </button>
         </Link>
