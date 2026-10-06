@@ -1,117 +1,57 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/medusa"
 import { Modules } from "@medusajs/framework/utils"
-import { randomBytes } from "crypto"
+import { createHash } from "crypto"
 
-function generateDiscountCode(): string {
-    const randomPart = randomBytes(3).toString("hex").toUpperCase()
-    return `ART15-${randomPart}`
-}
-
-function getExpiryDate(): Date {
-    const now = new Date()
-    return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-}
-
-function formatDate(date: Date): string {
-    return date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    })
-}
-
-export default async function customerCreatedHandler({
-    event: { data },
-    container,
-}: SubscriberArgs<{ id: string }>) {
-    const notificationModuleService = container.resolve(Modules.NOTIFICATION)
-    const customerModuleService = container.resolve(Modules.CUSTOMER)
-    const promotionModuleService = container.resolve(Modules.PROMOTION)
-    const logger = container.resolve("logger")
-
-    const customer = await customerModuleService.retrieveCustomer(data.id)
-
-    if (!customer) {
-        logger.warn(`[CustomerCreatedSubscriber] Customer ${data.id} not found.`)
-        return
-    }
-
-    logger.info(`[CustomerCreatedSubscriber] Processing new Cansoria customer: ${customer.email}`)
-
-    let discountCode: string | undefined
-    let validUntil: string | undefined
-
-    try {
-        const code = generateDiscountCode()
-        const expiryDate = getExpiryDate()
-        const campaignSuffix = code.toLowerCase()
-
-        logger.info(`[CustomerCreatedSubscriber] Creating Cansoria promotion with code: ${code}`)
-
-        const campaign = await promotionModuleService.createCampaigns({
-            campaign_identifier: `cansoria-account-${campaignSuffix}`,
-            name: `Cansoria Account Welcome ${code}`,
-            starts_at: new Date(),
-            ends_at: expiryDate,
+export default async function customerCreatedHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
+  const customers = container.resolve(Modules.CUSTOMER)
+  const promotions = container.resolve(Modules.PROMOTION)
+  const notifications = container.resolve(Modules.NOTIFICATION)
+  const locking = container.resolve(Modules.LOCKING)
+  const logger = container.resolve("logger")
+  try {
+    await locking.execute(`welcome-coupon:${data.id}`, async () => {
+      const customer = await customers.retrieveCustomer(data.id)
+      // Checkout creates guest customer records too; these do not qualify for registration coupons.
+      if (!customer || !customer.has_account || !customer.email || customer.metadata?.welcome_email_sent === true) return
+      const code = `ART15-${createHash("sha256").update(`cansoria-welcome:${customer.id}`).digest("hex").slice(0, 16).toUpperCase()}`
+      const existing = await promotions.listPromotions({ code })
+      const createdAt = customer.created_at ? new Date(customer.created_at).getTime() : Date.now()
+      const expiry = new Date(createdAt + 30 * 24 * 60 * 60 * 1000)
+      if (!existing.length) {
+        // The deterministic identifiers permit safe retry after a partial event-handler failure.
+        const identifier = `cansoria-account-${customer.id}`
+        const campaigns = await promotions.listCampaigns({ campaign_identifier: [identifier] })
+        const campaign = campaigns[0] || await promotions.createCampaigns({
+          campaign_identifier: identifier,
+          name: "Cansoria Account Welcome",
+          starts_at: new Date(), ends_at: expiry,
+          budget: { type: "usage", limit: 1 },
         })
-
-        const promotions = await promotionModuleService.createPromotions({
-            code,
-            type: "standard",
-            status: "active",
-            is_automatic: false,
-            campaign_id: campaign.id,
-            application_method: {
-                type: "percentage",
-                value: 15,
-                target_type: "order",
-                allocation: "across",
-            },
+        await promotions.createPromotions({
+          code, type: "standard", status: "active", is_automatic: false, campaign_id: campaign.id,
+          rules: [
+            { attribute: "customer.id", operator: "eq", values: [customer.id] },
+            { attribute: "email", operator: "eq", values: [customer.email.trim().toLowerCase()] },
+          ],
+          application_method: { type: "percentage", value: 15, target_type: "order", allocation: "across" },
         })
-
-        const promotion = Array.isArray(promotions) ? promotions[0] : promotions
-        logger.info(`[CustomerCreatedSubscriber] Promotion created with ID: ${promotion?.id}`)
-
-        discountCode = code
-        validUntil = formatDate(expiryDate)
-
-        const existingCoupons = Array.isArray(customer.metadata?.coupons)
-            ? customer.metadata.coupons
-            : []
-
-        await customerModuleService.updateCustomers(customer.id, {
-            metadata: {
-                ...customer.metadata,
-                coupons: [...existingCoupons, code],
-                welcome_discount_code: code,
-                welcome_discount_valid_until: expiryDate.toISOString(),
-            },
-        })
-
-        logger.info(`[CustomerCreatedSubscriber] Promotion added to customer metadata (valid until ${validUntil})`)
-    } catch (error) {
-        logger.error("[CustomerCreatedSubscriber] Failed to create Cansoria promotion:", error)
-    }
-
-    try {
-        await notificationModuleService.createNotifications({
-            to: customer.email,
-            channel: "email",
-            template: "customer_created",
-            data: {
-                first_name: customer.first_name,
-                last_name: customer.last_name,
-                email: customer.email,
-                discountCode,
-                validUntil,
-            },
-        })
-        logger.info(`[CustomerCreatedSubscriber] Welcome email sent to ${customer.email}`)
-    } catch (error) {
-        logger.error("[CustomerCreatedSubscriber] Failed to send welcome email:", error)
-    }
+      }
+      const metadata = {
+        ...customer.metadata,
+        coupons: Array.from(new Set([...(Array.isArray(customer.metadata?.coupons) ? customer.metadata.coupons : []), code])),
+        welcome_discount_code: code,
+        welcome_discount_valid_until: expiry.toISOString(),
+      }
+      await customers.updateCustomers(customer.id, { metadata })
+      await notifications.createNotifications({
+        to: customer.email, channel: "email", template: "customer_created", idempotency_key: `welcome:${customer.id}`,
+        data: { first_name: customer.first_name, discountCode: code, validUntil: expiry.toLocaleDateString("en-GB") },
+      })
+      await customers.updateCustomers(customer.id, { metadata: { ...metadata, welcome_email_sent: true } })
+    }, { timeout: 30 })
+  } catch {
+    logger.warn("[CustomerCreatedSubscriber] Welcome notification unavailable")
+  }
 }
 
-export const config: SubscriberConfig = {
-    event: "customer.created",
-}
+export const config: SubscriberConfig = { event: "customer.created" }

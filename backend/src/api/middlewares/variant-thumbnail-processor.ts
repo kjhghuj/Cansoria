@@ -29,6 +29,9 @@ export async function variantThumbnailProcessor(
 }
 
 function processProduct(product: any) {
+    if (Array.isArray(product.categories)) {
+        product.categories = product.categories.filter((category: any) => !category.is_internal && category.is_active !== false)
+    }
     if (product.variants && Array.isArray(product.variants)) {
         product.variants.forEach((variant: any) => {
             // If thumbnail is missing, try to get it from metadata

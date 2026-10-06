@@ -64,10 +64,8 @@ export const subscribeToNewsletter = async (email: string, context: NewsletterCo
         // Inspecting errors as per README
         if (error.response) {
             console.error('Klaviyo Error Status:', error.response.status)
-            console.error('Klaviyo Error Text:', error.response.statusText)
-            console.error('Klaviyo Error Data:', JSON.stringify(error.response.data, null, 2))
         } else {
-            console.error('Error subscribing to Klaviyo:', error)
+            console.warn('Newsletter provider unavailable')
         }
         throw new Error('Failed to subscribe to newsletter')
     }

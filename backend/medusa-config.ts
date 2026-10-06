@@ -1,5 +1,8 @@
 import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 import path from "path"
+import fs from "fs"
+import { signingSecret, storefrontUrl } from "./src/lib/access-tokens"
+import { STORE_RESTRICTED_FIELDS } from "./src/lib/catalog-fields"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
@@ -13,6 +16,21 @@ const hasS3FileConfig = Boolean(
 
 if (process.env.NODE_ENV === "production" && !hasS3FileConfig) {
   throw new Error("SECURITY ERROR: S3 file storage must be configured in production.")
+}
+if (process.env.NODE_ENV === "production") {
+  signingSecret()
+  storefrontUrl()
+  const cookieSecret = process.env.COOKIE_SECRET || ""
+  if (cookieSecret.length < 32 || /supersecret|replace|changeme|your[_-]|example/i.test(cookieSecret)) throw new Error("SECURITY ERROR: A strong COOKIE_SECRET is required")
+  if (!process.env.REDIS_URL) throw new Error("SECURITY ERROR: REDIS_URL is required for shared rate limits and locks")
+  if (!process.env.STRIPE_WEBHOOK_SECRET?.startsWith("whsec_")) throw new Error("SECURITY ERROR: STRIPE_WEBHOOK_SECRET is required")
+  const legacyStatic = path.join(process.cwd(), "static")
+  // The framework serves /static before custom routes; production must have no residual files there.
+  if (fs.existsSync(legacyStatic) && fs.readdirSync(legacyStatic).length) throw new Error("SECURITY ERROR: Move residual static files to controlled storage before production")
+  for (const key of ["STORE_CORS", "ADMIN_CORS", "AUTH_CORS"]) {
+    const origins = (process.env[key] || "").split(",").map(value => value.trim()).filter(Boolean)
+    if (!origins.length || origins.some(origin => { try { const url = new URL(origin); return url.protocol !== "https:" || url.origin !== origin || origin.includes("*") } catch { return true } })) throw new Error(`SECURITY ERROR: ${key} must contain exact HTTPS origins`)
+  }
 }
 
 const fileProvider = hasS3FileConfig
@@ -32,8 +50,8 @@ const fileProvider = hasS3FileConfig
       resolve: "@medusajs/medusa/file-local",
       id: "localfs",
       options: {
-        upload_dir: path.join(process.cwd(), "static"),
-        private_upload_dir: path.join(process.cwd(), "static"),
+        upload_dir: path.join(process.cwd(), "public-uploads"),
+        private_upload_dir: path.join(process.cwd(), "private-uploads"),
         backend_url: `${backendUrl}/static`,
       },
     }
@@ -48,9 +66,14 @@ module.exports = defineConfig({
       authCors: process.env.AUTH_CORS!,
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
+      restrictedFields: { store: STORE_RESTRICTED_FIELDS },
     },
   },
   modules: [
+    {
+      resolve: "@medusajs/medusa/locking",
+      options: process.env.REDIS_URL ? { providers: [{ resolve: "@medusajs/medusa/locking-redis", id: "redis", is_default: true, options: { redisUrl: process.env.REDIS_URL } }] } : {},
+    },
     {
       resolve: "@medusajs/medusa/file",
       options: {
@@ -82,6 +105,7 @@ module.exports = defineConfig({
             id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
             },
           },
         ],

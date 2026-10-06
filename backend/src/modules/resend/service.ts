@@ -1,8 +1,6 @@
 import { AbstractNotificationProviderService } from "@medusajs/utils"
 import { Resend } from "resend"
-import * as path from "path"
-import * as fs from "fs"
-import Handlebars from "handlebars"
+import { orderAccessUrl, storefrontUrl } from "../../lib/access-tokens"
 
 type ResendOptions = {
     apiKey: string
@@ -128,7 +126,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
     const subtotal = formatMoney(data.subtotal ?? data.total ?? 0, currencyCode)
     const shipping = formatMoney(data.shipping_total ?? 0, currencyCode)
     const total = formatMoney(data.total ?? 0, currencyCode)
-    const lookupEmail = encodeURIComponent(data.email || "")
+    const lookupUrl = escapeHtml(orderAccessUrl(fullOrderId))
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -172,7 +170,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
         </tr>
         <tr>
             <td align="center" style="padding: 0 42px 40px;">
-                <a href="${frontendUrl}/order/lookup?order=${escapeHtml(orderId)}&email=${lookupEmail}" style="display: inline-block; background-color: #2d2926; color: #ffffff; padding: 14px 30px; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">View Order Details</a>
+                <a href="${lookupUrl}" style="display: inline-block; background-color: #2d2926; color: #ffffff; padding: 14px 30px; text-decoration: none; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">View Order Details</a>
             </td>
         </tr>
         <tr>
@@ -209,7 +207,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     async send(notification: any): Promise<{ id: string; to: string; status: string; data: Record<string, unknown> }> {
         const from = this.options.from || "hello@cansoria.com"
         const { to, template, data = {} } = notification
-        const frontendUrl = process.env.STOREFRONT_URL || process.env.FRONTEND_URL || "http://localhost:3030"
+        const frontendUrl = storefrontUrl()
+        if (!["customer_created", "order_placed", "order_access"].includes(template)) throw new Error("Unsupported notification template")
 
         if (!to) {
             throw new Error("No 'to' address provided for notification")
@@ -233,32 +232,14 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
                 htmlContent = renderOrderEmail(data, frontendUrl)
                 subject = `Cansoria Studio order confirmation #${orderId}`
             } else {
-                const templateBaseDir = path.join(process.cwd(), "data", "templates", template)
-
-                const htmlPath = path.join(templateBaseDir, "html.hbs")
-                if (fs.existsSync(htmlPath)) {
-                    const htmlSource = fs.readFileSync(htmlPath, "utf-8")
-                    const htmlTemplate = Handlebars.compile(htmlSource)
-                    htmlContent = htmlTemplate(data)
-                } else {
-                    console.warn(`[Resend] No template found for ${template}`)
-                    htmlContent = `<h1>${escapeHtml(template)}</h1><pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`
-                }
-
-                const textPath = path.join(templateBaseDir, "text.hbs")
-                if (fs.existsSync(textPath)) {
-                    const textSource = fs.readFileSync(textPath, "utf-8")
-                    const textTemplate = Handlebars.compile(textSource)
-                    textContent = textTemplate(data)
-                }
-
-                if (template === "order_placed") {
-                    subject = `Cansoria Studio order confirmation #${data.display_id || data.id}`
-                }
+                const access = new URL(data.access_url)
+                if (access.origin !== new URL(frontendUrl).origin || access.pathname !== "/order/lookup") throw new Error("Invalid order access link")
+                subject = "Your Cansoria order access link"
+                htmlContent = `<h1>View your Cansoria order</h1><p>This link expires in 15 minutes.</p><p><a href="${escapeHtml(access.toString())}">View Order Details</a></p><p>If you did not request this link, you can ignore this email.</p>`
+                textContent = `View your Cansoria order: ${access.toString()}\nThis link expires in 15 minutes.`
             }
         } catch (err) {
-            console.error("[Resend] Failed to render template:", err)
-            htmlContent = `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`
+            throw new Error("Failed to render notification template")
         }
 
         try {
@@ -274,14 +255,14 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
                 emailOptions.text = textContent
             }
 
-            const { data: result, error } = await this.resend.emails.send(emailOptions)
+            const { data: result, error } = await this.resend.emails.send(emailOptions, notification.idempotency_key ? { idempotencyKey: notification.idempotency_key } : undefined)
 
             if (error) {
                 console.error("[Resend] Email send failed:", error.message || "Unknown error")
                 throw new Error("Failed to send email notification")
             }
 
-            console.log(`[Resend] Email sent to ${to} [ID: ${result?.id}] [Template: ${template}]`)
+            console.log(`[Resend] Notification sent [Template: ${template}]`)
 
             return {
                 id: result?.id || `email-${Date.now()}`,

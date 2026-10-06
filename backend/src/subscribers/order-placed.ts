@@ -43,7 +43,7 @@ export default async function orderPlacedHandler({
         return
     }
 
-    console.log(`[OrderPlacedSubscriber] Sending email for order ${order.id} to ${order.email}`)
+    console.log("[OrderPlacedSubscriber] Processing order notification")
 
     try {
         await notificationModuleService.createNotifications({

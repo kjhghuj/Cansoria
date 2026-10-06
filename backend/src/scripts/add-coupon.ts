@@ -5,7 +5,8 @@ export default async function addCouponToCustomer({ container }: ExecArgs) {
     const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
     const customerModuleService = container.resolve(Modules.CUSTOMER);
 
-    const TARGET_EMAIL = "kjhghuj@126.com";
+    const TARGET_EMAIL = process.env.COUPON_TARGET_EMAIL?.trim().toLowerCase();
+    if (!TARGET_EMAIL || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(TARGET_EMAIL)) throw new Error("COUPON_TARGET_EMAIL must be a valid target email");
     const COUPON_CODE = "WELCOME-BD5C82";
 
     logger.info(`Looking for customer with email: ${TARGET_EMAIL}`);

@@ -7,6 +7,7 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
         console.error("TURNSTILE_SECRET_KEY is not set");
         return false;
     }
+    if (typeof token !== "string" || !token || token.length > 2048) return false;
 
     try {
         const formData = new URLSearchParams();
@@ -30,10 +31,15 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
             console.warn("Turnstile verification failed:", data["error-codes"]);
             return false;
         }
+        const allowedHostnames = (process.env.TURNSTILE_HOSTNAMES || "").split(",").map(host => host.trim().toLowerCase()).filter(Boolean);
+        const action = process.env.TURNSTILE_ACTION || "newsletter";
+        if (process.env.NODE_ENV === "production" && !allowedHostnames.length) return false;
+        if (allowedHostnames.length && (typeof data.hostname !== "string" || !allowedHostnames.includes(data.hostname.toLowerCase()))) return false;
+        if (data.action !== action) return false;
 
         return true;
     } catch (error) {
-        console.error("Error verifying Turnstile token:", error);
+        console.warn("Turnstile verification unavailable");
         return false;
     }
 };

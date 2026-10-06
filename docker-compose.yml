@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: cansoria
       POSTGRES_DB: cansoria_medusa_v2
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - cansoria_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6480:6379"
+      - "127.0.0.1:6480:6379"
     volumes:
       - cansoria_redis_data:/data
     healthcheck:
