@@ -2,7 +2,9 @@ import Medusa from "@medusajs/js-sdk";
 import type { StoreCart, StoreProduct } from "@/lib/types";
 
 // Initialize Medusa client
-const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const MEDUSA_BACKEND_URL = typeof window === "undefined"
+  ? process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030"
+  : `${window.location.origin}/api/medusa`;
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 const SALES_CHANNEL_ID = process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID || "";
 
@@ -11,7 +13,8 @@ const PRODUCT_BASE_FIELDS =
 
 export const sdk = new Medusa({
   baseUrl: MEDUSA_BACKEND_URL,
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
+  auth: { type: "session", fetchCredentials: "same-origin", jwtTokenStorageMethod: "nostore" },
   publishableKey: PUBLISHABLE_API_KEY,
 });
 
@@ -39,15 +42,15 @@ export async function getStore() {
     });
 
     if (!response.ok) {
-      console.error("[getStore] Response not OK:", response.status, response.statusText);
+
       return null;
     }
 
     const data = await response.json();
-    console.log("[getStore] Success, store data:", data);
+
     return data.store || null;
-  } catch (error) {
-    console.error("[getStore] Error fetching store:", error);
+  } catch {
+
     return null;
   }
 }
@@ -63,8 +66,8 @@ export async function getRegion(countryCode: string = "gb") {
     );
 
     return region || regions?.[0];
-  } catch (error) {
-    console.error("Error fetching region:", error);
+  } catch {
+
     return null;
   }
 }
@@ -79,8 +82,8 @@ export async function getProducts(regionId?: string, limit: number = 100) {
       fields: `${PRODUCT_BASE_FIELDS},*variants.calculated_price,*variants.inventory_quantity,*categories,*images,*tags,*metadata,*collection`,
     });
     return { products, count };
-  } catch (error) {
-    console.error("Error fetching products:", error);
+  } catch {
+
     return { products: [], count: 0 };
   }
 }
@@ -97,8 +100,8 @@ export async function getProductsByIds(ids: string[], regionId?: string) {
       limit: ids.length,
     });
     return products || [];
-  } catch (error) {
-    console.error("Error fetching products by IDs:", error);
+  } catch {
+
     return [];
   }
 }
@@ -117,8 +120,8 @@ export async function getProductsWithVariantImages(ids: string[], regionId?: str
       limit: ids.length,
     });
     return products || [];
-  } catch (error) {
-    console.error("Error fetching products with variant images:", error);
+  } catch {
+
     return [];
   }
 }
@@ -134,8 +137,8 @@ export async function getProductByHandle(handle: string, regionId?: string) {
       fields: `${PRODUCT_BASE_FIELDS},*variants,*variants.calculated_price,*variants.options,*variants.images,*variants.thumbnail,*variants.inventory_quantity,*variants.metadata,*images,*categories,*tags,*metadata`,
     });
     return products?.[0] || null;
-  } catch (error) {
-    console.error("Error fetching product:", error);
+  } catch {
+
     return null;
   }
 }
@@ -148,8 +151,8 @@ export async function getProductById(id: string, regionId?: string) {
       fields: `${PRODUCT_BASE_FIELDS},*variants.calculated_price,*variants.options,*variants.images,*variants.inventory_quantity,*variants.metadata,*images,*categories,*tags,*metadata`,
     });
     return product;
-  } catch (error) {
-    console.error("Error fetching product by ID:", error);
+  } catch {
+
     return null;
   }
 }
@@ -161,8 +164,8 @@ export async function getCategories() {
       include_descendants_tree: true,
     });
     return product_categories || [];
-  } catch (error) {
-    console.error("Error fetching categories:", error);
+  } catch {
+
     return [];
   }
 }
@@ -176,8 +179,8 @@ export async function getProductsByCategory(categoryId: string, regionId?: strin
       fields: `${PRODUCT_BASE_FIELDS},*variants.calculated_price,*variants.inventory_quantity,*images,*categories`,
     });
     return products || [];
-  } catch (error) {
-    console.error("Error fetching products by category:", error);
+  } catch {
+
     return [];
   }
 }
@@ -187,8 +190,8 @@ export async function getCollections() {
   try {
     const { collections } = await sdk.store.collection.list();
     return collections || [];
-  } catch (error) {
-    console.error("Error fetching collections:", error);
+  } catch {
+
     return [];
   }
 }
@@ -202,8 +205,8 @@ export async function getProductsByCollection(collectionId: string, regionId?: s
       fields: `${PRODUCT_BASE_FIELDS},*variants.calculated_price,*variants.inventory_quantity,*images,*categories`,
     });
     return products || [];
-  } catch (error) {
-    console.error("Error fetching products by collection:", error);
+  } catch {
+
     return [];
   }
 }
@@ -217,8 +220,8 @@ export async function createCart(regionId: string) {
       sales_channel_id: SALES_CHANNEL_ID || undefined,
     });
     return cart;
-  } catch (error) {
-    console.error("Error creating cart:", error);
+  } catch {
+
     return null;
   }
 }
@@ -236,16 +239,16 @@ export async function getCart(cartId: string) {
     const status = getErrorStatus(error);
     const message = getErrorMessage(error);
     if (
-      status === 404 ||
+      status === 404 || status === 401 || status === 403 ||
       status === 400 ||
       message.includes("not found") ||
       message.includes("Bad Request")
     ) {
-      console.log("[getCart] Cart not found or invalid:", cartId);
+
       return null;
     }
     // For other errors (500, network, etc.), rethrow so we don't accidentally clear the cart ID
-    console.error("[getCart] Error fetching cart (Rethrowing):", error);
+
     throw error;
   }
 }
@@ -258,7 +261,7 @@ export async function addToCart(cartId: string, variantId: string, quantity: num
     });
     return cart;
   } catch (error) {
-    console.error("Error adding to cart:", error);
+
     throw error; // Throw error so UI can handle it
   }
 }
@@ -270,7 +273,7 @@ export async function updateCartItem(cartId: string, lineItemId: string, quantit
     });
     return cart;
   } catch (error) {
-    console.error("Error updating cart item:", error);
+
     throw error;
   }
 }
@@ -289,7 +292,7 @@ export async function removeFromCart(cartId: string, lineItemId: string) {
     const cart = response.parent || response.cart || null;
     return cart;
   } catch (error) {
-    console.error("Error removing from cart:", error);
+
     throw error;
   }
 }
@@ -297,20 +300,9 @@ export async function removeFromCart(cartId: string, lineItemId: string) {
 // Promotion Code Operations
 export async function applyPromoCode(cartId: string, code: string) {
   try {
-    console.log("[applyPromoCode] ========== START ==========");
-    console.log("[applyPromoCode] Cart ID:", cartId, "Code:", code);
-
-    // Get cart state BEFORE applying promo
-    const cartBefore = await getCart(cartId);
-    console.log("[applyPromoCode] BEFORE - Items:", cartBefore?.items?.length || 0,
-      "Item quantities:", cartBefore?.items?.map(i => ({ id: i.id, qty: i.quantity })) || []);
-    console.log("[applyPromoCode] BEFORE - Promotions:", cartBefore?.promotions?.length || 0);
-    console.log("[applyPromoCode] BEFORE - Total:", cartBefore?.total || 0);
 
     const url = `${MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`;
     const payload = { promo_codes: [code] };
-
-    console.log("[applyPromoCode] Sending POST request:", url, payload);
 
     const response = await fetch(url, {
       method: "POST",
@@ -321,43 +313,25 @@ export async function applyPromoCode(cartId: string, code: string) {
       body: JSON.stringify(payload),
     });
 
-    console.log("[applyPromoCode] Response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[applyPromoCode] Error response body:", errorText);
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(errorData.message || "Failed to apply promo code");
-      } catch {
-        throw new Error(`Failed to apply promo code: ${response.status} ${errorText}`);
-      }
+      throw new Error(response.status === 400 ? "The promo code is invalid or unavailable." : "Unable to apply promo code. Please try again.");
     }
 
     // After applying promo code, fetches full cart with all fields
     const fullCart = await getCart(cartId);
-    console.log("[applyPromoCode] AFTER - Items:", fullCart?.items?.length || 0,
-      "Item quantities:", fullCart?.items?.map(i => ({ id: i.id, qty: i.quantity })) || []);
-    console.log("[applyPromoCode] AFTER - Promotions:", fullCart?.promotions?.length || 0,
-      "Codes:", fullCart?.promotions?.map(p => p.code) || []);
-    console.log("[applyPromoCode] AFTER - Total:", fullCart?.total || 0);
-    console.log("[applyPromoCode] ========== END ==========");
+
     return fullCart;
   } catch (error) {
-    console.error("[applyPromoCode] Exception:", error);
+
     throw error;
   }
 }
 
 export async function removePromoCode(cartId: string, code: string) {
   try {
-    console.log("[removePromoCode] ========== START ==========");
-    console.log("[removePromoCode] Cart ID:", cartId, "Code:", code);
 
     const url = `${MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`;
     const payload = { promo_codes: [code] };
-
-    console.log("[removePromoCode] Sending DELETE request:", url, payload);
 
     const response = await fetch(url, {
       method: "DELETE",
@@ -368,75 +342,52 @@ export async function removePromoCode(cartId: string, code: string) {
       body: JSON.stringify(payload),
     });
 
-    console.log("[removePromoCode] Response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[removePromoCode] Error response body:", errorText);
-      try {
-        const errorData = JSON.parse(errorText);
-        throw new Error(errorData.message || "Failed to remove promo code");
-      } catch {
-        throw new Error(`Failed to remove promo code: ${response.status} ${errorText}`);
-      }
+      throw new Error("Unable to remove promo code. Please try again.");
     }
 
     // Fetch cart AFTER removal to get updated state
     const fullCart = await getCart(cartId);
-    console.log("[removePromoCode] AFTER - Items:", fullCart?.items?.length || 0,
-      "Promotions:", fullCart?.promotions?.length || 0,
-      "Codes:", fullCart?.promotions?.map(p => p.code) || [],
-      "Total:", fullCart?.total || 0);
-    console.log("[removePromoCode] ========== END ==========");
+
     return fullCart;
   } catch (error) {
-    console.error("[removePromoCode] Exception:", error);
+
     throw error;
   }
 }
 
 // Customer Auth
 export async function login(email: string, password: string) {
-  try {
-    const token = await sdk.auth.login("customer", "emailpass", {
-      email,
-      password,
-    });
-    return token;
-  } catch (error) {
-    console.error("Error logging in:", error);
-    return null;
-  }
+  const response = await fetch("/api/auth/login", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!response.ok) throw new Error("Invalid email or password.");
+  return true;
 }
 
 export async function register(email: string, password: string, firstName: string, lastName: string) {
-  try {
-    // First create the auth identity
-    const token = await sdk.auth.register("customer", "emailpass", {
-      email,
-      password,
-    });
+  const response = await fetch("/api/auth/register", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, first_name: firstName, last_name: lastName }),
+  });
+  if (!response.ok) throw new Error("Unable to create account. Please sign in or try again.");
+  const customer = await getCustomer();
+  if (!customer) throw new Error("Unable to load your account.");
+  return { customer };
+}
 
-    // Then create the customer
-    const { customer } = await sdk.store.customer.create({
-      email,
-      first_name: firstName,
-      last_name: lastName,
-    });
-
-    return { token, customer };
-  } catch (error) {
-    console.error("Error registering:", error);
-    return null;
-  }
+export async function logout() {
+  const response = await fetch("/api/auth/logout", { method: "POST" });
+  if (!response.ok) throw new Error("Unable to sign out. Please try again.");
 }
 
 export async function getCustomer() {
   try {
     const { customer } = await sdk.store.customer.retrieve();
     return customer;
-  } catch (error) {
-    console.error("Error fetching customer:", error);
+  } catch {
+
     return null;
   }
 }
@@ -448,8 +399,8 @@ export async function getCustomerOrders() {
       fields: "*items,*items.variant,*items.variant.product,*shipping_address",
     });
     return orders || [];
-  } catch (error) {
-    console.error("Error fetching customer orders:", error);
+  } catch {
+
     return [];
   }
 }
@@ -459,8 +410,8 @@ export async function getCustomerAddresses() {
   try {
     const { addresses } = await sdk.store.customer.listAddress();
     return addresses || [];
-  } catch (error) {
-    console.error("Error fetching customer addresses:", error);
+  } catch {
+
     return [];
   }
 }
@@ -480,7 +431,7 @@ export async function createCustomerAddress(addressData: {
     const { customer } = await sdk.store.customer.createAddress(addressData);
     return customer;
   } catch (error) {
-    console.error("Error creating address:", error);
+
     throw error;
   }
 }
@@ -503,7 +454,7 @@ export async function updateCustomerAddress(
     const { customer } = await sdk.store.customer.updateAddress(addressId, addressData);
     return customer;
   } catch (error) {
-    console.error("Error updating address:", error);
+
     throw error;
   }
 }
@@ -513,7 +464,7 @@ export async function deleteCustomerAddress(addressId: string) {
     await sdk.store.customer.deleteAddress(addressId);
     return true;
   } catch (error) {
-    console.error("Error deleting address:", error);
+
     throw error;
   }
 }
@@ -529,7 +480,7 @@ export async function updateCustomerProfile(data: {
     const { customer } = await sdk.store.customer.update(data);
     return customer;
   } catch (error) {
-    console.error("Error updating customer:", error);
+
     throw error;
   }
 }
@@ -539,35 +490,34 @@ export async function updateCustomerMetadata(metadata: Record<string, unknown>) 
     const { customer } = await sdk.store.customer.update({ metadata });
     return customer;
   } catch (error) {
-    console.error("Error updating customer metadata:", error);
+
     throw error;
   }
 }
 
-export async function updateCartOwnership(cartId: string, token: string) {
+export async function updateCartOwnership(cartId: string) {
   try {
-    console.log("[updateCartOwnership] Transferring cart", cartId);
+
     // Medusa v2: POST /store/carts/:id/customer to assign to logged-in user
     const response = await fetch(`${MEDUSA_BACKEND_URL}/store/carts/${cartId}/customer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-publishable-api-key": PUBLISHABLE_API_KEY,
-        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({}),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("[updateCartOwnership] Error response:", errorData);
+
       throw new Error(errorData.message || "Failed to update cart ownership");
     }
 
     const { cart } = await response.json();
     return cart;
   } catch (error) {
-    console.error("Error updating cart ownership:", error);
+
     throw error;
   }
 }
@@ -582,8 +532,8 @@ export async function searchProducts(query: string, regionId?: string) {
       fields: `${PRODUCT_BASE_FIELDS},*variants.calculated_price,*variants.inventory_quantity,*images,*categories`,
     });
     return products || [];
-  } catch (error) {
-    console.error("Error searching products:", error);
+  } catch {
+
     return [];
   }
 }
@@ -602,7 +552,6 @@ export function formatPrice(amount: number | null | undefined, currencyCode: str
 
 export async function createAndSelectStripePaymentSession(cartId: string) {
   try {
-    console.log("[createAndSelectStripePaymentSession] Creating and selecting payment session for cart:", cartId);
 
     const response = await fetch(`/api/checkout/${cartId}/payment-sessions`, {
       method: "POST",
@@ -616,21 +565,20 @@ export async function createAndSelectStripePaymentSession(cartId: string) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("[createAndSelectStripePaymentSession] Error response:", errorData);
+
       throw new Error(errorData.message || "Failed to create payment session");
     }
 
     const data = await response.json();
-    console.log("[createAndSelectStripePaymentSession] Success:", data);
+
     return data.cart;
   } catch (error) {
-    console.error("[createAndSelectStripePaymentSession] Error:", error);
+
     throw error;
   }
 }
 export async function selectStripePaymentSession(cartId: string) {
   try {
-    console.log("[selectStripePaymentSession] Selecting payment session for cart:", cartId);
 
     const response = await fetch(`/api/checkout/${cartId}/payment-sessions`, {
       method: "POST",
@@ -644,19 +592,18 @@ export async function selectStripePaymentSession(cartId: string) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("[selectStripePaymentSession] Error response:", errorData);
+
       throw new Error(errorData.message || "Failed to select payment session");
     }
 
     const data = await response.json();
-    console.log("[selectStripePaymentSession] Success, cart:", data.cart?.id);
+
     return data.cart;
   } catch (error) {
-    console.error("[selectStripePaymentSession] Error:", error);
+
     throw error;
   }
 }
-
 
 // Shipping Operations
 export async function getShippingOptions(cartId: string) {
@@ -665,8 +612,8 @@ export async function getShippingOptions(cartId: string) {
       cart_id: cartId,
     });
     return shipping_options || [];
-  } catch (error) {
-    console.error("Error fetching shipping options:", error);
+  } catch {
+
     return [];
   }
 }
@@ -678,7 +625,7 @@ export async function addShippingMethod(cartId: string, optionId: string) {
     });
     return cart;
   } catch (error) {
-    console.error("Error adding shipping method:", error);
+
     throw error;
   }
 }

@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
-// Helper to get auth token
-const getAuthToken = () => localStorage.getItem("medusa_auth_token");
 
 interface AccountUser {
   email?: string | null;
@@ -29,7 +27,6 @@ export function ProfileContent({ user }: { user: AccountUser | null }) {
   const handleSaveProfile = async () => {
     setSavingProfile(true);
     setProfileMessage("");
-    const token = getAuthToken();
 
     try {
       const response = await fetch(`${BACKEND_URL}/store/customers/me`, {
@@ -37,7 +34,6 @@ export function ProfileContent({ user }: { user: AccountUser | null }) {
         headers: {
           "Content-Type": "application/json",
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           first_name: firstName,
@@ -113,37 +109,7 @@ export function ProfileContent({ user }: { user: AccountUser | null }) {
         {savingProfile ? "Saving..." : "Save Changes"}
       </button>
 
-      {/* DEV ONLY: Test Email Button */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="mt-8 pt-8 border-t border-gray-100">
-          <h3 className="text-sm font-semibold text-charcoal mb-4">[DEV] Test Tools</h3>
-          <button
-            onClick={async () => {
-              try {
-                const res = await fetch(`${BACKEND_URL}/store/test-email`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "x-publishable-api-key": API_KEY
-                  },
-                  body: JSON.stringify({
-                    email: user?.email,
-                    first_name: firstName,
-                    last_name: lastName
-                  })
-                });
-                const data = (await res.json()) as { message?: string };
-                alert(res.ok ? "Email sent!" : `Failed: ${data.message || "Unknown error"}`);
-              } catch (e) {
-                alert("Error sending email: " + e);
-              }
-            }}
-            className="bg-gray-200 text-charcoal px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-gray-300"
-          >
-            Send Test Welcome Email
-          </button>
-        </div>
-      )}
+
     </div>
   );
 }

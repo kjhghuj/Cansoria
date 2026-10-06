@@ -37,29 +37,29 @@ export default function ShopFilters({
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-      <div className="border-y border-charcoal/10 bg-canvas-beige/30 py-5">
+      <div className="border-y border-border bg-cream-card/60 py-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => updateFilter("category", null)}
               aria-pressed={!currentCategory}
-              className={`border px-4 py-2.5 text-[11px] uppercase tracking-[0.22em] transition-colors ${
+              className={`rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-all ${
                 !currentCategory
-                  ? "border-charcoal bg-charcoal text-white"
-                  : "border-charcoal/15 bg-white/70 text-charcoal hover:border-muted-gold hover:text-muted-gold"
+                  ? "bg-toffee text-white shadow-[0_4px_16px_rgba(200,122,62,0.30)]"
+                  : "border border-border bg-white/80 text-charcoal hover:border-toffee hover:text-toffee"
               }`}
             >
-              All
+              All Pet Portraits
             </button>
             {categories.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => updateFilter("category", cat.value)}
                 aria-pressed={currentCategory === cat.value}
-                className={`border px-4 py-2.5 text-[11px] uppercase tracking-[0.22em] transition-colors ${
+                className={`rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-all ${
                   currentCategory === cat.value
-                    ? "border-charcoal bg-charcoal text-white"
-                    : "border-charcoal/15 bg-white/70 text-charcoal hover:border-muted-gold hover:text-muted-gold"
+                    ? "bg-toffee text-white shadow-[0_4px_16px_rgba(200,122,62,0.30)]"
+                    : "border border-border bg-white/80 text-charcoal hover:border-toffee hover:text-toffee"
                 }`}
               >
                 {cat.label}
@@ -69,7 +69,7 @@ export default function ShopFilters({
 
           <div className="flex flex-wrap items-center gap-4">
             <span className="text-xs uppercase tracking-[0.2em] text-charcoal-light">
-              {productCount} {productCount === 1 ? "product" : "products"}
+              {productCount} {productCount === 1 ? "portrait" : "portraits"}
             </span>
             <select
               value={currentSort || "featured"}
@@ -79,7 +79,7 @@ export default function ShopFilters({
                   event.target.value === "featured" ? null : event.target.value
                 )
               }
-              className="border border-charcoal/15 bg-white px-4 py-2.5 text-xs uppercase tracking-[0.18em] text-charcoal outline-none transition-colors focus:border-muted-gold"
+              className="rounded-full border border-border bg-white px-4 py-2.5 text-xs uppercase tracking-[0.18em] text-charcoal outline-none transition-colors focus:border-toffee"
             >
               <option value="featured">Featured</option>
               <option value="newest">Newest</option>

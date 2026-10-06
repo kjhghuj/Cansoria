@@ -4,11 +4,9 @@ import { Package, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { getProductsWithVariantImages } from "@/lib/medusa";
 import { useRegion } from "@/lib/providers";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
-// Helper to get auth token
-const getAuthToken = () => localStorage.getItem("medusa_auth_token");
 
 interface OrderItem {
   id: string;
@@ -126,15 +124,12 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
   }, [orders, region?.id, variantImageMap]);
 
   const fetchOrders = async () => {
-    const token = getAuthToken();
-    if (!token) return;
     setLoadingOrders(true);
     try {
       // Request variant_id and product_id fields for variant image resolution
       const response = await fetch(`${BACKEND_URL}/store/orders?fields=+items.variant_id,+items.product_id,+email`, {
         headers: {
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`,
         },
       });
 

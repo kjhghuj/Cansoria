@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { serializeJsonLd } from "@/lib/security-json";
 import "./globals.css";
 import { Providers } from "@/lib/providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 
 export const metadata: Metadata = {
-  title: "Cansoria | Custom Hand-Painted Oil Paintings",
+  title: "Cansoria | Custom Hand-Painted Pet Oil Portraits",
   description:
-    "Turn your favorite photos into museum-quality hand-painted oil paintings. Custom portraits, pet paintings, wedding gifts, and home decor canvas art.",
+    "Bespoke pet oil portraits, 100% hand-painted by master artists on archival fine linen. Dog portraits, cat portraits, multi-pet family art, and memorial keepsakes — with a free digital proof before shipping.",
   keywords: [
-    "custom oil painting",
-    "hand painted portrait",
-    "photo to painting",
-    "pet portrait",
-    "wedding painting",
-    "canvas wall art",
-    "home decor art",
+    "custom pet portrait",
+    "pet oil painting",
+    "hand painted dog portrait",
+    "hand painted cat portrait",
+    "pet portrait from photo",
+    "memorial pet painting",
+    "multi pet portrait",
   ],
   openGraph: {
-    title: "Cansoria | Custom Hand-Painted Oil Paintings",
+    title: "Cansoria | Custom Hand-Painted Pet Oil Portraits",
     description:
-      "Turn your favorite photos into museum-quality hand-painted oil paintings. Custom portraits, pet paintings, wedding gifts, and home decor canvas art.",
+      "Turn your pet's photo into a museum-grade, hand-painted oil portrait. Free proof, unlimited revisions, insured worldwide delivery.",
     type: "website",
   },
   icons: {
@@ -33,11 +35,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased" suppressHydrationWarning>
@@ -47,8 +50,9 @@ export default function RootLayout({
             <ExitIntentPopup />
             <script
               type="application/ld+json"
+              nonce={nonce}
               dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
+                __html: serializeJsonLd({
                   "@context": "https://schema.org",
                   "@type": "Organization",
                   name: "Cansoria",

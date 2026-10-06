@@ -8,7 +8,7 @@ type NewsletterResponse = {
     valid_until?: string;
 };
 
-const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const MEDUSA_BACKEND_URL = "/api/medusa";
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 const SECURITY_UNAVAILABLE_MESSAGE = "Security check unavailable in this environment.";
 

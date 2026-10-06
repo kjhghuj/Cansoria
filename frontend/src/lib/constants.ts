@@ -29,6 +29,8 @@ export interface Review {
 export interface Testimonial {
   text: string;
   author: string;
+  petBreed?: string;
+  image?: string;
 }
 
 export type ArticleBlock =
@@ -59,8 +61,9 @@ export interface Article {
 export const COMPANY_INFO = {
   name: "Cansoria Studio",
   supportEmail: "hello@cansoria.com",
-  address: "Online art studio serving homes worldwide",
-  studioNote: "Hand-painted canvas art made to order by independent artists.",
+  address: "Bespoke pet portrait studio serving pet parents worldwide",
+  studioNote:
+    "Museum-grade, 100% hand-painted pet oil portraits on archival fine linen — sketched, proofed, and perfected with you before shipping.",
 };
 
 export const PRODUCTS: Product[] = [
@@ -301,31 +304,61 @@ export const ARTICLES: Article[] = [
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    text: "We ordered a painting from one of our wedding photos for our first anniversary. The likeness was gentle and accurate, and the canvas feels far more personal than another framed print.",
-    author: "Emily R., Chicago",
+    text: "They captured the gentle look in Max's eyes perfectly — the exact soft expression he gave me every morning for eleven years. The brushstrokes are so real you want to touch them.",
+    author: "Sophia L., London",
+    petBreed: "Golden Retriever, Max",
+    image:
+      "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200",
   },
   {
-    text: "The pet memorial painting was quietly beautiful. It captured our dog's expression without feeling overdone, and the preview gave us confidence before it shipped.",
-    author: "Mark D., Vancouver",
+    text: "I cried when I unboxed it. Our Miso passed away last spring, and the artist painted her mid-blink smile like she was about to headbutt my hand. It hangs where her window used to be.",
+    author: "Hannah K., Melbourne",
+    petBreed: "British Shorthair, Miso",
+    image:
+      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200",
   },
   {
-    text: "We chose a large landscape for the living room, and it made the space feel finished. The brush texture looks warm in daylight and subtle in the evening.",
-    author: "Claire W., Bath",
+    text: "The free proof made all the difference. We asked for slightly warmer ears and a softer background, and the artist revised it twice without a word. The final canvas is worth every penny.",
+    author: "Daniel & Priya R., Toronto",
+    petBreed: "Tri-pet Family Portrait",
+    image:
+      "https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=80&w=200",
+  },
+  {
+    text: "Our Frenchie looks like royalty in the vintage brass frame. Guests always ask if it's an antique commission piece — nobody believes it started as a phone photo on a walk.",
+    author: "Camille D., Paris",
+    petBreed: "French Bulldog, Gaston",
+    image:
+      "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=200",
+  },
+  {
+    text: "Ordered one for my mum after our family dog crossed the rainbow bridge. She says painting him in his favourite blanket was the kindest gift we could have given her.",
+    author: "Marcus T., Austin",
+    petBreed: "Beagle, Buddy (Memorial)",
+    image:
+      "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200",
+  },
+  {
+    text: "Three puppies, one canvas, zero chaos in the painting. The artist somehow caught each of their personalities. The oak frame looks stunning against our cream walls.",
+    author: "Ingrid M., Copenhagen",
+    petBreed: "Triple Puppy Portrait",
+    image:
+      "https://images.unsplash.com/photo-1444212477490-ca407925329e?auto=format&fit=crop&q=80&w=200",
   },
 ];
 
 export const GEMINI_SYSTEM_INSTRUCTION = `
-You are the Cansoria Art Concierge: a professional, warm, concise advisor for a premium hand-painted oil painting studio.
+You are the Cansoria Pet Art Concierge: a professional, warm, concise advisor for a bespoke pet oil painting studio.
 
 Your role:
-- Help customers choose painting styles, canvas sizes, custom gift ideas, and product categories based on their intent.
-- Answer questions about photo-to-painting orders, pet portraits, wedding and anniversary gifts, living room art, shipping timelines, previews, and uploading photos.
-- Explain that every Cansoria painting is hand-painted by artists, not a printed canvas.
-- Explain that customers receive a digital preview before shipping.
-- Recommend categories such as Custom Portraits, Pet Portraits, Wedding Gifts, Landscape, Abstract, Classic Art, and Home Decor when useful.
+- Help pet parents commission hand-painted oil portraits of their dogs, cats, and other companions.
+- Answer questions about photo-to-painting orders, sizes, frames (natural oak, vintage brass, modern black gallery, gallery canvas wrap), memorial keepsakes, multi-pet portraits, proofs, shipping, and uploading photos.
+- Explain that every Cansoria painting is 100% hand-painted by master artists on archival fine linen — never a digital or printed canvas.
+- Explain that customers receive a free digital proof with unlimited revisions before shipping.
+- Recommend categories such as Dog Portraits, Cat Portraits, Multi-Pet & Family Portraits, and Memorial Keepsakes when useful.
 
 Response style:
-- Premium, patient, tasteful, and clear.
+- Premium, patient, tasteful, empathetic, and clear.
 - Keep answers concise, usually under 80 words.
 - Do not over-sell or pressure the customer.
 - Ask one helpful follow-up question when needed.
@@ -340,24 +373,26 @@ Boundaries:
 
 export const NAV_LINKS = [
   { name: "Home", path: "/" },
-  { name: "Shop", path: "/shop" },
-  { name: "Custom Painting", path: "/shop?category=custom-painting" },
-  { name: "Gallery", path: "/shop?category=gallery" },
-  { name: "Journal", path: "/journal" },
-  { name: "About", path: "/about" },
+  { name: "Custom Pet Portrait", path: "/shop?category=pet-portraits" },
+  { name: "Dog Portraits", path: "/shop?category=dogs" },
+  { name: "Cat Portraits", path: "/shop?category=cats" },
+  { name: "How It Works", path: "/#process" },
+  { name: "Reviews", path: "/#reviews" },
 ];
 
 export const FOOTER_LINKS = {
   shop: [
-    { name: "All Paintings", href: "/shop" },
-    { name: "Custom Portraits", href: "/shop?category=custom-painting" },
-    { name: "Pet Portraits", href: "/shop?category=pet-portraits" },
-    { name: "Wall Art", href: "/shop?category=wall-art" },
+    { name: "Custom Pet Portraits", href: "/shop?category=pet-portraits" },
+    { name: "Dog Portraits", href: "/shop?category=dogs" },
+    { name: "Cat Portraits", href: "/shop?category=cats" },
+    { name: "Multi-Pet & Family", href: "/shop?category=multi-pet" },
+    { name: "Memorial Keepsakes", href: "/shop?category=memorial" },
   ],
   company: [
     { name: "About Cansoria", href: "/about" },
-    { name: "Gallery", href: "/shop?category=gallery" },
+    { name: "How It Works", href: "/#process" },
     { name: "Journal", href: "/journal" },
+    { name: "Reviews", href: "/#reviews" },
   ],
   support: [
     { name: "Track My Order", href: "/order/lookup" },

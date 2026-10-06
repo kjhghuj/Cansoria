@@ -23,6 +23,7 @@ import {
   getCustomer,
   login,
   register,
+  logout,
 } from "@/lib/medusa";
 import { StoreCart, StoreRegion } from "@/lib/types";
 
@@ -46,7 +47,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 interface CartContextType {
@@ -108,8 +109,8 @@ export function Providers({ children }: ProvidersProps) {
       try {
         const fetchedRegion = await getRegion("gb");
         setRegion(fetchedRegion);
-      } catch (error) {
-        console.error("Failed to fetch region:", error);
+      } catch {
+
       } finally {
         setRegionLoading(false);
       }
@@ -120,21 +121,15 @@ export function Providers({ children }: ProvidersProps) {
   // Initialize Auth
   useEffect(() => {
     async function initAuth() {
-      const token = localStorage.getItem(AUTH_TOKEN_KEY);
-      if (token) {
-        try {
-          const customer = await getCustomer();
-          if (customer) {
-            setUser(customer as unknown as User);
-          } else {
-            localStorage.removeItem(AUTH_TOKEN_KEY);
-          }
-        } catch (error) {
-          console.error("Auth initialization failed:", error);
-          localStorage.removeItem(AUTH_TOKEN_KEY);
-        }
+      // Remove credentials persisted by older storefront releases.
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      try {
+        const customer = await getCustomer();
+        if (customer) setUser(customer as unknown as User);
+      } finally {
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     }
     initAuth();
   }, []);
@@ -158,7 +153,7 @@ export function Providers({ children }: ProvidersProps) {
         // 1. If Logged In: Check Metadata for active_cart_id
         // 2. If valid metadata cart exists, use it (and sync local storage)
         // 3. If local storage cart exists, merge/claim it if no metadata cart, or just use it if unowned?
-        //    Correction: If local cart exists and we are logged in, we should CLAIM it and save to metadata 
+        //    Correction: If local cart exists and we are logged in, we should CLAIM it and save to metadata
         //    UNLESS we already have a saved cart in metadata.
         //    (Simpler: User's saved cart takes precedence. Or merge? Merging is complex. Let's start with User Saved Cart wins, or claiming local if user has none.)
         // 1. If Logged In: Check Metadata for active_cart_id
@@ -171,21 +166,19 @@ export function Providers({ children }: ProvidersProps) {
             if (savedCart && !savedCart.completed_at) {
               currentCart = savedCart;
               localStorage.setItem(CART_ID_KEY, savedCart.id);
-            } else { }
+            }
           }
 
           // If we still don't have a cart, but have a local one, try to claim it
           if (!currentCart && cartIdToFetch) {
             const localCart = await getCart(cartIdToFetch);
-            if (localCart && !localCart.completed_at) {              // Assign to user
-              const token = localStorage.getItem(AUTH_TOKEN_KEY);
-              if (token) {
-                await updateCartOwnership(localCart.id, token);
-              }
+            if (localCart && !localCart.completed_at) {
+              // Assign to user
+              await updateCartOwnership(localCart.id);
               // Save to metadata
               await updateCustomerMetadata({ ...user.metadata, active_cart_id: localCart.id });
               currentCart = localCart;
-            } else { }
+            }
           }
         }
 
@@ -196,10 +189,7 @@ export function Providers({ children }: ProvidersProps) {
             currentCart = localCart;
             // If user logged in (and flow reached here), ensure it's owned and saved
             if (user) {
-              const token = localStorage.getItem(AUTH_TOKEN_KEY);
-              if (token) {
-                await updateCartOwnership(localCart.id, token);
-              }
+              await updateCartOwnership(localCart.id);
               await updateCustomerMetadata({ ...user.metadata, active_cart_id: localCart.id });
             }
           } else {
@@ -215,10 +205,7 @@ export function Providers({ children }: ProvidersProps) {
             localStorage.setItem(CART_ID_KEY, newCart.id);
 
             if (user) {
-              const token = localStorage.getItem(AUTH_TOKEN_KEY);
-              if (token) {
-                await updateCartOwnership(newCart.id, token);
-              }
+              await updateCartOwnership(newCart.id);
               await updateCustomerMetadata({ ...user.metadata, active_cart_id: newCart.id });
             }
           }
@@ -228,8 +215,8 @@ export function Providers({ children }: ProvidersProps) {
           setCart(currentCart);
         }
 
-      } catch (error) {
-        console.error("[initCart] Error initializing cart:", error);
+      } catch {
+
       } finally {
         setCartLoading(false);
       }
@@ -238,20 +225,15 @@ export function Providers({ children }: ProvidersProps) {
     initCart();
   }, [region, regionLoading, authLoading, user]); // Re-run when user changes (login/logout)
 
-
   // Auth Handlers
   const handleLogin = async (email: string, pass: string) => {
     // Don't set global auth loading to prevent unmounting the login form
     // setAuthLoading(true);
     try {
-      const token = await login(email, pass);
-      if (token && typeof token === "string") {
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
-        const customer = await getCustomer();
-        if (customer) setUser(customer as unknown as User);
-      } else {
-        throw new Error("Login failed");
-      }
+      await login(email, pass);
+      const customer = await getCustomer();
+      if (!customer) throw new Error("Unable to load your account.");
+      setUser(customer as unknown as User);
     } catch (error) {
       throw error;
     }
@@ -262,25 +244,20 @@ export function Providers({ children }: ProvidersProps) {
     // setAuthLoading(true);
     try {
       const result = await register(email, pass, first, last);
-      if (result?.token) {
-        localStorage.setItem(AUTH_TOKEN_KEY, result.token);
-        setUser((result.customer as unknown as User) || null);
-      } else {
-        throw new Error("Registration failed");
-      }
+      setUser(result.customer as unknown as User);
     } catch (error) {
       throw error;
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout();
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(CART_ID_KEY); // Clear local cart reference on logout to avoid mixing
     setUser(null);
     setCart(null);
     // Effect will trigger, create a new Guest cart
   };
-
 
   // Cart Handlers (Wrapped to ensure check)
   const refreshCart = useCallback(async () => {
@@ -290,7 +267,7 @@ export function Providers({ children }: ProvidersProps) {
 
       // If cart is completed OR if getCart returned null (invalid/not found), reset.
       if (!updatedCart || updatedCart.completed_at) {
-        console.log("[refreshCart] Cart invalid or completed. Resetting...", updatedCart ? "Completed" : "Not Found");
+
         localStorage.removeItem(CART_ID_KEY);
         setCart(null);
 
@@ -303,10 +280,7 @@ export function Providers({ children }: ProvidersProps) {
 
             // Sync with user if logged in (persist new cart ID)
             if (user) {
-              const token = localStorage.getItem(AUTH_TOKEN_KEY);
-              if (token) {
-                await updateCartOwnership(newCart.id, token);
-              }
+              await updateCartOwnership(newCart.id);
               await updateCustomerMetadata({ ...user.metadata, active_cart_id: newCart.id });
             }
           }
@@ -315,8 +289,8 @@ export function Providers({ children }: ProvidersProps) {
         // Valid active cart
         setCart(updatedCart);
       }
-    } catch (err) {
-      console.error("Failed to refresh cart", err);
+    } catch {
+
     }
   }, [cart?.id, region, user]);
 
@@ -332,7 +306,7 @@ export function Providers({ children }: ProvidersProps) {
         if (isCompletedOrInvalidCartError(error)) {
           await refreshCart();
         }
-        console.error("Add item failed:", error);
+
       } finally {
         setCartLoading(false);
       }
@@ -351,7 +325,7 @@ export function Providers({ children }: ProvidersProps) {
         if (isCompletedOrInvalidCartError(error)) {
           await refreshCart();
         }
-        console.error("Update item failed:", error);
+
       } finally {
         setCartLoading(false);
       }
@@ -370,7 +344,7 @@ export function Providers({ children }: ProvidersProps) {
         if (isCompletedOrInvalidCartError(error)) {
           await refreshCart();
         }
-        console.error("Remove item failed:", error);
+
       } finally {
         setCartLoading(false);
       }
@@ -390,7 +364,7 @@ export function Providers({ children }: ProvidersProps) {
         }
         return false;
       } catch (error) {
-        console.error("Failed to apply promo code:", error);
+
         throw error;
       } finally {
         setCartLoading(false);
@@ -410,7 +384,7 @@ export function Providers({ children }: ProvidersProps) {
         }
         return false;
       } catch (error) {
-        console.error("Failed to remove promo code:", error);
+
         throw error;
       } finally {
         setCartLoading(false);
@@ -448,7 +422,7 @@ export function Providers({ children }: ProvidersProps) {
         if (updatedCart) setCart(updatedCart);
         return updatedCart;
       } catch (error) {
-        console.error(error);
+
         throw error;
       } finally {
         setCartLoading(false);

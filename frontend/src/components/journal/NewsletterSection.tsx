@@ -28,12 +28,12 @@ export default function NewsletterSection() {
                 </h2>
                 <p className="text-charcoal-light font-light mb-8 leading-relaxed">
                     Join our community for home decor notes, custom painting ideas,
-                    and <span className="font-medium text-terracotta">15% off your first order</span>.
+                    and <span className="font-medium text-terracotta">member offers</span>.
                 </p>
 
                 {status === "success" ? (
                     <div className="p-4 bg-green-50 text-green-800 text-sm rounded">
-                        Thank you for subscribing! Check your inbox for your discount code.
+                        Thank you for subscribing! Check your inbox for studio updates.
                     </div>
                 ) : (
                     <form onSubmit={subscribe} className="flex flex-col gap-4">
@@ -66,10 +66,11 @@ export default function NewsletterSection() {
                                     <Turnstile
                                         ref={turnstileRef}
                                         siteKey={turnstileSiteKey}
-                                        onSuccess={(token) => setTurnstileToken(token)}
+                                                onSuccess={(token) => setTurnstileToken(token)}
                                         onError={() => setErrorMessage("Security check failed. Please try again.")}
                                         onExpire={() => setTurnstileToken(null)}
                                         options={{
+                                            action: 'newsletter',
                                             theme: "light",
                                             size: "normal",
                                         }}

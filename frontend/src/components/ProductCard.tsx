@@ -169,10 +169,10 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
     rating !== undefined ? Math.min(Math.max(rating, 0), 5).toFixed(1) : undefined;
 
   return (
-    <article className="group h-full border border-charcoal/10 bg-white transition-colors hover:border-muted-gold/60">
+    <article className="group h-full rounded-2xl border border-border-subtle bg-cream-light overflow-hidden shadow-[0_4px_20px_rgba(38,34,30,0.05)] transition-all hover:shadow-[0_12px_32px_rgba(38,34,30,0.10)]">
       <Link href={productHref} className="flex h-full flex-col">
         <div
-          className="relative aspect-[4/5] w-full overflow-hidden bg-canvas-beige"
+          className="relative aspect-[4/5] w-full overflow-hidden bg-cream-card"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -202,7 +202,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
               {badges.slice(0, 3).map((badge) => (
                 <span
                   key={badge}
-                  className="bg-white/95 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal shadow-sm backdrop-blur"
+                  className="rounded-full bg-cream-light/95 border border-border px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal shadow-sm backdrop-blur"
                 >
                   {badge}
                 </span>
@@ -211,7 +211,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
           )}
 
           {compareAtPrice && (
-            <span className="absolute bottom-3 right-3 bg-terracotta px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white">
+            <span className="absolute bottom-3 right-3 rounded-full bg-toffee px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white shadow-sm">
               Sale
             </span>
           )}
@@ -219,14 +219,14 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
 
         <div className="flex flex-1 flex-col p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-gold">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-toffee">
               {category}
             </p>
             {safeRating && (
               <p className="flex shrink-0 items-center gap-1 text-xs text-charcoal-light">
                 <Star
                   aria-hidden="true"
-                  className="h-3.5 w-3.5 fill-muted-gold text-muted-gold"
+                  className="h-3.5 w-3.5 fill-champagne-gold text-champagne-gold"
                 />
                 <span>{safeRating}</span>
                 {reviewCount !== undefined && <span>({reviewCount})</span>}
@@ -234,7 +234,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
             )}
           </div>
 
-          <h3 className="font-serif text-xl leading-snug text-charcoal transition-colors group-hover:text-muted-gold">
+          <h3 className="font-serif text-xl leading-snug text-charcoal transition-colors group-hover:text-toffee">
             {title}
           </h3>
           <p className="mt-2 min-h-[3.5rem] text-sm leading-6 text-charcoal-light">
@@ -252,7 +252,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
                 </span>
               )}
             </div>
-            <span className="shrink-0 border-b border-charcoal pb-1 text-xs uppercase tracking-[0.22em] text-charcoal transition-colors group-hover:border-muted-gold group-hover:text-muted-gold">
+            <span className="shrink-0 border-b border-charcoal pb-1 text-xs uppercase tracking-[0.22em] text-charcoal transition-colors group-hover:border-toffee group-hover:text-toffee">
               View Details
             </span>
           </div>

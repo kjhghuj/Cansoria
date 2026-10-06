@@ -3,9 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
-const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
+import { useAuth } from "@/lib/providers";
 
 function getErrorMessage(error: unknown) {
     return error instanceof Error ? error.message : "";
@@ -13,6 +11,7 @@ function getErrorMessage(error: unknown) {
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { register } = useAuth();
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
@@ -50,57 +49,8 @@ export default function RegisterPage() {
         setIsLoading(true);
 
         try {
-            // Step 1: Register with email/password via auth endpoint
-            const authResponse = await fetch(`${BACKEND_URL}/auth/customer/emailpass/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-publishable-api-key": API_KEY,
-                },
-                credentials: "include",
-                body: JSON.stringify({
-                    email: formData.email,
-                    password: formData.password,
-                }),
-            });
-
-            if (!authResponse.ok) {
-                const authError = (await authResponse.json()) as { message?: string };
-                throw new Error(authError.message || "Registration failed");
-            }
-
-            const authData = await authResponse.json();
-            const token = authData.token;
-
-            // Step 2: Create customer profile
-            // Split full name
-            const names = formData.fullName.trim().split(' ');
-            const firstName = names[0];
-            const lastName = names.slice(1).join(' ') || "";
-
-            const customerResponse = await fetch(`${BACKEND_URL}/store/customers`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-publishable-api-key": API_KEY,
-                    "Authorization": `Bearer ${token}`,
-                },
-                credentials: "include",
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: formData.email,
-                }),
-            });
-
-            if (!customerResponse.ok) {
-                const customerError = (await customerResponse.json()) as { message?: string };
-                throw new Error(customerError.message || "Failed to create profile");
-            }
-
-            // Success!
-            // Store token for auto-login
-            localStorage.setItem("medusa_auth_token", token);
+            const [firstName, ...remainingNames] = formData.fullName.trim().split(/\s+/);
+            await register(formData.email, formData.password, firstName, remainingNames.join(" "));
 
             setSuccess(true);
             setTimeout(() => {
@@ -108,7 +58,7 @@ export default function RegisterPage() {
             }, 1500);
 
         } catch (err: unknown) {
-            console.error("Registration error:", err);
+
             const message = getErrorMessage(err);
             if (message.includes("already") || message.includes("duplicate") || message.includes("exists")) {
                 setError("An account with this email already exists. Please sign in.");

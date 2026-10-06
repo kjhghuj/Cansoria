@@ -22,7 +22,7 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const trendingSearches = ["Custom Portrait", "Pet Portrait", "Wedding Gift", "Landscape", "Canvas Art"];
+  const trendingSearches = ["Dog Portrait", "Cat Portrait", "Multi-Pet Family", "Memorial Keepsake", "Custom Pet Portrait"];
 
   useEffect(() => {
     if (isOpen) {
@@ -135,7 +135,7 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                   <button
                     key={term}
                     onClick={() => setQuery(term)}
-                    className="px-5 py-2 rounded-full border border-gray-200 text-sm text-charcoal hover:border-terracotta hover:text-terracotta transition-all"
+                    className="px-5 py-2 rounded-full border border-border bg-cream-light text-sm text-charcoal hover:border-toffee hover:text-toffee transition-all"
                   >
                     {term}
                   </button>
@@ -148,23 +148,23 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   {
-                    name: "Custom Portraits",
-                    href: "/shop?category=custom-painting",
+                    name: "Dog Portraits",
+                    href: "/shop?category=dogs",
                     img: "/products/portrait.svg",
                   },
                   {
-                    name: "Pet Portraits",
-                    href: "/shop?category=pet-portraits",
+                    name: "Cat Masterpieces",
+                    href: "/shop?category=cats",
                     img: "/products/canvas.svg",
                   },
                   {
-                    name: "Wall Art",
-                    href: "/shop?category=wall-art",
+                    name: "Multi-Pet & Family",
+                    href: "/shop?category=multi-pet",
                     img: "/products/generic.svg",
                   },
                   {
-                    name: "Gifts",
-                    href: "/shop?category=gifts",
+                    name: "Memorial Keepsakes",
+                    href: "/shop?category=memorial",
                     img: "/placeholder.svg",
                   },
                 ].map((cat, idx) => (

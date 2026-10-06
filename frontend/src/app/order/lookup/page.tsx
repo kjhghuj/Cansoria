@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getProductsWithVariantImages } from "@/lib/medusa";
+import { useAuth } from "@/lib/providers";
 
 // Icons
 function SearchIcon() {
@@ -58,6 +59,10 @@ function getErrorMessage(error: unknown) {
 
 function OrderLookupContent() {
     const searchParams = useSearchParams();
+    const { user } = useAuth();
+    const consumedLink = useRef("");
+    const [accessToken, setAccessToken] = useState("");
+    const [notice, setNotice] = useState<string | null>(null);
     const [orderId, setOrderId] = useState("");
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
@@ -123,50 +128,37 @@ function OrderLookupContent() {
     }, [orderData, variantImageMap]);
 
     const lookupOrder = async (id: string, mail: string) => {
-        if (!id || !mail) {
-            setError("Please fill in all fields.");
-            return;
-        }
-
+        if (!id || !mail) { setError("Please fill in all fields."); return; }
         setLoading(true);
         setError(null);
+        setNotice(null);
         setOrderData(null);
-
         try {
-            // Prepend order_ prefix if not already present
-            const fullOrderId = id.startsWith('order_') ? id : `order_${id}`;
-
-            // Request fields needed for variant image resolution
-            const response = await fetch(`/api/medusa/store/orders/${fullOrderId}?fields=+items.variant_id,+items.product_id`, {
-                headers: {
-                    'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '',
-                }
+            const fullOrderId = id.startsWith("order_") ? id : `order_${id}`;
+            const response = await fetch("/api/medusa/store/orders/access", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ order_id: fullOrderId, email: mail }),
             });
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error("Order not found or access denied.");
-                }
-                throw new Error("Could not retrieve order details.");
-            }
-
-            const data = (await response.json()) as { order?: LookupOrder };
-            const order = data.order;
-
-            // Security Check: Client-side email validation
-            if (!order || !order.email || order.email.toLowerCase() !== mail.toLowerCase()) {
-                // Fake 404 security practice: Don't reveal order exists if email mismatch
-                throw new Error("Order not found with provided details.");
-            }
-
-            setOrderData(order);
-
+            if (!response.ok) throw new Error(response.status === 429 ? "Please wait before requesting another link." : "Unable to send a verification link. Please try again.");
+            setNotice("If these details match an order, a verification link has been sent to its email address. Open the link to view your order.");
         } catch (err: unknown) {
-            console.error("Lookup error:", err);
-            setError(getErrorMessage(err) || "We could not find an order confirming those details. Please check and try again.");
-        } finally {
-            setLoading(false);
-        }
+            setError(getErrorMessage(err) || "Unable to send a verification link.");
+        } finally { setLoading(false); }
+    };
+
+    const claimOrder = async () => {
+        if (!orderData || !accessToken) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch("/api/medusa/store/orders/transfer", {
+                method: "POST", headers: { "Content-Type": "application/json", "x-order-access-token": accessToken },
+                body: JSON.stringify({ order_id: orderData.id }),
+            });
+            if (!response.ok) throw new Error("This order could not be added to your account. Request a new verification link or contact support.");
+            setNotice("This order has been added to your account.");
+        } catch (err: unknown) { setError(getErrorMessage(err)); }
+        finally { setLoading(false); }
     };
 
     const handleLookup = async (e: React.FormEvent) => {
@@ -175,15 +167,24 @@ function OrderLookupContent() {
     };
 
     useEffect(() => {
-        const urlOrder = searchParams.get("order");
-        const urlEmail = searchParams.get("email");
-
-        if (urlOrder && urlEmail) {
-            setOrderId(urlOrder);
-            setEmail(urlEmail);
-            // Small delay to ensure state updates or UI readiness if needed, but direct call is fine
-            lookupOrder(urlOrder, urlEmail);
-        }
+        const id = searchParams.get("order");
+        const token = searchParams.get("token");
+        if (!id || !token || consumedLink.current === token) return;
+        consumedLink.current = token;
+        setOrderId(id);
+        setAccessToken(token);
+        window.history.replaceState(null, "", window.location.pathname);
+        setLoading(true);
+        fetch(`/api/medusa/store/orders/${encodeURIComponent(id)}`, {
+            headers: { "x-order-access-token": token }, cache: "no-store",
+        }).then(async (response) => {
+            if (!response.ok) throw new Error("This verification link is invalid or expired. Please request a new link.");
+            const data = (await response.json()) as { order?: LookupOrder };
+            if (!data.order) throw new Error("Order not found.");
+            setOrderData(data.order);
+        }).catch((err: unknown) => {
+            setError(getErrorMessage(err) || "Unable to load this order.");
+        }).finally(() => { setLoading(false); });
     }, [searchParams]);
 
     return (
@@ -192,9 +193,14 @@ function OrderLookupContent() {
 
                 <h1 className="font-serif text-3xl text-charcoal mb-4 text-center">Track Your Order</h1>
                 <p className="text-charcoal-light text-center mb-10">
-                    Enter your order ID and the email address used at checkout to view your order status.
+                    Enter your order ID and checkout email to receive a secure verification link.
                 </p>
 
+                {notice && <p role="status" className="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">{notice}</p>}
+                {orderData && error && <p role="alert" className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+                {orderData && accessToken && (user ? (
+                    <button onClick={claimOrder} disabled={loading} className="mb-6 w-full rounded-full bg-charcoal px-6 py-3 text-white disabled:opacity-50">Add this order to my account</button>
+                ) : <p className="mb-6 text-sm text-charcoal-light">Sign in, then reopen your verification link to add this order to your account.</p>)}
                 {!orderData ? (
                     /* LOOKUP FORM */
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -245,7 +251,7 @@ function OrderLookupContent() {
                                 ) : (
                                     <>
                                         <SearchIcon />
-                                        <span>Track Order</span>
+                                        <span>Email Verification Link</span>
                                     </>
                                 )}
                             </button>

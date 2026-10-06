@@ -8,7 +8,8 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
 // Mock fetch
-global.fetch = jest.fn();
+const fetchMock = jest.fn<(...args: unknown[]) => Promise<unknown>>();
+global.fetch = fetchMock as typeof fetch;
 
 // Import after mocking
 import { applyPromoCode, removePromoCode } from '../medusa';
@@ -38,19 +39,19 @@ describe('Cart Coupon Operations', () => {
     };
 
     beforeEach(() => {
-        (global.fetch as jest.Mock).mockClear();
+        fetchMock.mockClear();
     });
 
     describe('applyPromoCode', () => {
         it('should apply promo code without duplicating items', async () => {
             // Mock the POST request to apply promo
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
+            fetchMock.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ cart: mockCartWithPromo })
             });
 
             // Mock the GET request to fetch updated cart
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
+            fetchMock.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ cart: mockCartWithPromo })
             });
@@ -59,6 +60,7 @@ describe('Cart Coupon Operations', () => {
 
             // Verify cart structure
             expect(result).toBeDefined();
+            if (!result?.items) throw new Error("Expected cart with items");
             expect(result.items).toHaveLength(1);
             expect(result.items[0].quantity).toBe(1);
             expect(result.promotions).toHaveLength(1);
@@ -66,7 +68,7 @@ describe('Cart Coupon Operations', () => {
         });
 
         it('should handle errors gracefully', async () => {
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
+            fetchMock.mockResolvedValueOnce({
                 ok: false,
                 status: 400,
                 text: async () => JSON.stringify({ message: 'Invalid promo code' })
@@ -79,13 +81,13 @@ describe('Cart Coupon Operations', () => {
     describe('removePromoCode', () => {
         it('should remove promo code without affecting item quantities', async () => {
             // Mock the DELETE request
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
+            fetchMock.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ cart: mockCartWithoutPromo })
             });
 
             // Mock the GET request
-            (global.fetch as jest.Mock).mockResolvedValueOnce({
+            fetchMock.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ cart: mockCartWithoutPromo })
             });
@@ -94,6 +96,7 @@ describe('Cart Coupon Operations', () => {
 
             // Verify cart structure
             expect(result).toBeDefined();
+            if (!result?.items) throw new Error("Expected cart with items");
             expect(result.items).toHaveLength(1);
             expect(result.items[0].quantity).toBe(1);
             expect(result.promotions).toHaveLength(0);
@@ -104,31 +107,34 @@ describe('Cart Coupon Operations', () => {
     describe('Sequential operations', () => {
         it('should handle apply -> remove -> apply without duplication', async () => {
             // First apply
-            (global.fetch as jest.Mock)
+            fetchMock
                 .mockResolvedValueOnce({ ok: true })
                 .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: mockCartWithPromo }) });
 
             const cart1 = await applyPromoCode(mockCartId, mockPromoCode);
+            if (!cart1?.items) throw new Error("Expected cart with items");
             expect(cart1.items).toHaveLength(1);
             expect(cart1.items[0].quantity).toBe(1);
 
             // Remove
-            (global.fetch as jest.Mock)
+            fetchMock
                 .mockResolvedValueOnce({ ok: true })
                 .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: mockCartWithoutPromo }) });
 
             const cart2 = await removePromoCode(mockCartId, mockPromoCode);
+            if (!cart2?.items) throw new Error("Expected cart with items");
             expect(cart2.items).toHaveLength(1);
             expect(cart2.items[0].quantity).toBe(1);
 
             // Re-apply
-            (global.fetch as jest.Mock)
+            fetchMock
                 .mockResolvedValueOnce({ ok: true })
                 .mockResolvedValueOnce({ ok: true, json: async () => ({ cart: mockCartWithPromo }) });
 
             const cart3 = await applyPromoCode(mockCartId, mockPromoCode);
 
             // CRITICAL: Items should still be 1, not 3
+            if (!cart3?.items) throw new Error("Expected cart with items");
             expect(cart3.items).toHaveLength(1);
             expect(cart3.items[0].quantity).toBe(1);
             // Total should not be 0

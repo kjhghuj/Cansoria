@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { MapPin, Loader2, Plus, Edit, Trash2 } from "lucide-react";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
-// Helper to get auth token
-const getAuthToken = () => localStorage.getItem("medusa_auth_token");
 
 interface Address {
   id: string;
@@ -31,14 +29,11 @@ export function AddressesContent() {
   }, []);
 
   const fetchAddresses = async () => {
-    const token = getAuthToken();
-    if (!token) return;
     setLoadingAddresses(true);
     try {
       const response = await fetch(`${BACKEND_URL}/store/customers/me/addresses`, {
         headers: {
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`,
         },
       });
 
@@ -66,7 +61,6 @@ export function AddressesContent() {
       is_default_shipping: formData.get("isDefault") === "on",
     };
 
-    const token = getAuthToken();
 
     try {
       const url = editingAddress
@@ -78,7 +72,6 @@ export function AddressesContent() {
         headers: {
           "Content-Type": "application/json",
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(addressData),
       });
@@ -95,14 +88,12 @@ export function AddressesContent() {
 
   const handleDeleteAddress = async (addressId: string) => {
     if (!confirm("Are you sure you want to delete this address?")) return;
-    const token = getAuthToken();
 
     try {
       await fetch(`${BACKEND_URL}/store/customers/me/addresses/${addressId}`, {
         method: "DELETE",
         headers: {
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`,
         },
       });
       fetchAddresses();

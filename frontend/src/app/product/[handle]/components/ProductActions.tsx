@@ -133,10 +133,10 @@ export default function ProductActions({
                       type="button"
                       key={value.id}
                       onClick={() => onOptionChange(option.id, value.value)}
-                      className={`min-h-11 border px-4 py-2 text-sm transition-colors ${
+                      className={`min-h-11 rounded-xl border px-4 py-2 text-sm transition-colors ${
                         isSelected
-                          ? "border-charcoal bg-charcoal text-white"
-                          : "border-border bg-white text-charcoal hover:border-gold"
+                          ? "border-toffee bg-toffee text-white shadow-[0_4px_14px_rgba(200,122,62,0.28)]"
+                          : "border-border bg-white text-charcoal hover:border-toffee hover:text-toffee"
                       }`}
                     >
                       {value.value}
@@ -150,7 +150,7 @@ export default function ProductActions({
       )}
 
       {selectedPrice !== undefined && (
-        <div className="flex items-baseline gap-3 bg-white px-4 py-3">
+        <div className="flex items-baseline gap-3 rounded-xl bg-white border border-border-subtle px-4 py-3">
           <span className="text-xl font-medium text-charcoal">
             {formatPrice(selectedPrice, selectedCurrency)}
           </span>
@@ -166,7 +166,7 @@ export default function ProductActions({
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-charcoal">
           Quantity
         </h3>
-        <div className="inline-flex h-12 items-center border border-border bg-white">
+        <div className="inline-flex h-12 items-center rounded-xl border border-border bg-white">
           <button
             type="button"
             onClick={decreaseQuantity}
@@ -196,11 +196,11 @@ export default function ProductActions({
           type="button"
           onClick={handleAddToCart}
           disabled={!canAddToCart && !justAdded}
-          className={`flex min-h-14 w-full items-center justify-center gap-2 px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
+          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
             justAdded
               ? "bg-sage text-white"
               : canAddToCart
-                ? "bg-terracotta text-white hover:bg-terracotta-dark"
+                ? "bg-toffee text-white hover:bg-toffee-dark shadow-[0_8px_24px_rgba(200,122,62,0.30)]"
                 : "cursor-not-allowed border border-border bg-white text-charcoal-light"
           }`}
         >
@@ -218,7 +218,7 @@ export default function ProductActions({
           type="button"
           onClick={handleBuyNow}
           disabled={!canAddToCart}
-          className={`flex min-h-14 w-full items-center justify-center gap-2 px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
+          className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-[0.22em] transition-colors ${
             canAddToCart
               ? "bg-charcoal text-white hover:bg-oil-brown"
               : "cursor-not-allowed border border-border bg-white text-charcoal-light"
@@ -236,11 +236,35 @@ export default function ProductActions({
       {justAdded && (
         <Link
           href="/cart"
-          className="block border border-charcoal px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.22em] text-charcoal transition-colors hover:bg-charcoal hover:text-white"
+          className="block rounded-xl border border-charcoal px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.22em] text-charcoal transition-colors hover:bg-charcoal hover:text-white"
         >
           View Cart
         </Link>
       )}
+
+      {/* 3-Step Zero-Risk Promise */}
+      <div className="rounded-2xl border border-border-subtle bg-cream-card p-5">
+        <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-charcoal">
+          Your Zero-Risk Bespoke Promise
+        </p>
+        <ul className="space-y-3">
+          {[
+            { icon: "📷", text: "1. Upload Photo Online or via Email" },
+            { icon: "🎨", text: "2. Free Digital Proof Before Painting" },
+            { icon: "📦", text: "3. Insured Worldwide Delivery in Gift Box" },
+          ].map((step) => (
+            <li key={step.text} className="flex items-center gap-3 text-sm text-charcoal-light">
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream-light border border-border-subtle text-sm"
+              >
+                {step.icon}
+              </span>
+              <span>{step.text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <p className="text-sm leading-6 text-charcoal-light">
         Custom orders include photo upload after purchase. We will request your

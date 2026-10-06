@@ -21,15 +21,17 @@ export function ProductGrid({ products, region, category }: ProductGridProps) {
           ))}
         </div>
       ) : (
-        <div className="mx-auto max-w-2xl border border-charcoal/10 bg-warm-ivory px-6 py-16 text-center sm:px-10">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-border-subtle bg-cream-light px-6 py-16 text-center sm:px-10">
           <p className="mb-3 font-serif text-3xl text-charcoal">
             {category
-              ? `${category} pieces are being curated.`
-              : "The gallery is being curated."}
+              ? `${category} commissions are being prepared.`
+              : "The pet portrait collection is being curated."}
           </p>
           <p className="mx-auto max-w-md text-sm leading-7 text-charcoal-light">
-            New hand-painted canvases and custom painting options will appear
-            here as soon as they are available in Medusa.
+            Every Cansoria portrait is painted to order from your photo. New
+            commission formats and canvas options will appear here soon — in
+            the meantime, your bespoke order always starts with a free sketch
+            proof.
           </p>
         </div>
       )}

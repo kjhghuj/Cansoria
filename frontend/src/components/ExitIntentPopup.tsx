@@ -8,7 +8,7 @@ function getErrorMessage(error: unknown) {
     return error instanceof Error ? error.message : "";
 }
 
-const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const MEDUSA_BACKEND_URL = "/api/medusa";
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 const SECURITY_UNAVAILABLE_MESSAGE = "Security check unavailable in this environment.";
 
@@ -141,14 +141,14 @@ export default function ExitIntentPopup() {
                                 Your 15% off code is <span className="font-mono font-semibold text-charcoal">{discountCode}</span>.
                             </p>
                         ) : (
-                            <p className="text-charcoal-light">Check your inbox for your 15% off code.</p>
+                            <p className="text-charcoal-light">Thank you for subscribing to our studio updates.</p>
                         )}
                     </div>
                 ) : (
                     <div className="text-center">
                         <h2 className="font-serif text-3xl text-charcoal mb-3">Wait, don&apos;t leave empty-handed.</h2>
                         <p className="text-charcoal-light mb-8 text-sm leading-relaxed">
-                            Take <span className="font-semibold text-terracotta">15% OFF</span> your first custom painting or canvas artwork.
+                            Get studio updates and member offers on custom paintings and canvas artwork.
                         </p>
 
                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -174,6 +174,7 @@ export default function ExitIntentPopup() {
                                         onError={() => setErrorMessage("Security check failed.")}
                                         onExpire={() => setTurnstileToken(null)}
                                         options={{
+                                            action: 'newsletter',
                                             theme: "light",
                                             size: "normal",
                                         }}
@@ -191,7 +192,7 @@ export default function ExitIntentPopup() {
                                 className="w-full bg-charcoal text-white py-3 text-sm font-semibold tracking-wide hover:bg-terracotta transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
                             >
                                 {isLoading && <Loader2 size={16} className="animate-spin" />}
-                                UNLOCK 15% OFF
+                                JOIN THE STUDIO
                             </button>
                         </form>
 

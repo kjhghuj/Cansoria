@@ -1,32 +1,48 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Cansoria Brand Colors & Theme */
+/* Cansoria Brand Colors & Theme — 治愈静奢奶油风 (Healing Quiet-Luxury Cream) */
 @theme inline {
-  /* Brand Colors */
-  --color-cream: #FBF7EF;
-  --color-charcoal: #26231F;
-  --color-charcoal-light: #6B6258;
-  --color-terracotta: #A97842;
-  --color-terracotta-dark: #76512C;
-  --color-sage: #8A7658;
-  --color-border: #E7DDCF;
-  --color-canvas: #F3E7D3;
-  --color-gold: #B9904A;
-  --color-oil-brown: #5B3923;
+  /* Cream Color System */
+  --color-cream: #FAF8F5;              /* Global base: mascarpone warm white */
+  --color-cream-light: #FFFDF9;        /* Bright cards: vanilla milk white */
+  --color-cream-card: #F4EFE6;         /* Soft containers: oat warm tone */
+  --color-cream-dark: #ECE3D4;         /* Deep cream: butter biscuit tone */
+
+  /* Text System: warm coffee-grey instead of cold black */
+  --color-charcoal: #26221E;
+  --color-charcoal-light: #6E6357;
+  --color-charcoal-muted: #9C8E7F;
+
+  /* Core Conversion & Accent Colors */
+  --color-toffee: #C87A3E;             /* Primary CTA: warm caramel amber */
+  --color-toffee-dark: #A55F28;        /* Hover state: deep-roast caramel */
+  --color-champagne-gold: #C5A059;     /* Hand-painted seal: brushed champagne gold */
+
+  /* Borders & Soft Dividers */
+  --color-border: #E8DFCF;
+  --color-border-subtle: #F0E8DC;
 
   /* Semantic Colors */
   --color-background: var(--color-cream);
   --color-foreground: var(--color-charcoal);
 
   /* Fonts */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-sans: var(--font-geist-sans), 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', 'Georgia', serif;
+
+  /* Legacy token aliases → new cream palette (keep existing pages in sync) */
+  --color-terracotta: var(--color-toffee);
+  --color-terracotta-dark: var(--color-toffee-dark);
+  --color-sage: #8A7658;
+  --color-canvas: var(--color-cream-card);
+  --color-gold: var(--color-champagne-gold);
+  --color-oil-brown: #5B3923;
 }
 
 :root {
-  --background: #FBF7EF;
-  --foreground: #26231F;
+  --background: #FAF8F5;
+  --foreground: #26221E;
 }
 
 html {

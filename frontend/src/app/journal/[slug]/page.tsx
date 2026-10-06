@@ -1,5 +1,7 @@
 ﻿import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { serializeJsonLd } from "@/lib/security-json";
 import Link from "next/link";
 import { Share2, Facebook, Twitter, Link as LinkIcon } from "lucide-react";
 import ImageWithFallback from "@/components/ImageWithFallback";
@@ -435,8 +437,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* SEO Structured Data */}
       <script
         type="application/ld+json"
+        nonce={(await headers()).get("x-nonce") ?? undefined}
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: serializeJsonLd({
             "@context": "https://schema.org",
             "@type": "Article",
             headline: article.title,

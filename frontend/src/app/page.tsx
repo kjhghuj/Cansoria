@@ -6,6 +6,7 @@ import { FeaturedProducts } from "./components/home/FeaturedProducts";
 import { Testimonials } from "./components/home/Testimonials";
 import { CustomPaintingProcess } from "./components/home/CustomPaintingProcess";
 import { BeforeAfterSection } from "./components/home/BeforeAfterSection";
+import { PetFrameCustomizerPreview } from "./components/home/PetFrameCustomizerPreview";
 import { FinalCTA } from "./components/home/FinalCTA";
 
 export const revalidate = 60; // Revalidate every 60 seconds
@@ -38,9 +39,10 @@ export default async function HomePage() {
       <HeroSection />
       <HomeUSPBar />
       <CustomPaintingProcess />
+      <BeforeAfterSection />
+      <PetFrameCustomizerPreview />
       <CategoryGrid />
       <FeaturedProducts products={products} region={region} />
-      <BeforeAfterSection />
       <Testimonials />
       <FinalCTA />
     </div>

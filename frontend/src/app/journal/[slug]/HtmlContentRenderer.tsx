@@ -1,6 +1,7 @@
 import parse, { DOMNode, Element } from "html-react-parser";
 import { StoreProduct } from "@/lib/types";
 import InlineProductBlock from "@/components/journal/InlineProductBlock";
+import { sanitizeArticleHtml } from "@/lib/html-safety";
 
 interface HtmlContentRendererProps {
     content: string;
@@ -50,5 +51,5 @@ export default function HtmlContentRenderer({
         },
     };
 
-    return <>{parse(content, options)}</>;
+    return <>{parse(sanitizeArticleHtml(content), options)}</>;
 }

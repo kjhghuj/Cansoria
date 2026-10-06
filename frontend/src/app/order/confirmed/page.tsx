@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/providers";
+import { readOrderConfirmation } from "@/lib/order-confirmation";
 
-const MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
-const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
 function CheckIcon() {
   return (
@@ -33,25 +32,12 @@ function LockIcon() {
   );
 }
 
-function extractUlid(orderId: string | null): string {
-  if (!orderId) return "";
-  return orderId.startsWith("order_") ? orderId.substring(6) : orderId;
-}
-
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "";
 }
 
-async function readJsonSafely(response: Response) {
-  try {
-    return (await response.json()) as { message?: string; is_registered?: boolean; token?: string; customer?: { id?: string } };
-  } catch {
-    return {};
-  }
-}
-
 export default function OrderConfirmedPage() {
-  const { user } = useAuth();
+  const { user, register } = useAuth();
   const [orderId, setOrderId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("Customer");
@@ -61,50 +47,17 @@ export default function OrderConfirmedPage() {
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get("success") === "true";
-    const orderNum = urlParams.get("order");
-    const userEmail = urlParams.get("email");
-    const userFirstName = urlParams.get("first_name");
-    const userLastName = urlParams.get("last_name");
-
-    const checkRegistration = async (emailToCheck: string) => {
-      try {
-        const response = await fetch(`${MEDUSA_BACKEND_URL}/store/check-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-publishable-api-key": PUBLISHABLE_API_KEY,
-          },
-          body: JSON.stringify({ email: emailToCheck }),
-        });
-
-        if (response.ok) {
-          const data = await readJsonSafely(response);
-          if (data.is_registered) {
-            setIsRegistered(true);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to check registration status", err);
-      }
-    };
-
-    if (success && orderNum) {
-      setOrderId(orderNum);
-      if (userEmail) {
-        setEmail(userEmail);
-        checkRegistration(userEmail);
-      }
-      if (userFirstName) setFirstName(userFirstName);
-      if (userLastName) setLastName(userLastName);
+    const confirmation = readOrderConfirmation();
+    if (confirmation) {
+      setOrderId(confirmation.orderId);
+      setEmail(confirmation.email);
+      setFirstName(confirmation.firstName);
+      setLastName(confirmation.lastName);
     }
-
-    const timer = window.setTimeout(() => setLoading(false), 500);
-    return () => window.clearTimeout(timer);
+    if (window.location.search) window.history.replaceState(null, "", window.location.pathname);
+    setLoading(false);
   }, []);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
@@ -115,65 +68,7 @@ export default function OrderConfirmedPage() {
     setRegisterError(null);
 
     try {
-      const authResponse = await fetch(`${MEDUSA_BACKEND_URL}/auth/customer/emailpass/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key": PUBLISHABLE_API_KEY,
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const authData = await readJsonSafely(authResponse);
-      if (!authResponse.ok || !authData.token) {
-        throw new Error(authData.message || "Registration failed during authentication.");
-      }
-
-      const customerResponse = await fetch(`${MEDUSA_BACKEND_URL}/store/customers`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key": PUBLISHABLE_API_KEY,
-          Authorization: `Bearer ${authData.token}`,
-        },
-        body: JSON.stringify({
-          email,
-          first_name: firstName,
-          last_name: lastName,
-        }),
-      });
-
-      const customerData = await readJsonSafely(customerResponse);
-      if (!customerResponse.ok) {
-        throw new Error(customerData.message || "Failed to create customer profile.");
-      }
-
-      const customerId = customerData.customer?.id;
-      if (orderId && customerId) {
-        try {
-          const transferResponse = await fetch(`${MEDUSA_BACKEND_URL}/store/orders/transfer`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-publishable-api-key": PUBLISHABLE_API_KEY,
-              Authorization: `Bearer ${authData.token}`,
-            },
-            body: JSON.stringify({
-              order_id: orderId,
-              customer_id: customerId,
-              customer_email: email,
-            }),
-          });
-
-          if (!transferResponse.ok) {
-            console.warn("[Transfer] Failed to transfer order:", await readJsonSafely(transferResponse));
-          }
-        } catch (transferErr) {
-          console.error("[Transfer] Error transferring order:", transferErr);
-        }
-      }
-
-      localStorage.setItem("medusa_auth_token", authData.token);
+      await register(email, password, firstName, lastName);
       setRegisterSuccess(true);
     } catch (err: unknown) {
       const message = getErrorMessage(err);
@@ -222,20 +117,20 @@ export default function OrderConfirmedPage() {
 
           <div className="bg-gray-50 rounded-xl p-6 mb-6 inline-block w-full max-w-lg mx-auto">
             <p className="text-sm text-charcoal-light uppercase tracking-wider mb-2">Order ID</p>
-            <p className="font-mono text-base sm:text-lg text-charcoal font-bold break-all tracking-normal">{extractUlid(orderId)}</p>
+            <p className="font-mono text-base sm:text-lg text-charcoal font-bold break-all tracking-normal">{orderId.replace(/^order_/, '')}</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/shop" className="bg-charcoal text-white px-8 py-4 rounded-full hover:bg-charcoal-light transition-colors font-medium min-w-[200px]">
               Continue Shopping
             </Link>
-            <Link href={`/order/lookup?order=${extractUlid(orderId)}&email=${encodeURIComponent(email || "")}`} className="bg-white border border-gray-200 text-charcoal px-8 py-4 rounded-full hover:border-charcoal transition-colors font-medium min-w-[200px]">
+            <Link href="/order/lookup" className="bg-white border border-gray-200 text-charcoal px-8 py-4 rounded-full hover:border-charcoal transition-colors font-medium min-w-[200px]">
               View Order Details
             </Link>
           </div>
         </div>
 
-        {email && !registerSuccess && !isRegistered && !user && (
+        {email && !registerSuccess  && !user && (
           <div className="bg-terracotta/5 rounded-2xl p-8 sm:p-10 border border-terracotta/20">
             <div className="flex flex-col md:flex-row gap-8 items-start">
               <div className="md:flex-1">

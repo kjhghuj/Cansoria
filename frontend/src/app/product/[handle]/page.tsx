@@ -1,12 +1,15 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductByHandle, getProducts, getRegion } from "@/lib/medusa";
+import { headers } from "next/headers";
+import { serializeJsonLd } from "@/lib/security-json";
+import { getProductByHandle, getRegion } from "@/lib/medusa";
 import { StoreProduct } from "@/lib/types";
 import ProductClient from "./components/ProductClient";
 import { Breadcrumb } from "./components/Breadcrumb";
 import ProductStory, { StorySection } from "./components/ProductStory";
 
-export const revalidate = 60;
+// Each HTML response needs the request's CSP nonce, including new product handles.
+export const dynamic = 'force-dynamic';
 
 interface ProductPageProps {
   params: Promise<{ handle: string }>;
@@ -60,20 +63,6 @@ function hasAvailableVariant(product: StoreProduct) {
       return (variant.inventory_quantity ?? 0) > 0;
     }) ?? false
   );
-}
-
-export async function generateStaticParams() {
-  try {
-    const region = await getRegion("gb");
-    const { products } = await getProducts(region?.id, 100);
-    return products
-      .filter((product) => Boolean(product.handle))
-      .map((product) => ({
-        handle: product.handle,
-      }));
-  } catch {
-    return [];
-  }
 }
 
 export async function generateMetadata({
@@ -145,8 +134,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <script
         type="application/ld+json"
+        nonce={(await headers()).get("x-nonce") ?? undefined}
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: serializeJsonLd({
             "@context": "https://schema.org",
             "@type": "Product",
             name: product.title,

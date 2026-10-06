@@ -1,5 +1,7 @@
 "use client";
 
+import { saveOrderConfirmation } from "@/lib/order-confirmation";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -153,7 +155,6 @@ function CheckoutForm() {
     try {
       const { firstName, lastName } = splitName(billingData.name);
 
-      console.log("[Checkout] Updating cart with customer info...");
       const updateCartResponse = await fetch(`/api/medusa/store/carts/${cart.id}`, {
         method: "POST",
         headers: {
@@ -185,14 +186,10 @@ function CheckoutForm() {
       });
 
       if (!updateCartResponse.ok) {
-        console.warn(
-          "[Checkout] Failed to update cart contact info",
-          await updateCartResponse.json()
-        );
+
         throw new Error("Failed to save shipping information.");
       }
 
-      console.log("[Checkout] Selecting shipping method...");
       const shippingOptionsResponse = await fetch(
         `/api/medusa/store/shipping-options?cart_id=${cart.id}`,
         {
@@ -208,7 +205,6 @@ function CheckoutForm() {
           (await shippingOptionsResponse.json()) as ShippingOptionsResponse;
         if (shipping_options && shipping_options.length > 0) {
           const defaultOption = shipping_options[0];
-          console.log("[Checkout] Selected shipping option:", defaultOption.name);
 
           await fetch(`/api/medusa/store/carts/${cart.id}/shipping-methods`, {
             method: "POST",
@@ -222,7 +218,6 @@ function CheckoutForm() {
         }
       }
 
-      console.log("[Checkout] Creating payment session...");
       const response = await fetch(`/api/checkout/${cart.id}/payment-sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -243,7 +238,6 @@ function CheckoutForm() {
         throw new Error("Payment failed");
       }
 
-      console.log("[Checkout] Client secret obtained. Confirming with Stripe...");
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
@@ -262,12 +256,10 @@ function CheckoutForm() {
       });
 
       if (result.error) {
-        console.error("[Checkout] Stripe error:", result.error);
+
         throw new Error(result.error.message || "Payment failed");
       }
 
-      console.log("[Checkout] Payment confirmed:", result.paymentIntent);
-      console.log("[Checkout] Completing cart...");
       const completeResponse = await fetch(
         `/api/medusa/store/carts/${cart.id}/complete`,
         {
@@ -288,7 +280,6 @@ function CheckoutForm() {
       }
 
       const completeData = (await completeResponse.json()) as CompleteCartResponse;
-      console.log("[Checkout] Order completed:", completeData);
 
       const orderData =
         completeData.order ||
@@ -298,15 +289,8 @@ function CheckoutForm() {
         const { firstName: redirectFirstName, lastName: redirectLastName } =
           splitName(billingData.name);
 
-        const redirectUrl = `/order/confirmed?success=true&order=${
-          orderData.id
-        }&email=${encodeURIComponent(
-          billingData.email
-        )}&first_name=${encodeURIComponent(
-          redirectFirstName
-        )}&last_name=${encodeURIComponent(redirectLastName)}`;
-        console.log("[Checkout] Redirecting to:", redirectUrl);
-        router.push(redirectUrl);
+        saveOrderConfirmation({ orderId: orderData.id, email: billingData.email, firstName: redirectFirstName, lastName: redirectLastName });
+        router.push("/order/confirmed");
 
         refreshCart().catch((refreshError) =>
           console.error("Background cart refresh failed:", refreshError)
@@ -314,15 +298,12 @@ function CheckoutForm() {
       } else if (completeData.type === "cart") {
         throw new Error("Payment failed");
       } else {
-        console.warn(
-          "[Checkout] Unrecognized completion response, fallback redirect to Account:",
-          completeData
-        );
+
         await refreshCart();
         router.push("/account");
       }
     } catch (checkoutError: unknown) {
-      console.error("[Checkout] Error:", checkoutError);
+
       setError(getFriendlyCheckoutError(checkoutError));
     } finally {
       setProcessing(false);

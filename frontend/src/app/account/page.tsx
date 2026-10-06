@@ -25,10 +25,16 @@ function AccountContent() {
 
   // UI state
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [logoutError, setLogoutError] = useState("");
 
-  const handleLogout = () => {
-    logout();
-    router.push("/account"); // Refresh or stay
+  const handleLogout = async () => {
+    setLogoutError("");
+    try {
+      await logout();
+      router.push("/account");
+    } catch {
+      setLogoutError("Unable to sign out. Please try again.");
+    }
   };
 
   // Loading state
@@ -54,6 +60,7 @@ function AccountContent() {
             Welcome, {user?.first_name || user?.email}
           </p>
         </div>
+        {logoutError && <p role="alert" className="mb-4 text-sm text-red-600">{logoutError}</p>}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}

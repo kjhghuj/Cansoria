@@ -17,16 +17,16 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
         <div className="px-6 lg:px-8 mb-10 lg:mb-12 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
           <div className="max-w-2xl">
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-charcoal mb-3">
-              Featured Paintings
+              Most Cherished Pet Portraits
             </h2>
             <p className="text-charcoal-light text-sm sm:text-base font-light leading-relaxed">
-              Browse selected custom-ready canvases and hand-painted artwork
-              from the current collection.
+              Hand-painted oil portraits curated by popular canvas sizes and
+              framing styles.
             </p>
           </div>
           <Link
             href="/shop"
-            className="text-xs uppercase tracking-widest border-b border-charcoal pb-1 hover:text-terracotta hover:border-terracotta transition-colors"
+            className="text-xs uppercase tracking-widest border-b border-charcoal pb-1 hover:text-toffee hover:border-toffee transition-colors whitespace-nowrap"
           >
             View All
           </Link>
@@ -43,11 +43,11 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
           </div>
         ) : (
           <div className="px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-12 items-center border-y border-border py-10 lg:py-14">
-              <div className="relative aspect-[4/3] bg-white overflow-hidden border border-border">
+            <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 lg:gap-12 items-center rounded-2xl border border-border-subtle bg-cream-light py-10 lg:py-14 px-6 lg:px-10">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-[0_10px_32px_rgba(38,34,30,0.12)]">
                 <Image
-                  src="/products/canvas.svg"
-                  alt="Cansoria canvas artwork placeholder"
+                  src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=900"
+                  alt="Hand-painted golden retriever oil portrait on canvas"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 35vw"
@@ -55,18 +55,19 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
               </div>
               <div className="max-w-2xl">
                 <h3 className="font-serif text-2xl lg:text-4xl text-charcoal mb-4">
-                  The collection is being prepared.
+                  Your companion&rsquo;s portrait starts with a single photo.
                 </h3>
                 <p className="text-charcoal-light font-light leading-relaxed mb-7">
-                  Connect your Medusa catalog to feature available paintings
-                  here. The homepage remains ready for custom orders and
-                  category browsing while products are being curated.
+                  Commission a museum-grade, hand-painted oil portrait of your
+                  dog, cat, or whole furry family. Every order begins with a
+                  free sketch proof — revise it until it melts your heart
+                  before anything ships.
                 </p>
                 <Link
-                  href="/shop?category=custom-painting"
-                  className="inline-flex bg-terracotta text-white px-7 py-3 text-xs uppercase tracking-widest font-bold hover:bg-terracotta-dark transition-colors"
+                  href="/shop?category=pet-portraits"
+                  className="inline-flex bg-toffee text-white px-7 py-3.5 text-xs uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(200,122,62,0.30)]"
                 >
-                  Start a Custom Painting
+                  Commission Your Pet Portrait
                 </Link>
               </div>
             </div>

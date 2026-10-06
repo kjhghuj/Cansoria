@@ -12,43 +12,41 @@ interface ShopPageProps {
   searchParams: Promise<{ category?: string; sort?: string }>;
 }
 
-export const SHOP_CATEGORIES = [
+const SHOP_CATEGORIES = [
   {
-    label: "Custom Portraits",
-    value: "custom-portraits",
-    aliases: ["custom-portraits", "custom-painting", "portrait", "photo-to-painting"],
+    label: "Dog Portraits",
+    value: "dog-portraits",
+    aliases: ["dog-portraits", "dog-portrait", "dogs", "dog", "puppy", "puppies"],
   },
   {
-    label: "Pet Portraits",
-    value: "pet-portraits",
-    aliases: ["pet-portraits", "pet-painting", "pet", "dog", "cat"],
+    label: "Cat Masterpieces",
+    value: "cat-masterpieces",
+    aliases: ["cat-masterpieces", "cat-portraits", "cat-portrait", "cats", "cat", "kitten", "feline"],
   },
   {
-    label: "Wedding Gifts",
-    value: "wedding-gifts",
-    aliases: ["wedding-gifts", "wedding-anniversary", "anniversary", "couple"],
+    label: "Multiple Pets & Family",
+    value: "multiple-pets",
+    aliases: ["multiple-pets", "multi-pet", "family-portrait", "multi-pet-family"],
   },
   {
-    label: "Landscape",
-    value: "landscape",
-    aliases: ["landscape", "landscape-paintings", "seascape", "scenery"],
-  },
-  {
-    label: "Abstract",
-    value: "abstract",
-    aliases: ["abstract", "abstract-wall-art", "modern-abstract"],
-  },
-  {
-    label: "Classic Art",
-    value: "classic-art",
-    aliases: ["classic-art", "classic-reproductions", "reproduction", "old-master"],
-  },
-  {
-    label: "Home Decor",
-    value: "home-decor",
-    aliases: ["home-decor", "canvas-wall-art", "wall-art", "living-room"],
+    label: "Memorial & Rainbow Bridge",
+    value: "memorial",
+    aliases: ["memorial", "memorial-keepsakes", "pet-memorial", "rainbow-bridge"],
   },
 ] as const;
+
+// Params that mean "the whole bespoke pet collection" (no filtering).
+const ALL_PETS_ALIASES = new Set([
+  "pet-portraits",
+  "pet-portrait",
+  "pet-painting",
+  "pets",
+  "pet",
+  "all-pet-portraits",
+  "custom-painting",
+  "custom-portraits",
+  "custom",
+]);
 
 type ShopCategory = (typeof SHOP_CATEGORIES)[number];
 
@@ -63,9 +61,9 @@ export async function generateMetadata({ searchParams }: ShopPageProps): Promise
   const { category } = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
 
-  const title = "Shop Custom Oil Paintings | Cansoria";
+  const title = "The Bespoke Pet Art Collection | Cansoria";
   const description =
-    "Browse hand-painted oil paintings, custom portraits, pet portraits, wedding gifts, and canvas wall art by Cansoria.";
+    "Commission museum-grade, 100% hand-painted oil portraits of your dogs, cats, and cherished companions. Free digital proof with unlimited revisions before shipping.";
 
   let canonical = `${baseUrl}/shop`;
   if (category) {
@@ -98,6 +96,8 @@ function normalize(value: string) {
 function getSelectedCategory(category?: string) {
   if (!category) return undefined;
   const normalizedCategory = normalize(category);
+
+  if (ALL_PETS_ALIASES.has(normalizedCategory)) return undefined;
 
   return SHOP_CATEGORIES.find(
     (item) =>

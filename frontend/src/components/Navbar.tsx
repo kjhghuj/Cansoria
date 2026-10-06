@@ -33,7 +33,7 @@ export default function Navbar({ cartCount, onSearchClick, topOffset = 0 }: Navb
       <nav
         style={{ top: `${topOffset}px` }}
         className={`fixed w-full z-40 transition-all duration-300 ${scrolled || isOpen
-          ? "bg-cream/95 backdrop-blur-md shadow-sm py-2"
+          ? "bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_2px_20px_rgba(38,34,30,0.06)] py-2"
           : "bg-transparent py-4"
           }`}
       >
@@ -79,16 +79,17 @@ export default function Navbar({ cartCount, onSearchClick, topOffset = 0 }: Navb
               </div>
 
               {/* PC Menu */}
-              <div className="hidden lg:flex space-x-10">
+              <div className="hidden lg:flex space-x-4 min-[1360px]:space-x-5">
                 {NAV_LINKS.map((link) => (
                   <Link
                     key={link.name}
                     href={link.path}
-                    className="relative group text-xs uppercase tracking-widest text-charcoal font-medium py-2"
+                    className={`relative group text-[10px] uppercase tracking-[0.08em] text-charcoal font-medium py-2 whitespace-nowrap ${link.path.startsWith("/#") ? "hidden min-[1360px]:block" : ""
+                      }`}
                   >
                     {link.name}
                     <span
-                      className={`absolute left-0 bottom-0 h-[1px] bg-terracotta transition-all duration-300 ${isActive(link.path) ? "w-full" : "w-0 group-hover:w-full"
+                      className={`absolute left-0 bottom-0 h-[1px] bg-toffee transition-all duration-300 ${isActive(link.path) ? "w-full" : "w-0 group-hover:w-full"
                         }`}
                     ></span>
                   </Link>
@@ -96,30 +97,39 @@ export default function Navbar({ cartCount, onSearchClick, topOffset = 0 }: Navb
               </div>
             </div>
 
-            {/* RIGHT: Icons */}
-            <div className="flex-1 flex items-center justify-end space-x-5">
+            {/* RIGHT: Icons & CTA */}
+            <div className="flex-1 flex items-center justify-end space-x-4 xl:space-x-5">
               <button
                 onClick={onSearchClick}
-                className="text-charcoal hover:text-terracotta transition-colors"
+                aria-label="Search"
+                className="text-charcoal hover:text-toffee transition-colors"
               >
                 <Search size={20} strokeWidth={1.5} />
               </button>
               <Link
                 href="/account"
-                className="hidden sm:block text-charcoal hover:text-terracotta transition-colors"
+                aria-label="My account"
+                className="hidden sm:block text-charcoal hover:text-toffee transition-colors"
               >
                 <User size={20} strokeWidth={1.5} />
               </Link>
               <Link
                 href="/cart"
-                className="text-charcoal hover:text-terracotta transition-colors relative"
+                aria-label="Cart"
+                className="text-charcoal hover:text-toffee transition-colors relative"
               >
                 <ShoppingBag size={20} strokeWidth={1.5} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-terracotta text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                  <span className="absolute -top-1.5 -right-1.5 bg-toffee text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                     {cartCount}
                   </span>
                 )}
+              </Link>
+              <Link
+                href="/shop?category=pet-portraits"
+                className="hidden min-[1360px]:inline-flex items-center bg-toffee hover:bg-toffee-dark text-white px-4 min-[1440px]:px-5 py-2.5 text-[10px] uppercase tracking-widest font-bold rounded-xl transition-colors whitespace-nowrap"
+              >
+                Start Custom Portrait
               </Link>
             </div>
           </div>
@@ -129,7 +139,7 @@ export default function Navbar({ cartCount, onSearchClick, topOffset = 0 }: Navb
       {/* Mobile Menu Overlay */}
       <div
         style={{ paddingTop: `calc(6rem + ${topOffset}px)` }}
-        className={`fixed inset-0 z-30 bg-cream px-6 transform transition-transform duration-300 ease-in-out lg:hidden ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-0 z-30 bg-[#FAF8F5] px-6 transform transition-transform duration-300 ease-in-out lg:hidden ${isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex flex-col space-y-6">
@@ -138,13 +148,20 @@ export default function Navbar({ cartCount, onSearchClick, topOffset = 0 }: Navb
               key={link.name}
               href={link.path}
               onClick={() => setIsOpen(false)}
-              className="text-2xl font-serif text-charcoal hover:text-terracotta transition-colors border-b border-gray-100 pb-4"
+              className="text-2xl font-serif text-charcoal hover:text-toffee transition-colors border-b border-border-subtle pb-4"
             >
               {link.name}
             </Link>
           ))}
-          <div className="pt-8">
-            <h5 className="text-xs uppercase tracking-widest text-gray-400 mb-4">
+          <Link
+            href="/shop?category=pet-portraits"
+            onClick={() => setIsOpen(false)}
+            className="inline-flex justify-center items-center bg-toffee text-white px-7 py-4 text-xs uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors"
+          >
+            Start Custom Portrait
+          </Link>
+          <div className="pt-4">
+            <h5 className="text-xs uppercase tracking-widest text-charcoal-muted mb-4">
               Account
             </h5>
             <div className="flex flex-col space-y-4 text-sm text-charcoal">

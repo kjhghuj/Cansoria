@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Ticket, Loader2, Copy, Check } from "lucide-react";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
-// Helper to get auth token
-const getAuthToken = () => localStorage.getItem("medusa_auth_token");
 
 interface AccountUser {
   metadata?: Record<string, unknown> | null;
@@ -31,7 +29,6 @@ export function CouponsContent({ user }: { user: AccountUser | null }) {
     if (!couponCode.trim()) return;
     setRedeeming(true);
     setRedeemMessage(null);
-    const token = getAuthToken();
 
     const newCode = couponCode.trim().toUpperCase();
 
@@ -50,7 +47,6 @@ export function CouponsContent({ user }: { user: AccountUser | null }) {
         headers: {
           "Content-Type": "application/json",
           "x-publishable-api-key": API_KEY,
-          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           metadata: {

@@ -1,3 +1,4 @@
+import { saveOrderConfirmation } from "@/lib/order-confirmation";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/providers";
@@ -52,8 +53,6 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
     const countryCode = cart.region?.countries?.[0]?.iso_2?.toUpperCase() || 'US';
     const currencyCode = (currency || 'usd').toLowerCase();
 
-    console.log("[StripeWalletButton] Init:", { country: countryCode, currency: currencyCode, amount });
-
     const pr = stripe.paymentRequest({
       country: countryCode,
       currency: currencyCode,
@@ -69,7 +68,7 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
 
     // Check if the browser supports this payment method (Apple Pay / Google Pay)
     pr.canMakePayment().then((result) => {
-      console.log("[StripeWalletButton] canMakePayment result:", result);
+
       if (result) {
         setCanMakePayment(true);
         setPaymentRequest(pr);
@@ -94,7 +93,7 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
         // In robust app, we'd map fields carefully.
 
         // 2. Initialize a Medusa v2 payment session and get the Stripe client secret.
-        const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9030";
+        const BACKEND_URL = "/api/medusa";
         const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
         const sessionRes = await fetch(`/api/checkout/${cart.id}/payment-sessions`, {
@@ -123,7 +122,7 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
 
         if (confirmResult.error) {
           ev.complete('fail');
-          console.error("Payment failed", confirmResult.error);
+
           return;
         }
 
@@ -143,17 +142,18 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
 
         if (orderData) {
           // Redirect
-          const redirectUrl = `/order/confirmed?success=true&order=${orderData.id}&email=${encodeURIComponent(ev.payerEmail || "")}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}`;
-          router.push(redirectUrl);
+          if (!orderData.id) throw new Error("Unable to confirm order.");
+          saveOrderConfirmation({ orderId: orderData.id, email: ev.payerEmail || "", firstName, lastName });
+          router.push("/order/confirmed");
           refreshCart(); // Cleanup
         } else {
-          console.error("Order completion failed", completeData);
+
           router.push("/account");
         }
 
-      } catch (err) {
+      } catch {
         ev.complete('fail');
-        console.error("Wallet payment error:", err);
+
       }
     });
 

@@ -26,7 +26,7 @@ export default function Newsletter() {
     return (
         <div className="w-full">
             <h5 className="uppercase tracking-widest text-xs font-bold text-terracotta mb-6">
-                Unlock 15% Off Your First Painting
+                Studio Notes and Member Offers
             </h5>
             <p className="text-sm text-charcoal-light mb-4">
                 Join Cansoria for art styling notes, custom painting ideas, and private offers. Unsubscribe anytime.
@@ -79,6 +79,7 @@ export default function Newsletter() {
                                 onError={() => setErrorMessage("Security check failed. Please try again.")}
                                 onExpire={() => setTurnstileToken(null)}
                                 options={{
+                                    action: 'newsletter',
                                     theme: "light",
                                     size: "normal" // Switch to normal (horizontal) which is shorter (65px) than compact (120px)
                                 }}
