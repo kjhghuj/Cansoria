@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
 import "./globals.css";
+import "./portrait-home.css";
 import { Providers } from "@/lib/providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
 
 export const metadata: Metadata = {
   title: "Cansoria | Custom Hand-Painted Pet Oil Portraits",
@@ -47,10 +49,11 @@ export default async function RootLayout({
         <Providers>
           <div className="flex flex-col min-h-screen font-sans text-charcoal bg-cream">
             <LayoutWrapper>{children}</LayoutWrapper>
-            <ExitIntentPopup />
             <script
               type="application/ld+json"
               nonce={nonce}
+              // Browsers hide nonce attributes after parsing; the server value is intentional.
+              suppressHydrationWarning
               dangerouslySetInnerHTML={{
                 __html: serializeJsonLd({
                   "@context": "https://schema.org",

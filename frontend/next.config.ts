@@ -5,6 +5,7 @@ import path from "node:path";
 const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   outputFileTracingRoot: path.resolve(process.cwd()),
   poweredByHeader: false,
   images: {

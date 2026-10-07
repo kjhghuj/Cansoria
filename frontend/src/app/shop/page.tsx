@@ -1,225 +1,96 @@
-import { Metadata } from "next";
-import { Suspense } from "react";
-import { getProducts, getRegion } from "@/lib/medusa";
-import { StoreProduct } from "@/lib/types";
-import ShopFilters from "./components/ShopFilters";
-import { ShopHeader } from "./components/ShopHeader";
-import { ProductGrid } from "./components/ProductGrid";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRightIcon } from "@phosphor-icons/react/ssr";
+import "./pet-oil.css";
 
-export const revalidate = 60;
+const portraitUrl = "/product/pet-portrait-oil-painting";
+const styles = [
+  { name: "Classic Oil", image: "classic-oil", alt: "Golden Retriever oil portrait in a warm wooden frame" },
+  { name: "Soft Impression", image: "soft-impression", alt: "Blue-eyed Ragdoll cat painted in soft, light brushstrokes" },
+  { name: "Textured Oil", image: "textured-oil", alt: "Cavalier spaniel portrait with rich, textured oil paint" },
+  { name: "Dark Classic", image: "dark-classic", alt: "French Bulldog oil portrait against a deep umber background" },
+];
 
-interface ShopPageProps {
-  searchParams: Promise<{ category?: string; sort?: string }>;
-}
-
-const SHOP_CATEGORIES = [
-  {
-    label: "Dog Portraits",
-    value: "dog-portraits",
-    aliases: ["dog-portraits", "dog-portrait", "dogs", "dog", "puppy", "puppies"],
+export const metadata: Metadata = {
+  title: "Pet Oil Paintings | CANSORIA",
+  description: "Turn your favorite photo into a timeless hand-painted pet portrait. Explore four oil painting styles, created by real artists on premium canvas.",
+  alternates: { canonical: "/shop" },
+  openGraph: {
+    title: "Pet Oil Paintings | CANSORIA",
+    description: "A portrait made just for you. Painted by hand, made to last.",
+    images: [{ url: "/images/pet-oil/hero-room.png", alt: "A Golden Retriever beside its framed oil portrait" }],
   },
-  {
-    label: "Cat Masterpieces",
-    value: "cat-masterpieces",
-    aliases: ["cat-masterpieces", "cat-portraits", "cat-portrait", "cats", "cat", "kitten", "feline"],
-  },
-  {
-    label: "Multiple Pets & Family",
-    value: "multiple-pets",
-    aliases: ["multiple-pets", "multi-pet", "family-portrait", "multi-pet-family"],
-  },
-  {
-    label: "Memorial & Rainbow Bridge",
-    value: "memorial",
-    aliases: ["memorial", "memorial-keepsakes", "pet-memorial", "rainbow-bridge"],
-  },
-] as const;
+};
 
-// Params that mean "the whole bespoke pet collection" (no filtering).
-const ALL_PETS_ALIASES = new Set([
-  "pet-portraits",
-  "pet-portrait",
-  "pet-painting",
-  "pets",
-  "pet",
-  "all-pet-portraits",
-  "custom-painting",
-  "custom-portraits",
-  "custom",
-]);
-
-type ShopCategory = (typeof SHOP_CATEGORIES)[number];
-
-async function getShopData() {
-  const region = await getRegion("gb");
-  const { products } = await getProducts(region?.id, 50);
-
-  return { products, region };
-}
-
-export async function generateMetadata({ searchParams }: ShopPageProps): Promise<Metadata> {
-  const { category } = await searchParams;
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
-
-  const title = "The Bespoke Pet Art Collection | Cansoria";
-  const description =
-    "Commission museum-grade, 100% hand-painted oil portraits of your dogs, cats, and cherished companions. Free digital proof with unlimited revisions before shipping.";
-
-  let canonical = `${baseUrl}/shop`;
-  if (category) {
-    canonical += `?category=${category}`;
-  }
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      url: canonical,
-    },
-  };
-}
-
-function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function getSelectedCategory(category?: string) {
-  if (!category) return undefined;
-  const normalizedCategory = normalize(category);
-
-  if (ALL_PETS_ALIASES.has(normalizedCategory)) return undefined;
-
-  return SHOP_CATEGORIES.find(
-    (item) =>
-      item.value === normalizedCategory ||
-      item.aliases.some((alias) => alias === normalizedCategory)
-  );
-}
-
-function getProductText(product: StoreProduct) {
-  const categories =
-    product.categories?.flatMap((category) => [category.name, category.handle]) ?? [];
-  const tags = product.tags?.map((tag) => tag.value) ?? [];
-  const collection = product.collection
-    ? [product.collection.title, product.collection.handle]
-    : [];
-
-  return [
-    product.title,
-    product.subtitle,
-    product.description,
-    product.handle,
-    ...categories,
-    ...tags,
-    ...collection,
-  ]
-    .filter((value): value is string => Boolean(value))
-    .map(normalize)
-    .join(" ");
-}
-
-function productMatchesCategory(product: StoreProduct, category: ShopCategory) {
-  const productText = getProductText(product);
-  return category.aliases.some((alias) => productText.includes(alias));
-}
-
-function getLowestPrice(product: StoreProduct) {
-  const prices =
-    product.variants
-      ?.map((variant) => variant.calculated_price?.calculated_amount)
-      .filter((amount): amount is number => typeof amount === "number") ?? [];
-
-  return prices.length > 0 ? Math.min(...prices) : Number.POSITIVE_INFINITY;
-}
-
-export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const { category, sort } = await searchParams;
-  const { products, region } = await getShopData();
-  const selectedCategory = getSelectedCategory(category);
-
-  let filteredProducts = products;
-  if (selectedCategory) {
-    filteredProducts = products.filter((product) =>
-      productMatchesCategory(product, selectedCategory)
-    );
-  }
-
-  if (sort === "price-asc") {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) => getLowestPrice(a) - getLowestPrice(b)
-    );
-  } else if (sort === "price-desc") {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) => getLowestPrice(b) - getLowestPrice(a)
-    );
-  } else if (sort === "newest") {
-    filteredProducts = [...filteredProducts].sort(
-      (a, b) =>
-        new Date(b.created_at || 0).getTime() -
-        new Date(a.created_at || 0).getTime()
-    );
-  }
-
+export default function ShopPage() {
   return (
-    <div className="pb-16">
-      <ShopHeader />
-
-      <div id="collection" className="scroll-mt-24 pt-10">
-        <Suspense fallback={<div className="h-12" />}>
-          <ShopFilters
-            categories={SHOP_CATEGORIES.map(({ label, value }) => ({ label, value }))}
-            currentCategory={selectedCategory?.value}
-            currentSort={sort}
-            productCount={filteredProducts.length}
-          />
-        </Suspense>
-      </div>
-
-      <ProductGrid
-        products={filteredProducts}
-        region={region}
-        category={selectedCategory?.label}
-      />
-
-      {/* Collection trust strip */}
-      <section className="mt-16 border-t border-border pt-12">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-            {[
-              {
-                title: "Hand-Painted by Real Artists",
-                text: "Every portrait is 100% brush-painted in oils — never a digital print.",
-              },
-              {
-                title: "Free Preview Before Shipping",
-                text: "Approve your sketch online with unlimited revisions before we frame it.",
-              },
-              {
-                title: "Worldwide Insured Shipping",
-                text: "Gift-boxed, damage-free delivery to pet families everywhere.",
-              },
-            ].map((item) => (
-              <div key={item.title} className="text-center">
-                <h3 className="mb-3 font-serif text-lg text-charcoal">
-                  {item.title}
-                </h3>
-                <p className="mx-auto max-w-xs text-sm leading-6 text-charcoal-light">
-                  {item.text}
-                </p>
-              </div>
-            ))}
-          </div>
+    <div className="pet-oil-page">
+      <section className="pet-oil-hero" aria-labelledby="pet-oil-title">
+        <Image
+          src="/images/pet-oil/hero-room.png"
+          alt="A Golden Retriever in a sunlit cream living room, beneath its hand-painted oil portrait"
+          fill
+          priority
+          sizes="100vw"
+          className="pet-oil-hero-image"
+        />
+        <div className="pet-oil-container pet-oil-hero-content">
+          <p className="pet-oil-eyebrow">HAND-PAINTED PET PORTRAITS</p>
+          <h1 id="pet-oil-title">Pet Oil<br />Paintings</h1>
+          <p className="pet-oil-hero-description">Turn your favorite photo into a timeless<br className="pet-oil-desktop-break" /> hand-painted portrait.</p>
+          <Link href={portraitUrl} className="pet-oil-button">Create Your Portrait</Link>
         </div>
+      </section>
+
+      <section className="pet-oil-styles" id="styles" aria-labelledby="pet-oil-styles-title">
+        <div className="pet-oil-section-heading">
+          <h2 id="pet-oil-styles-title">Choose Your Style</h2>
+          <p>Every portrait is painted by hand by a real artist.</p>
+        </div>
+        <div className="pet-oil-style-grid">
+          {styles.map(style => (
+            <Link href={portraitUrl} className="pet-oil-style-card" key={style.image} aria-label={`${style.name}, from $129. Create your portrait`}>
+              <div className="pet-oil-style-image">
+                <Image src={`/images/pet-oil/${style.image}.webp`} alt={style.alt} fill sizes="(max-width: 600px) 44vw, (max-width: 900px) 42vw, 23vw" />
+              </div>
+              <h3>{style.name}</h3>
+              <p>From $129</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="pet-oil-craft" id="craft" aria-labelledby="pet-oil-craft-title">
+        <div className="pet-oil-craft-image">
+          <Image src="/images/pet-oil/artist-at-work.webp" alt="An artist's hand applying oil paint to a Golden Retriever portrait, with brushes and a palette beside the canvas" fill sizes="(max-width: 900px) 100vw, 60vw" />
+        </div>
+        <div className="pet-oil-container pet-oil-craft-content">
+          <h2 id="pet-oil-craft-title">Painted by Hand.<br />Made to Last.</h2>
+          <p>Created by real artists on premium canvas.</p>
+          <Link href="/#process" className="pet-oil-process-link">Our Process <ArrowRightIcon weight="light" size={20} aria-hidden="true" /></Link>
+        </div>
+      </section>
+
+      <section className="pet-oil-transformation" aria-labelledby="pet-oil-photo-title">
+        <h2 id="pet-oil-photo-title">Made From Your Photo</h2>
+        <div className="pet-oil-comparison">
+          <figure>
+            <div className="pet-oil-comparison-image"><Image src="/images/pet-oil/original-photo.webp" alt="Original photograph of a Golden Retriever outdoors" fill sizes="(max-width: 600px) 42vw, 29vw" /></div>
+            <figcaption>Original Photo</figcaption>
+          </figure>
+          <ArrowRightIcon className="pet-oil-comparison-arrow" weight="thin" aria-hidden="true" />
+          <figure>
+            <div className="pet-oil-comparison-image"><Image src="/images/pet-oil/finished-oil.webp" alt="Finished oil painting of the same Golden Retriever" fill sizes="(max-width: 600px) 42vw, 29vw" /></div>
+            <figcaption>Finished Oil Painting</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section className="pet-oil-invitation" aria-labelledby="pet-oil-invitation-title">
+        <h2 id="pet-oil-invitation-title">Ready to Turn Your Pet Into Art?</h2>
+        <p>Create a portrait made just for you.</p>
+        <Link href={portraitUrl} className="pet-oil-button">Create Your Portrait</Link>
       </section>
     </div>
   );
