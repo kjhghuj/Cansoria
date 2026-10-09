@@ -14,7 +14,7 @@ export function SubmitButton({ processing, disabled, label = "Pay Securely" }: S
       {processing ? (
         <>
           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          <span>Processing Payment...</span>
+          <span>Processing…</span>
         </>
       ) : (
         label

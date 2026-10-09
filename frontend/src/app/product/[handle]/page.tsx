@@ -3,20 +3,22 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
 import { getProductByHandle, getRegion } from "@/lib/medusa";
-import { StoreProduct } from "@/lib/types";
 import ProductClient from "./components/ProductClient";
+import { studioProduct, studioProductSeo } from "@/lib/studio-content";
+import { getPortraitStyle } from "@/lib/portrait";
 import { Breadcrumb } from "./components/Breadcrumb";
 import ProductStory, { StorySection } from "./components/ProductStory";
 
 // Each HTML response needs the request's CSP nonce, including new product handles.
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface ProductPageProps {
   params: Promise<{ handle: string }>;
+  searchParams: Promise<{ style?: string }>;
 }
 
 function parseStorySections(
-  metadata: Record<string, unknown> | null | undefined
+  metadata: Record<string, unknown> | null | undefined,
 ): StorySection[] {
   if (!metadata?.story_sections) {
     return [];
@@ -42,35 +44,13 @@ function parseStorySections(
   }
 }
 
-function getVariantPrices(product: StoreProduct) {
-  return (
-    product.variants
-      ?.map((variant) => variant.calculated_price?.calculated_amount)
-      .filter((amount): amount is number => typeof amount === "number") ?? []
-  );
-}
-
-function getLowestPrice(product: StoreProduct) {
-  const prices = getVariantPrices(product);
-  return prices.length > 0 ? Math.min(...prices) : undefined;
-}
-
-function hasAvailableVariant(product: StoreProduct) {
-  return (
-    product.variants?.some((variant) => {
-      if (!variant.id) return false;
-      if (!variant.manage_inventory || variant.allow_backorder) return true;
-      return (variant.inventory_quantity ?? 0) > 0;
-    }) ?? false
-  );
-}
-
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params;
   const region = await getRegion("gb");
-  const product = await getProductByHandle(handle, region?.id);
+  const rawProduct = await getProductByHandle(handle, region?.id);
+  const product = rawProduct ? studioProduct(rawProduct) : null;
 
   if (!product) {
     return {
@@ -79,48 +59,43 @@ export async function generateMetadata({
     };
   }
 
-  const image = product.thumbnail || product.images?.[0]?.url;
-  const description =
-    product.description ||
-    `Shop ${product.title} at Cansoria, featuring custom hand-painted oil paintings and premium canvas wall art.`;
-
-  return {
-    title: `${product.title} | Cansoria`,
-    description,
-    openGraph: {
-      title: product.title || "Cansoria Oil Painting",
-      description,
-      images: image ? [{ url: image }] : [],
-      type: "website",
-    },
-  };
+  return studioProductSeo(product);
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
   const { handle } = await params;
+  const initialStyle = getPortraitStyle((await searchParams).style);
   const region = await getRegion("gb");
-  const product = await getProductByHandle(handle, region?.id);
+  const rawProduct = await getProductByHandle(handle, region?.id);
+  const product = rawProduct ? studioProduct(rawProduct) : null;
 
   if (!product) {
     notFound();
   }
 
-  const images = product.images || [];
+  const images =
+    product.handle === "pet-portrait-oil-painting"
+      ? [
+          { url: "/images/pet-oil/" + initialStyle + ".webp" },
+          { url: "/images/pet-oil/hero-room.png" },
+        ]
+      : product.images || [];
   const thumbnail = product.thumbnail;
   const category = product.categories?.[0] || null;
   const currencyCode = region?.currency_code?.toUpperCase() || "GBP";
-  const lowestPrice = getLowestPrice(product);
   const storySections = parseStorySections(product.metadata);
-  const availability = hasAvailableVariant(product)
-    ? "https://schema.org/InStock"
-    : "https://schema.org/OutOfStock";
 
   return (
     <>
-      <main className="min-h-screen bg-cream pb-16 pt-24">
+      <div className="studio-page studio-product min-h-screen bg-cream pb-16 pt-24">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <Breadcrumb product={product} category={category} />
+          <Breadcrumb product={product} />
           <ProductClient
+            key={`${product.id}:${initialStyle}`}
+            initialStyle={initialStyle}
             product={product}
             images={images}
             thumbnail={thumbnail}
@@ -128,13 +103,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             currencyCode={currencyCode}
           />
         </div>
-      </main>
+      </div>
 
       <ProductStory sections={storySections} />
 
+      {/* Browsers redact nonce attributes; this static JSON-LD script keeps its CSP nonce. */}
       <script
         type="application/ld+json"
         nonce={(await headers()).get("x-nonce") ?? undefined}
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: serializeJsonLd({
             "@context": "https://schema.org",
@@ -146,15 +123,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             brand: {
               "@type": "Brand",
               name: "Cansoria",
-            },
-            offers: {
-              "@type": "Offer",
-              url: `${
-                process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"
-              }/product/${product.handle}`,
-              priceCurrency: currencyCode,
-              price: lowestPrice !== undefined ? lowestPrice / 100 : undefined,
-              availability,
             },
           }),
         }}

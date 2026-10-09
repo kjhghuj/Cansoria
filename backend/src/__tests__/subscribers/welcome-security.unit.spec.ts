@@ -1,4 +1,4 @@
-import handler from "../customer-created"
+import handler from "../../subscribers/customer-created"
 const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
 function setup(customer: any) {
   const customers = { retrieveCustomer: jest.fn().mockResolvedValue(customer), updateCustomers: jest.fn().mockResolvedValue({}) }

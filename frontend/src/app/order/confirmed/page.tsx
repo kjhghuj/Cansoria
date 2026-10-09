@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { useAuth } from "@/lib/providers";
 import { readOrderConfirmation } from "@/lib/order-confirmation";
 
@@ -97,9 +98,9 @@ export default function OrderConfirmedPage() {
         <div className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <h1 className="font-serif text-2xl text-charcoal mb-4">Order Not Found</h1>
           <p className="text-charcoal-light mb-8">We could not retrieve the order details.</p>
-          <Link href="/shop" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
-            Return to Shop
-          </Link>
+          <a href={portraitStylesUrl} className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
+            Explore Pet Portraits
+          </a>
         </div>
       </div>
     );
@@ -121,9 +122,9 @@ export default function OrderConfirmedPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/shop" className="bg-charcoal text-white px-8 py-4 rounded-full hover:bg-charcoal-light transition-colors font-medium min-w-[200px]">
+            <a href={portraitStylesUrl} className="bg-charcoal text-white px-8 py-4 rounded-full hover:bg-charcoal-light transition-colors font-medium min-w-[200px]">
               Continue Shopping
-            </Link>
+            </a>
             <Link href="/order/lookup" className="bg-white border border-gray-200 text-charcoal px-8 py-4 rounded-full hover:border-charcoal transition-colors font-medium min-w-[200px]">
               View Order Details
             </Link>

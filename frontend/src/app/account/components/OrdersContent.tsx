@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { formatPrice } from "@/lib/money";
+import { portraitSummary, portraitStylesUrl } from "@/lib/portrait";
 import { Package, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { getProductsWithVariantImages } from "@/lib/medusa";
 import { useRegion } from "@/lib/providers";
+import PortraitOrderDetails from "@/components/PortraitOrderDetails";
 
 const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
 
 interface OrderItem {
+  metadata?: Record<string, unknown>;
   id: string;
   title: string;
   variant_title?: string;
@@ -158,6 +163,8 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
 
   // Get the best image for an order item
   const getItemImage = (item: OrderItem): string | undefined => {
+    const portraitImage = portraitSummary(item.metadata)?.image;
+    if (portraitImage) return portraitImage;
     // Priority 1: Variant-specific image (resolved from product API)
     if (item.variant_id && variantImageMap[item.variant_id]) {
       return variantImageMap[item.variant_id];
@@ -193,13 +200,6 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
     });
   };
 
-  const formatPrice = (amount: number, currency: string = "gbp") => {
-    return new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-    }).format(amount / 100);
-  };
-
   return (
     <div className="bg-white rounded-lg p-6 md:p-8 border border-gray-100 min-h-[400px]">
       <h2 className="font-serif text-xl md:text-2xl text-charcoal mb-6">Order History</h2>
@@ -212,12 +212,12 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
         <div className="text-center py-12">
           <Package size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="text-charcoal-light mb-4">No orders yet</p>
-          <Link
-            href="/shop"
+          <a
+            href={portraitStylesUrl}
             className="inline-block bg-terracotta text-white px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-terracotta-dark transition-colors"
           >
             Start Shopping
-          </Link>
+          </a>
         </div>
       ) : (
         <div className="space-y-4">
@@ -237,7 +237,7 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
                     {/* Preview Image (First Item) */}
                     <div className="w-16 h-16 bg-white rounded-lg border border-gray-200 flex-shrink-0 overflow-hidden relative">
                       {previewImages[0]?.src ? (
-                        <img src={previewImages[0].src} alt={previewImages[0].alt} className="w-full h-full object-cover" />
+                        <Image src={previewImages[0].src} alt={previewImages[0].alt} width={64} height={64} unoptimized className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300">
                           <Package size={20} />
@@ -282,11 +282,12 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
                           <div key={item.id} className="flex items-start gap-4">
                             <div className="w-12 h-12 bg-gray-50 rounded border border-gray-100 flex-shrink-0 overflow-hidden">
                               {imageSrc && (
-                                <img src={imageSrc} alt={item.title} className="w-full h-full object-cover" />
+                                <Image src={imageSrc} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-charcoal truncate">{item.title}</p>
+                              <PortraitOrderDetails metadata={item.metadata} orderId={order.id} />
                               <p className="text-xs text-charcoal-light mb-1">{item.variant_title}</p>
                               <div className="flex justify-between items-center text-xs">
                                 <span className="text-charcoal-light">Qty: {item.quantity}</span>

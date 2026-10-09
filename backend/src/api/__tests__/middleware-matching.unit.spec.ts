@@ -28,7 +28,7 @@ describe("Medusa's actual middleware loader and Express matching", () => {
     app.use((_req, res) => res.status(200).json({ bypassed: true }))
     const original = process.env.REDIS_URL; delete process.env.REDIS_URL
     try {
-      for (const endpoint of ["/store/carts/cart_a", "/store/carts/cart_a/line-items", "/store/carts/cart_a/complete", "/store/carts/cart_a/customer", "/store/payment-collections", "/store/payment-collections/paycol_a/payment-sessions"]) {
+      for (const endpoint of ["/store/carts/cart_a", "/store/carts/cart_a/line-items", "/store/carts/cart_a/complete", "/store/carts/cart_a/customer", "/store/carts/cart_a/photos", "/store/carts/cart_a/portrait-items", "/store/payment-collections", "/store/payment-collections/paycol_a/payment-sessions"]) {
         const result = await exercise(app, endpoint, "POST")
         expect(result.status).toBe(403)
         expect(result.body).not.toContain("bypassed")

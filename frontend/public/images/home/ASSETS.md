@@ -9,3 +9,5 @@ The WebP files are individual photographic/illustration regions extracted from t
 Generation prompt: Extract the reference's top hero photograph, remove all text/buttons/icons, preserve the golden retriever, framed portrait, cream sofa, olive vase, fireplace, warm lighting, and pale left-side space. Output a clean photographic room background, without UI, text or icons.
 
 Icons use [Phosphor](https://phosphoricons.com/) through `@phosphor-icons/react`; body fonts are locally served through `@fontsource/dm-sans`.
+
+Public use: all extracted and generated scenes are design illustrations. They are labelled as concepts, not real customer commissions. Pet names from the design are not presented as customer identities.

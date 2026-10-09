@@ -143,3 +143,4 @@ npm run dev          # 监听 3030 端口
 - [backend/docs/FRONTEND_CART_API.md](backend/docs/FRONTEND_CART_API.md) — 前端购物车 API 约定
 - [frontend/FRONTEND_CART_API.md](frontend/FRONTEND_CART_API.md) — 前端购物车接口对接说明
 - [backend/SECURITY.md](backend/SECURITY.md) — 安全注意事项
+- [PORTRAIT_FLOW.md](PORTRAIT_FLOW.md) — 宠物肖像独立页面、私有照片上传、风格及订单关联、联系表单配置

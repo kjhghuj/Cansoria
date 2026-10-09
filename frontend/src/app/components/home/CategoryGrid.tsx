@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { ArrowRight } from "lucide-react";
 
 const categories = [
@@ -7,7 +7,7 @@ const categories = [
     name: "Dog Portraits",
     description:
       "Soulful single-dog oil portraits that catch the light in their eyes and every wisp of fur.",
-    href: "/shop?category=dogs",
+    href: portraitStylesUrl,
     image:
       "https://images.unsplash.com/photo-1544568100-847a948585b9?auto=format&fit=crop&q=80&w=1000",
     tag: "Most Loved",
@@ -16,7 +16,7 @@ const categories = [
     name: "Cat & Feline Masterpieces",
     description:
       "Soft, painterly feline portraits with all the attitude, elegance, and quiet judgment.",
-    href: "/shop?category=cats",
+    href: portraitStylesUrl,
     image:
       "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1000",
     tag: null,
@@ -25,7 +25,7 @@ const categories = [
     name: "Multiple Pets & Family",
     description:
       "Dogs, cats, and humans together on one canvas — harmony, chaos, and everything between.",
-    href: "/shop?category=multi-pet",
+    href: portraitStylesUrl,
     image:
       "https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=80&w=1000",
     tag: null,
@@ -34,7 +34,7 @@ const categories = [
     name: "Memorial & Angel Keepsakes",
     description:
       "Tender rainbow-bridge portraits painted with warmth — a gentle way to keep them close.",
-    href: "/shop?category=memorial",
+    href: portraitStylesUrl,
     image:
       "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1000",
     tag: "Keepsake",
@@ -58,17 +58,17 @@ export function CategoryGrid() {
               memorial. Choose where your story begins.
             </p>
           </div>
-          <Link
-            href="/shop"
+          <a
+            href={portraitStylesUrl}
             className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-charcoal border-b border-charcoal pb-1 hover:text-toffee hover:border-toffee transition-colors whitespace-nowrap"
           >
             View Pet Gallery <ArrowRight size={14} />
-          </Link>
+          </a>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
           {categories.map((category) => (
-            <Link
+            <a
               key={category.name}
               href={category.href}
               className="group relative overflow-hidden rounded-2xl bg-cream-card aspect-[4/4.7] shadow-[0_6px_24px_rgba(38,34,30,0.06)]"
@@ -97,7 +97,7 @@ export function CategoryGrid() {
                   Commission Now <ArrowRight size={12} />
                 </span>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       </div>

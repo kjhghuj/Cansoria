@@ -3,11 +3,15 @@ const readPaths = [
   /^store\/(products|regions|collections|product-categories)(\/[A-Za-z0-9_-]{1,128})?$/,
   /^store\/(store-info|shipping-options|orders)$/,
   new RegExp(`^store/carts/${ID}$`),
+  new RegExp(`^store/carts/${ID}/photos/[a-f0-9-]{36}$`),
+  new RegExp(`^store/orders/${ID}/photos/[a-f0-9-]{36}$`),
   new RegExp(`^store/orders/${ID}$`),
   new RegExp(`^store/customers/me(/addresses(/${ID})?)?$`),
 ];
 const writePaths = [
   /^store\/(carts|newsletter)$/,
+  /^store\/contact$/,
+  new RegExp(`^store/carts/${ID}/(photos|portrait-items)$`),
   /^store\/orders\/(access|transfer)$/,
   new RegExp(`^store/carts/${ID}(/(line-items(/${ID})?|promotions|shipping-methods|customer|complete))?$`),
   new RegExp(`^store/customers/me(/addresses(/${ID})?)?$`),

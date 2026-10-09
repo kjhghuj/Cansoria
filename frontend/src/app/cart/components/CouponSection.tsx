@@ -141,7 +141,8 @@ export default function CouponSection({
               onChange={(e) => setInputCode(e.target.value.toUpperCase())} // Auto-uppercase
               onKeyDown={handleKeyDown}
               placeholder="Enter code"
-              className="flex-1 px-4 py-2 bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal font-mono uppercase placeholder:normal-case"
+              aria-label="Collector code"
+              className="min-w-0 flex-1 px-4 py-2 bg-white border border-border text-sm focus:outline-none focus:ring-2 focus:ring-charcoal/20 focus:border-charcoal font-mono uppercase placeholder:normal-case"
               disabled={applying || isLoading}
             />
             <button

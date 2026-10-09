@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import ExitIntentPopup from "./ExitIntentPopup";
-import { Navbar, Footer, SearchOverlay, ChatWidget, AnnouncementBar } from "@/components";
+import {
+  Navbar,
+  Footer,
+  SearchOverlay,
+  ChatWidget,
+  AnnouncementBar,
+} from "@/components";
 import { useCart, useRegion } from "@/lib/providers";
 
 interface LayoutWrapperProps {
@@ -17,8 +23,19 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const { region } = useRegion();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isGallery = pathname === "/shop";
-  const isEditorial = isHome || isGallery;
+  const isEditorial =
+    isHome ||
+    [
+      "/gallery",
+      "/how-it-works",
+      "/our-studio",
+      "/reviews",
+      "/about",
+      "/upload-photo",
+      "/faq",
+      "/contact",
+    ].includes(pathname) ||
+    pathname.startsWith("/product/");
   const offset = isEditorial ? 0 : navOffset;
 
   return (
@@ -28,7 +45,6 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
         cartCount={cartCount}
         onSearchClick={() => setIsSearchOpen(true)}
         topOffset={offset}
-        variant={isGallery ? "gallery" : "default"}
       />
       <SearchOverlay
         isOpen={isSearchOpen}
@@ -40,14 +56,14 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
         style={{
           paddingTop: `${offset}px`,
           // @ts-expect-error - Custom CSS variable
-          "--announcement-height": `${offset}px`
+          "--announcement-height": `${offset}px`,
         }}
       >
         {children}
       </main>
       {!isEditorial && <ChatWidget />}
       {!isEditorial && <ExitIntentPopup />}
-      <Footer compact={isGallery} />
+      <Footer />
     </>
   );
 }

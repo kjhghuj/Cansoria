@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
+import { STUDIO, studioProduct } from "@/lib/studio-content";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { StoreProduct } from "@/lib/types";
 import { formatPrice } from "@/lib/medusa";
 
@@ -15,7 +17,9 @@ const FALLBACK_IMAGES = [
 
 function getFallbackImage(productId?: string): string {
   if (!productId) return FALLBACK_IMAGES[0];
-  const hash = productId.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = productId
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return FALLBACK_IMAGES[hash % FALLBACK_IMAGES.length];
 }
 
@@ -26,7 +30,10 @@ function isPresentString(value: unknown): value is string {
 }
 
 function cleanText(value: string, maxLength: number) {
-  const text = value.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+  const text = value
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength).trim()}...`;
 }
@@ -40,11 +47,13 @@ function getProductSubtitle(product: StoreProduct) {
     return cleanText(product.description, 104);
   }
 
-  return "Hand-painted canvas artwork made for refined rooms, personal gifts, and lasting memories.";
+  return STUDIO.productDescription;
 }
 
 function getMetadata(product: StoreProduct): ProductMetadata {
-  return product.metadata && typeof product.metadata === "object" ? product.metadata : {};
+  return product.metadata && typeof product.metadata === "object"
+    ? product.metadata
+    : {};
 }
 
 function getMetadataNumber(metadata: ProductMetadata, keys: string[]) {
@@ -67,7 +76,10 @@ function getMetadataNumber(metadata: ProductMetadata, keys: string[]) {
 function getSearchableProductText(product: StoreProduct) {
   const tags = product.tags?.map((tag) => tag.value) ?? [];
   const categories =
-    product.categories?.flatMap((category) => [category.name, category.handle]) ?? [];
+    product.categories?.flatMap((category) => [
+      category.name,
+      category.handle,
+    ]) ?? [];
 
   return [
     product.title,
@@ -86,8 +98,10 @@ function getVariantPrices(product: StoreProduct) {
   return (
     product.variants
       ?.map((variant) => variant.calculated_price?.calculated_amount)
-      .filter((amount): amount is number => typeof amount === "number" && Number.isFinite(amount)) ??
-    []
+      .filter(
+        (amount): amount is number =>
+          typeof amount === "number" && Number.isFinite(amount),
+      ) ?? []
   );
 }
 
@@ -96,35 +110,45 @@ interface ProductCardProps {
   regionCurrency?: string;
 }
 
-export default function ProductCard({ product, regionCurrency = "GBP" }: ProductCardProps) {
+export default function ProductCard({
+  product: rawProduct,
+  regionCurrency = "GBP",
+}: ProductCardProps) {
+  const product = studioProduct(rawProduct);
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   const images = product.images || [];
+  const isPortrait = product.handle === "pet-portrait-oil-painting";
   const fallbackImage = getFallbackImage(product.id);
-  const mainImage =
-    imageError || !isPresentString(product.thumbnail || images[0]?.url)
+  const mainImage = isPortrait
+    ? "/images/pet-oil/classic-oil.webp"
+    : imageError || !isPresentString(product.thumbnail || images[0]?.url)
       ? fallbackImage
       : product.thumbnail || images[0]?.url || fallbackImage;
-  const secondaryImage =
-    imageError || !isPresentString(images[1]?.url)
+  const secondaryImage = isPortrait
+    ? "/images/pet-oil/soft-impression.webp"
+    : imageError || !isPresentString(images[1]?.url)
       ? mainImage
       : images[1]?.url || mainImage;
 
   const title = product.title || "Untitled Oil Painting";
   const subtitle = getProductSubtitle(product);
   const category = product.categories?.[0]?.name || "Oil Painting";
-  const productHref = product.handle ? `/product/${product.handle}` : "/shop";
+  const productHref = product.handle ? `/product/${product.handle}` : portraitStylesUrl;
+  const ProductLink = product.handle ? Link : "a";
 
   const variantPrices = getVariantPrices(product);
-  const lowestPrice = variantPrices.length > 0 ? Math.min(...variantPrices) : undefined;
-  const highestPrice = variantPrices.length > 0 ? Math.max(...variantPrices) : undefined;
+  const lowestPrice =
+    variantPrices.length > 0 ? Math.min(...variantPrices) : undefined;
+  const highestPrice =
+    variantPrices.length > 0 ? Math.max(...variantPrices) : undefined;
   const priceLabel =
     lowestPrice === undefined
       ? "Contact for Price"
       : `${highestPrice !== lowestPrice ? "From " : ""}${formatPrice(
           lowestPrice,
-          regionCurrency
+          regionCurrency,
         )}`;
 
   const compareAtPrice = product.variants?.find((variant) => {
@@ -148,17 +172,22 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
   const isCustomizable =
     metadata.customizable === true ||
     ["custom", "portrait", "photo", "pet", "wedding"].some((keyword) =>
-      productText.includes(keyword)
+      productText.includes(keyword),
     );
   const hasFreePreview =
     metadata.free_preview !== false && metadata.freePreview !== false;
   const badges = [
+    "Style illustration",
     isCustomizable ? "Customizable" : null,
     isBestSeller ? "Best Seller" : null,
     hasFreePreview ? "Free Preview" : null,
   ].filter(isPresentString);
 
-  const rating = getMetadataNumber(metadata, ["rating", "average_rating", "review_rating"]);
+  const rating = getMetadataNumber(metadata, [
+    "rating",
+    "average_rating",
+    "review_rating",
+  ]);
   const reviewCount = getMetadataNumber(metadata, [
     "review_count",
     "reviews",
@@ -166,11 +195,15 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
   ]);
 
   const safeRating =
-    rating !== undefined ? Math.min(Math.max(rating, 0), 5).toFixed(1) : undefined;
+    metadata.reviews_verified === true &&
+    rating !== undefined &&
+    (reviewCount ?? 0) > 0
+      ? Math.min(Math.max(rating, 0), 5).toFixed(1)
+      : undefined;
 
   return (
     <article className="group h-full rounded-2xl border border-border-subtle bg-cream-light overflow-hidden shadow-[0_4px_20px_rgba(38,34,30,0.05)] transition-all hover:shadow-[0_12px_32px_rgba(38,34,30,0.10)]">
-      <Link href={productHref} className="flex h-full flex-col">
+      <ProductLink href={productHref} className="flex h-full flex-col">
         <div
           className="relative aspect-[4/5] w-full overflow-hidden bg-cream-card"
           onMouseEnter={() => setIsHovered(true)}
@@ -257,7 +290,7 @@ export default function ProductCard({ product, regionCurrency = "GBP" }: Product
             </span>
           </div>
         </div>
-      </Link>
+      </ProductLink>
     </article>
   );
 }

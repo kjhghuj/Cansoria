@@ -12,7 +12,7 @@ import { defaultStoreCurrencyFields } from "@medusajs/medusa/api/store/currencie
 import { defaultStoreRetrieveReturnReasonFields } from "@medusajs/medusa/api/store/return-reasons/query-config"
 import { retrieveTransformQueryConfig as customerQueryConfig, defaultStoreCustomerAddressFields } from "@medusajs/medusa/api/store/customers/query-config"
 import { defaultStoreOrderFields } from "@medusajs/medusa/api/store/orders/query-config"
-import { SAFE_ORDER_FIELDS } from "./cart-fields"
+import { SAFE_ORDER_FIELDS, projectOrderMetadata } from "./cart-fields"
 
 export const PROJECTED_STORE_RESOURCES = ["products", "product-variants", "product-types", "product-tags", "regions", "collections", "product-categories", "shipping-options", "payment-providers", "return-reasons", "currencies", "locales", "orders", "customers"]
 
@@ -26,12 +26,12 @@ const policies: Record<string, string[]> = {
   "product-categories": categoryFields,
   "product-types": typeFields.filter(field => field !== "*products"),
   "product-tags": tagFields.filter(field => field !== "*products"),
-  "shipping-options": [...defaultStoreShippingOptionsFields, "shipping_option_type.*"],
+  "shipping-options": [...defaultStoreShippingOptionsFields, "type.id", "type.label", "type.description", "type.code"],
   "payment-providers": ["id", "is_enabled"],
   "return-reasons": defaultStoreRetrieveReturnReasonFields,
   currencies: defaultStoreCurrencyFields,
   locales: ["code", "name"],
-  orders: [...defaultStoreOrderFields, ...SAFE_ORDER_FIELDS],
+  orders: [...defaultStoreOrderFields.filter(field => field !== "metadata"), ...SAFE_ORDER_FIELDS],
   customers: customerQueryConfig.defaults,
 }
 
@@ -41,6 +41,10 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
   const resource = pathname.match(/^\/store\/([^/]+)/i)?.[1].toLowerCase()
   const defaults = resource === "customers" && req.method === "GET" && /\/addresses(?:\/|$)/i.test(pathname) ? defaultStoreCustomerAddressFields : resource && policies[resource]
   if (!defaults) return next()
+  if (resource === "orders" && typeof _res.json === "function") {
+    const original = _res.json
+    _res.json = function (body: any) { projectOrderMetadata(body); return original.call(this, body) } as any
+  }
   const fields = [...defaults]
   // Inventory availability is a supported public addon; arbitrary neighboring inventory relations are not.
   const requested = typeof req.query?.fields === "string" ? req.query.fields : ""

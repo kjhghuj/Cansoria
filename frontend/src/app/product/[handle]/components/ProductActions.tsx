@@ -1,14 +1,32 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Brush, Check, Eye, Globe, Loader2, Minus, Plus, ShoppingBag, UploadCloud, Zap } from "lucide-react";
+import {
+  Brush,
+  Check,
+  Eye,
+  Globe,
+  Loader2,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Zap,
+} from "lucide-react";
+import PhotoUpload from "@/components/PhotoUpload";
+import {
+  portraitStyles,
+  type PortraitStyle,
+  type UploadedPhoto,
+} from "@/lib/portrait";
 import { useCart } from "@/lib/providers";
 import { formatPrice } from "@/lib/medusa";
 import { StoreProduct, StoreProductVariant } from "@/lib/types";
 
 interface ProductActionsProps {
+  initialStyle: PortraitStyle;
+  onStyleChange?: (style: PortraitStyle) => void;
   product: StoreProduct;
   selectedOptions: Record<string, string>;
   selectedVariant: StoreProductVariant | null;
@@ -27,12 +45,14 @@ function isVariantInStock(variant: StoreProductVariant | null) {
 }
 
 const panelTrustPoints = [
-  { icon: <Brush size={16} />, label: "Hand-Painted" },
-  { icon: <Eye size={16} />, label: "Free Preview" },
-  { icon: <Globe size={16} />, label: "Worldwide Shipping" },
+  { icon: <Brush size={16} />, label: "Style Concepts" },
+  { icon: <Eye size={16} />, label: "Photo Guidance" },
+  { icon: <Globe size={16} />, label: "In Preparation" },
 ];
 
 export default function ProductActions({
+  initialStyle,
+  onStyleChange,
   product,
   selectedOptions,
   selectedVariant,
@@ -40,17 +60,23 @@ export default function ProductActions({
   onOptionChange,
 }: ProductActionsProps) {
   const router = useRouter();
-  const { addItem, cartLoading } = useCart();
+  const { addItem, cartLoading, cart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const [photoName, setPhotoName] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
+  const [style, setStyle] = useState<PortraitStyle>(initialStyle);
+  const [notes, setNotes] = useState("");
+  const [actionError, setActionError] = useState("");
+  const isPortrait = product.handle === "pet-portrait-oil-painting";
+  const photoReady = Boolean(photo && photo.cartId === cart?.id);
 
   const variants = useMemo(() => product.variants ?? [], [product.variants]);
   const options = useMemo(() => product.options ?? [], [product.options]);
-  const isAllOptionsSelected = options.every((option) => selectedOptions[option.id]);
+  const isAllOptionsSelected = options.every(
+    (option) => selectedOptions[option.id],
+  );
   const isInStock = isVariantInStock(selectedVariant);
   const hasVariants = variants.length > 0;
   const isProcessing = isAdding || isBuyingNow || cartLoading;
@@ -59,12 +85,15 @@ export default function ProductActions({
     Boolean(selectedVariant?.id) &&
     isAllOptionsSelected &&
     isInStock &&
+    (!isPortrait || photoReady) &&
     !isProcessing;
 
   const selectedPrice = selectedVariant?.calculated_price?.calculated_amount;
-  const selectedOriginalPrice = selectedVariant?.calculated_price?.original_amount;
+  const selectedOriginalPrice =
+    selectedVariant?.calculated_price?.original_amount;
   const selectedCurrency =
-    selectedVariant?.calculated_price?.currency_code?.toUpperCase() || currencyCode;
+    selectedVariant?.calculated_price?.currency_code?.toUpperCase() ||
+    currencyCode;
   const isSelectedVariantOnSale =
     typeof selectedOriginalPrice === "number" &&
     typeof selectedPrice === "number" &&
@@ -73,13 +102,18 @@ export default function ProductActions({
   const handleAddToCart = async () => {
     if (!canAddToCart || !selectedVariant?.id) return;
     setIsAdding(true);
+    setActionError("");
     try {
-      await addItem(selectedVariant.id, quantity);
+      await addItem(
+        selectedVariant.id,
+        quantity,
+        isPortrait && photo ? { style, photo_id: photo.id, notes } : undefined,
+      );
       setJustAdded(true);
       window.setTimeout(() => setJustAdded(false), 2200);
     } catch (error: unknown) {
       console.error("Failed to add to cart:", error);
-      window.alert(`Failed to add to cart: ${getErrorMessage(error)}`);
+      setActionError(getErrorMessage(error));
     } finally {
       setIsAdding(false);
     }
@@ -88,12 +122,17 @@ export default function ProductActions({
   const handleBuyNow = async () => {
     if (!canAddToCart || !selectedVariant?.id) return;
     setIsBuyingNow(true);
+    setActionError("");
     try {
-      await addItem(selectedVariant.id, quantity);
+      await addItem(
+        selectedVariant.id,
+        quantity,
+        isPortrait && photo ? { style, photo_id: photo.id, notes } : undefined,
+      );
       router.push("/cart");
     } catch (error: unknown) {
       console.error("Failed to add item for buy now:", error);
-      window.alert(`Failed to add item: ${getErrorMessage(error)}`);
+      setActionError(getErrorMessage(error));
       setIsBuyingNow(false);
     }
   };
@@ -106,11 +145,6 @@ export default function ProductActions({
     setQuantity((current) => Math.min(10, current + 1));
   };
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) setPhotoName(file.name);
-  };
-
   const addToCartLabel = (() => {
     if (!hasVariants) return "Unavailable";
     if (justAdded) return "Added to Cart";
@@ -118,11 +152,41 @@ export default function ProductActions({
     if (!isAllOptionsSelected) return "Select Options";
     if (!selectedVariant) return "Combination Unavailable";
     if (!isInStock) return "Out of Stock";
+    if (isPortrait && !photoReady) return "Upload Your Photo";
     return "Add to Cart";
   })();
 
   return (
     <div className="space-y-6">
+      {isPortrait && (
+        <fieldset>
+          <legend className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]">
+            Painting style
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            {portraitStyles.map((option) => (
+              <label
+                key={option.id}
+                className={`cursor-pointer rounded-xl border p-3 text-sm ${style === option.id ? "border-toffee bg-cream-card" : "border-border bg-cream-light"}`}
+              >
+                <input
+                  className="mr-2 accent-toffee"
+                  type="radio"
+                  name="portrait-style"
+                  value={option.id}
+                  checked={style === option.id}
+                  disabled={isProcessing}
+                  onChange={() => {
+                    setStyle(option.id);
+                    onStyleChange?.(option.id);
+                  }}
+                />
+                {option.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       {options.length > 0 && (
         <div className="space-y-5">
           {options.map((option) => (
@@ -175,50 +239,37 @@ export default function ProductActions({
         </div>
       )}
 
-      {/* Photo upload dropzone */}
-      <div>
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-charcoal">
-          Upload Your Pet&rsquo;s Photo
-        </h3>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-toffee/50 bg-cream-card/60 px-6 py-8 text-center transition-colors hover:border-toffee hover:bg-cream-card"
-        >
-          <UploadCloud className="h-8 w-8 text-toffee" aria-hidden="true" />
-          {photoName ? (
-            <>
-              <span className="text-sm font-medium text-charcoal">{photoName}</span>
-              <span className="text-xs text-charcoal-light">
-                Great choice — click to replace
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="text-sm font-medium text-charcoal">
-                Upload Your Photo
-              </span>
-              <span className="text-xs leading-5 text-charcoal-light">
-                JPG, PNG or HEIC (max 10MB) — a clear phone snapshot works
-                beautifully
-              </span>
-            </>
-          )}
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/heic"
-          className="hidden"
-          onChange={handlePhotoChange}
-          aria-label="Upload your pet photo"
-        />
-        <p className="mt-2 text-xs leading-5 text-charcoal-muted">
-          Prefer to decide later? You can also email your favourite shots after
-          checkout — your artist will help pick the best one.
+      {isPortrait && (
+        <div>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]">
+            Your reference photo
+          </h3>
+          <PhotoUpload key={cart?.id || "loading"} onChange={setPhoto} />
+          <Link
+            href="/upload-photo"
+            className="mt-3 inline-block text-sm text-toffee underline"
+          >
+            Photo tips &amp; upload page
+          </Link>
+          <label className="mt-5 block text-sm">
+            Notes for your artist
+            <textarea
+              value={notes}
+              maxLength={1000}
+              disabled={isProcessing}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={3}
+              className="mt-2 w-full rounded-xl border border-border bg-cream-light p-3"
+              placeholder="Your pet’s name, background preferences, or details to keep."
+            />
+          </label>
+        </div>
+      )}
+      {actionError && (
+        <p role="alert" className="text-sm text-red-700">
+          {actionError}
         </p>
-      </div>
-
+      )}
       <div>
         <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-charcoal">
           Quantity
@@ -291,7 +342,7 @@ export default function ProductActions({
       </div>
 
       {/* Panel trust row */}
-      <div className="flex items-center justify-between gap-2 rounded-2xl border border-border-subtle bg-cream-light px-5 py-4">
+      <div className="flex flex-wrap items-center justify-start gap-3 rounded-2xl border border-border-subtle bg-cream-light px-5 py-4">
         {panelTrustPoints.map((point, index) => (
           <div key={point.label} className="flex items-center gap-3">
             {index > 0 && (
@@ -316,18 +367,24 @@ export default function ProductActions({
         </Link>
       )}
 
-      {/* 3-Step Zero-Risk Promise */}
+      {/* Reference preparation guidance */}
       <div className="rounded-2xl border border-border-subtle bg-cream-card p-5">
         <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-charcoal">
-          Your Zero-Risk Bespoke Promise
+          Preparing Your Portrait
         </p>
         <ul className="space-y-3">
           {[
-            { icon: "📷", text: "1. Upload Photo Online or via Email" },
-            { icon: "🎨", text: "2. Free Digital Proof Before Painting" },
-            { icon: "📦", text: "3. Insured Worldwide Delivery in Gift Box" },
+            { icon: "📷", text: "1. Upload Your Photo Securely" },
+            { icon: "🎨", text: "2. Choose a Style and Add Your Preferences" },
+            {
+              icon: "📦",
+              text: "3. Discuss Your Idea Before Commissions Open",
+            },
           ].map((step) => (
-            <li key={step.text} className="flex items-center gap-3 text-sm text-charcoal-light">
+            <li
+              key={step.text}
+              className="flex items-center gap-3 text-sm text-charcoal-light"
+            >
               <span
                 aria-hidden="true"
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cream-light border border-border-subtle text-sm"
@@ -341,9 +398,9 @@ export default function ProductActions({
       </div>
 
       <p className="text-sm leading-6 text-charcoal-light">
-        Custom orders include photo upload after purchase. We will request your
-        reference image and send a digital preview before the finished canvas
-        ships.
+        Your uploaded photo and painting style stay together in the customizer.
+        Uploading a reference does not reserve a commission. Production and
+        service arrangements will be confirmed before orders open.
       </p>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-cream/95 px-4 py-3 shadow-[0_-10px_30px_rgba(38,35,31,0.12)] backdrop-blur lg:hidden">
@@ -355,7 +412,7 @@ export default function ProductActions({
                 : "Ready for custom artwork"}
             </p>
             <p className="truncate text-[11px] text-charcoal-light">
-              Free preview before shipping
+              Commissions in preparation
             </p>
           </div>
           <button

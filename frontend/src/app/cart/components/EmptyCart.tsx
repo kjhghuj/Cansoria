@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { ShoppingBagIcon } from "./utils";
 
 export default function EmptyCart() {
@@ -11,15 +11,15 @@ export default function EmptyCart() {
         Your Cart Is Empty
       </h2>
       <p className="text-charcoal-light text-center max-w-md mb-8">
-        Commission a bespoke pet oil portrait — every order begins with a free
-        sketch proof and unlimited revisions.
+        Explore our portrait style concepts and prepare your reference.
+        Commissions are in preparation.
       </p>
-      <Link
-        href="/shop"
+      <a
+        href={portraitStylesUrl}
         className="rounded-full bg-toffee text-white px-8 py-3.5 hover:bg-toffee-dark transition-colors font-bold uppercase tracking-[0.18em] text-xs shadow-[0_8px_24px_rgba(176,141,79,0.30)]"
       >
-        Start a Custom Portrait
-      </Link>
+        Explore Portrait Styles
+      </a>
     </div>
   );
 }

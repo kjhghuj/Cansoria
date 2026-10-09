@@ -21,6 +21,8 @@ const corsOptions = {
 
 export default defineMiddlewares({
     routes: [
+        { matcher: "/store/contact", method: "POST", middlewares: [createRateLimiter({ name: "studio-contact", limit: 5, windowSeconds: 3600 }), createRateLimiter({ name: "contact-email-budget", limit: 200, windowSeconds: 86400, global: true })] },
+        { matcher: "/store/carts/:id/photos", method: "POST", bodyParser: { sizeLimit: "14mb" }, middlewares: [createRateLimiter({ name: "portrait-upload", limit: 20, windowSeconds: 3600 })] },
         ...PROJECTED_STORE_RESOURCES.map(resource => ({ matcher: `/store/${resource}`, middlewares: [forceCatalogFields] })),
         {
             matcher: "/store/returns", middlewares: [retiredReturns],

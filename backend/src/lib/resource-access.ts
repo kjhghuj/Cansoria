@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction, AuthenticatedMedusaRequest } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { verifyAccessToken } from "./access-tokens"
+import { portraitCartReady, PORTRAIT_CART_FIELDS } from "./portrait-photos"
 
 export function sensitiveResponse(res: MedusaResponse) {
   res.setHeader("Cache-Control", "no-store")
@@ -69,6 +70,11 @@ export async function paymentAccessGuard(req: MedusaRequest, res: MedusaResponse
     }
     if (!cartId || !(await authorizeCart(req, cartId))) {
       return res.status(403).json({ type: "forbidden", message: "Payment access denied" })
+    }
+    if (req.method === "POST") {
+      const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+      const { data } = await query.graph({ entity: "cart", fields: PORTRAIT_CART_FIELDS, filters: { id: cartId } })
+      if (!data[0] || !portraitCartReady(data[0], cartId)) return res.status(400).json({ type: "invalid_request", message: "Each pet portrait needs a valid photo and painting style before payment." })
     }
     return next()
   } catch {

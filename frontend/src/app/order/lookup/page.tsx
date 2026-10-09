@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import Link from "next/link";
+import Image from "next/image";
+import { formatPrice } from "@/lib/money";
+import { portraitSummary, portraitStylesUrl } from "@/lib/portrait";
 import { useSearchParams } from "next/navigation";
 import { getProductsWithVariantImages } from "@/lib/medusa";
 import { useAuth } from "@/lib/providers";
+import PortraitOrderDetails from "@/components/PortraitOrderDetails";
 
 // Icons
 function SearchIcon() {
@@ -16,6 +19,7 @@ function SearchIcon() {
 }
 
 interface LookupOrderItem {
+    metadata?: Record<string, unknown>;
     id: string;
     title: string;
     quantity: number;
@@ -284,19 +288,22 @@ function OrderLookupContent() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-gray-50 rounded flex-shrink-0 relative overflow-hidden">
                                             {/* Display resolved variant image or fallback to thumbnail */}
-                                            {(item.variant_id && variantImageMap[item.variant_id]) ? (
-                                                <img src={variantImageMap[item.variant_id]} alt={item.title} className="w-full h-full object-cover" />
+                                            {portraitSummary(item.metadata)?.image ? (
+                                                <Image src={portraitSummary(item.metadata)!.image!} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
+                                            ) : (item.variant_id && variantImageMap[item.variant_id]) ? (
+                                                <Image src={variantImageMap[item.variant_id]} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
                                             ) : item.thumbnail ? (
-                                                <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                                                <Image src={item.thumbnail} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
                                             ) : null}
                                         </div>
                                         <div>
                                             <p className="font-medium text-charcoal">{item.title}</p>
                                             <p className="text-charcoal-light">Qty: {item.quantity}</p>
+                                            <PortraitOrderDetails metadata={item.metadata} orderId={orderData.id} token={accessToken} />
                                         </div>
                                     </div>
                                     <span className="font-medium text-charcoal">
-                                        {(item.unit_price / 100).toLocaleString('en-GB', { style: 'currency', currency: orderData.currency_code.toUpperCase() })}
+                                        {formatPrice(item.unit_price, orderData.currency_code)}
                                     </span>
                                 </div>
                             ))}
@@ -305,14 +312,14 @@ function OrderLookupContent() {
                         <div className="border-t border-gray-100 pt-6 flex justify-between items-center mb-8">
                             <span className="font-serif text-lg text-charcoal">Total</span>
                             <span className="font-serif text-xl text-charcoal font-bold">
-                                {(orderData.total / 100).toLocaleString('en-GB', { style: 'currency', currency: orderData.currency_code.toUpperCase() })}
+                                {formatPrice(orderData.total, orderData.currency_code)}
                             </span>
                         </div>
 
                         <div className="text-center space-y-3">
-                            <Link href="/shop" className="block w-full text-center bg-charcoal text-white py-3 rounded-full hover:bg-charcoal-light transition-colors font-medium">
+                              <a href={portraitStylesUrl} className="block w-full text-center bg-charcoal text-white py-3 rounded-full hover:bg-charcoal-light transition-colors font-medium">
                                 Continue Shopping
-                            </Link>
+                            </a>
                             <button onClick={() => setOrderData(null)} className="text-sm text-charcoal-light hover:text-terracotta underline">
                                 Search another order
                             </button>

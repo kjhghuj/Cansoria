@@ -1,10 +1,11 @@
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from "@medusajs/framework/http"
 import { defaultStoreCartFields } from "@medusajs/medusa/api/store/carts/query-config"
+import { publicPortraitMetadata } from "./portrait-photos"
 
 // Never expand a customer's reverse links, including carts, orders or saved addresses.
 export const SAFE_PAYMENT_FIELDS = ["id", "currency_code", "amount", "status", "payment_sessions.id", "payment_sessions.provider_id", "payment_sessions.status", "payment_sessions.data"]
 export const SAFE_CART_FIELDS = [...defaultStoreCartFields.filter(field => !/^(customer|payment_collection)(\.|$)/.test(field.replace(/^\*/, ""))), ...SAFE_PAYMENT_FIELDS.map(field => `payment_collection.${field}`), "items.variant.images.*", "items.variant.thumbnail", "region.*"]
-export const SAFE_ORDER_FIELDS = ["id", "display_id", "email", "status", "created_at", "total", "subtotal", "shipping_total", "currency_code", "items.id", "items.title", "items.quantity", "items.unit_price", "items.total", "items.variant_id", "items.product_id", "items.thumbnail", "items.variant_title", "items.product_title"]
+export const SAFE_ORDER_FIELDS = ["id", "display_id", "email", "status", "created_at", "total", "subtotal", "shipping_total", "currency_code", "items.id", "items.title", "items.quantity", "items.unit_price", "items.total", "items.variant_id", "items.product_id", "items.thumbnail", "items.variant_title", "items.product_title", "items.metadata"]
 
 export function applyCartFields(req: MedusaRequest, completing = false) {
   const fields = completing ? SAFE_ORDER_FIELDS : SAFE_CART_FIELDS
@@ -21,12 +22,26 @@ export function forceCartFields(req: MedusaRequest, _res: MedusaResponse, next: 
 function projectPaymentResponses(res: MedusaResponse) {
   const original = res.json
   res.json = function (body: any) {
+    projectOrderMetadata(body)
     const collection = body?.payment_collection || body?.cart?.payment_collection || body?.parent?.payment_collection
     if (Array.isArray(collection?.payment_sessions)) {
       collection.payment_sessions = collection.payment_sessions.map((session: any) => ({ id: session.id, provider_id: session.provider_id, status: session.status, data: { client_secret: session.data?.client_secret } }))
     }
     return original.call(this, body)
   } as any
+}
+
+export function projectOrderMetadata(body: any) {
+  const orders = body?.order ? [body.order] : body?.orders
+  if (!Array.isArray(orders)) return
+  for (const order of orders) {
+    delete order.metadata
+    for (const item of order.items || []) {
+      const metadata = publicPortraitMetadata(item.metadata)
+      if (metadata) item.metadata = metadata
+      else delete item.metadata
+    }
+  }
 }
 
 export function forcePaymentFields(req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) {
@@ -47,5 +62,9 @@ export function safeCartInput(input: any): any | null {
     result[field] = properties
   }
   delete result.customer_id
+  if (result.metadata && typeof result.metadata === "object" && !Array.isArray(result.metadata)) {
+    const { portrait_photos: _photos, ...metadata } = result.metadata
+    result.metadata = metadata
+  }
   return result
 }

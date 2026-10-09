@@ -1,6 +1,15 @@
 import { prepareRetrieveQuery } from "@medusajs/framework"
-import { applyCartFields, forceCartFields, forcePaymentFields, SAFE_CART_FIELDS, SAFE_PAYMENT_FIELDS } from "../cart-fields"
+import { applyCartFields, forceCartFields, forcePaymentFields, SAFE_CART_FIELDS, SAFE_PAYMENT_FIELDS, safeCartInput, projectOrderMetadata } from "../cart-fields"
 describe("all Store cart field boundaries", () => {
+  it("keeps signed storage records out of customer order list responses", () => {
+    const body = { orders: [{ metadata: { portrait_photos: [{ file_id: "private" }] }, items: [{ metadata: { portrait: { style: "dark-classic", photo_name: "pet.png", internal: "private" }, server: "secret" } }] }] } as any
+    projectOrderMetadata(body)
+    expect(body.orders[0]).not.toHaveProperty("metadata")
+    expect(body.orders[0].items[0].metadata).toEqual({ portrait: { style: "dark-classic", photo_name: "pet.png" } })
+  })
+  it("prevents clients from overwriting server-owned photo records", () => {
+    expect(safeCartInput({ metadata: { gift_message: "Hello", portrait_photos: [{ file_id: "victim" }] } }).metadata).toEqual({ gift_message: "Hello" })
+  })
   it.each(["customer.carts.shipping_address.*", "customer.addresses.*", "customer.orders.*", "payment_collection.cart.customer.orders.*"])('ignores unsafe remote expansion %s using the actual Medusa parser', fields => {
     const req = { originalUrl: "/store/carts/cart_a/line-items", query: { fields } } as any
     forceCartFields(req, {} as any, jest.fn())

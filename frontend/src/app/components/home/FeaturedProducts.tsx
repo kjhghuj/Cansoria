@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import { STUDIO } from "@/lib/studio-content";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { ProductCard } from "@/components";
 import { StoreProduct, StoreRegion } from "@/lib/types";
 
@@ -20,22 +21,24 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
               Most Cherished Pet Portraits
             </h2>
             <p className="text-charcoal-light text-sm sm:text-base font-light leading-relaxed">
-              Hand-painted oil portraits curated by popular canvas sizes and
-              framing styles.
+              Portrait concepts organised by canvas sizes and framing styles.
             </p>
           </div>
-          <Link
-            href="/shop"
+          <a
+            href={portraitStylesUrl}
             className="text-xs uppercase tracking-widest border-b border-charcoal pb-1 hover:text-toffee hover:border-toffee transition-colors whitespace-nowrap"
           >
             View All
-          </Link>
+          </a>
         </div>
 
         {products.length > 0 ? (
           <div className="flex lg:grid lg:grid-cols-4 gap-6 overflow-x-auto lg:overflow-visible px-6 lg:px-8 pb-8 no-scrollbar snap-x snap-mandatory">
             {products.map((product) => (
-              <div key={product.id} className="min-w-[280px] lg:min-w-0 snap-center">
+              <div
+                key={product.id}
+                className="min-w-[280px] lg:min-w-0 snap-center"
+              >
                 <ProductCard product={product} regionCurrency={currency} />
               </div>
             ))}
@@ -47,7 +50,7 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-[0_10px_32px_rgba(38,34,30,0.12)]">
                 <Image
                   src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=900"
-                  alt="Hand-painted golden retriever oil portrait on canvas"
+                  alt="Golden retriever portrait style illustration"
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 35vw"
@@ -58,17 +61,14 @@ export function FeaturedProducts({ products, region }: FeaturedProductsProps) {
                   Your companion&rsquo;s portrait starts with a single photo.
                 </h3>
                 <p className="text-charcoal-light font-light leading-relaxed mb-7">
-                  Commission a museum-grade, hand-painted oil portrait of your
-                  dog, cat, or whole furry family. Every order begins with a
-                  free sketch proof — revise it until it melts your heart
-                  before anything ships.
+                  {STUDIO.description} These images are style illustrations.
                 </p>
-                <Link
-                  href="/shop?category=pet-portraits"
+                <a
+                  href={portraitStylesUrl}
                   className="inline-flex bg-toffee text-white px-7 py-3.5 text-xs uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(176,141,79,0.30)]"
                 >
-                  Commission Your Pet Portrait
-                </Link>
+                  Explore Portrait Styles
+                </a>
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 module.exports = {
   rootDir: __dirname,
   testEnvironment: 'node',
-  testMatch: ['<rootDir>/src/**/__tests__/*.security.spec.ts', '<rootDir>/src/lib/__tests__/cart-coupon.test.ts'],
+  testMatch: ['<rootDir>/src/**/__tests__/*.security.spec.ts', '<rootDir>/src/**/__tests__/*.test.ts'],
   transform: {
     '^.+\\.[jt]sx?$': [require.resolve('../backend/node_modules/@swc/jest'), {
       jsc: { parser: { syntax: 'typescript', tsx: true }, transform: { react: { runtime: 'automatic' } } },

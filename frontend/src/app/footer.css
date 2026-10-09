@@ -1,0 +1,135 @@
+/* Shared pet portrait footer. Styles are isolated from page-specific layouts. */
+.cansoria-footer {
+  background: #eee4d8;
+  color: #1c1712;
+  border-top: 1px solid #ddcfbd;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.cansoria-footer-container {
+  width: calc(100% - 96px);
+  max-width: 1288px;
+  margin-inline: auto;
+}
+.cansoria-footer a { -webkit-tap-highlight-color: transparent; }
+.cansoria-footer a:hover { color: #624126; text-decoration: underline; text-underline-offset: 4px; }
+.cansoria-footer a:focus-visible,
+.cansoria-footer input:focus-visible,
+.cansoria-footer button:focus-visible {
+  outline: 2px solid #624126;
+  outline-offset: 4px;
+}
+.cansoria-footer-newsletter {
+  background: #f1e9df;
+  border-bottom: 1px solid #ddcfbd;
+  padding-block: 48px;
+}
+.cansoria-footer-newsletter-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 64px;
+}
+.cansoria-footer-eyebrow { font-size: 12px; letter-spacing: .12em; color: #624126; }
+.cansoria-footer-newsletter-copy h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+  margin-block: 10px 14px;
+}
+.cansoria-footer-newsletter-copy > p:last-child { color: #615b55; max-width: 470px; }
+.cansoria-footer-newsletter-signup { min-width: 0; }
+.cansoria-footer-newsletter-signup label { display: block; margin-bottom: 8px; font-weight: 500; }
+.cansoria-footer-email-row { display: flex; align-items: stretch; gap: 12px; }
+.cansoria-footer-email-row input {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  flex: 1;
+  background: #fffaf3;
+  border: 1px solid #b8a592;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font: inherit;
+  color: #1c1712;
+}
+.cansoria-footer-email-row input::placeholder { color: #615b55; opacity: 1; }
+.cansoria-footer-email-row button {
+  min-height: 48px;
+  flex-shrink: 0;
+  background: #624126;
+  border-radius: 100px;
+  color: #fffaf3;
+  padding: 11px 24px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.cansoria-footer-email-row button:hover:not(:disabled) { background: #49301d; }
+.cansoria-footer-email-row button:disabled { cursor: not-allowed; }
+.cansoria-footer-email-row input:disabled { color: #615b55; }
+.cansoria-footer-captcha { margin-top: 16px; min-width: 0; }
+.cansoria-footer-error { color: #8b2721; margin-top: 12px; }
+.cansoria-footer-consent { font-size: 12px; color: #615b55; margin-top: 14px; }
+.cansoria-footer-consent a { color: #624126; text-decoration: underline; text-underline-offset: 3px; }
+.cansoria-footer-success {
+  border: 1px solid #a4997e;
+  border-radius: 8px;
+  padding: 20px;
+  background: #fffaf3;
+  color: #37462c;
+}
+.cansoria-footer-main {
+  padding-block: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) repeat(3, minmax(0, 1fr));
+  gap: 36px;
+}
+.cansoria-footer-brand { min-width: 0; }
+.cansoria-footer-logo { display: inline-flex; max-width: 100%; }
+.cansoria-footer-logo .brand-logo-image { width: 240px; max-width: 100%; height: auto; }
+.cansoria-footer-brand p { color: #615b55; margin-top: 16px; max-width: 285px; }
+.cansoria-footer-contact { display: inline-block; color: #624126; margin-top: 16px; overflow-wrap: anywhere; }
+.cansoria-footer-column { min-width: 0; }
+.cansoria-footer-column h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.3;
+  margin-bottom: 18px;
+}
+.cansoria-footer-column ul { display: grid; gap: 10px; color: #615b55; }
+.cansoria-footer-column a { display: inline-block; }
+.cansoria-footer-bottom {
+  border-top: 1px solid #ddcfbd;
+  padding-block: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: #615b55;
+  font-size: 12px;
+}
+.cansoria-footer-bottom nav { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+@media (max-width: 1023px) {
+  .cansoria-footer-container { width: calc(100% - 48px); }
+  .cansoria-footer-newsletter-layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .cansoria-footer-newsletter-signup { max-width: 620px; }
+  .cansoria-footer-main { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+  .cansoria-footer-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 767px) {
+  .cansoria-footer-container { width: calc(100% - 40px); }
+  .cansoria-footer-newsletter { padding-block: 36px; }
+  .cansoria-footer-newsletter-copy h2 { font-size: 28px; }
+  .cansoria-footer-email-row { flex-direction: column; }
+  .cansoria-footer-email-row input { font-size: 16px; }
+  .cansoria-footer-main { grid-template-columns: minmax(0, 1fr); padding-block: 36px; }
+  .cansoria-footer-bottom { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+@media (max-width: 339px) {
+  .cansoria-footer-container { width: calc(100% - 32px); }
+}

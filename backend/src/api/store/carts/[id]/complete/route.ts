@@ -4,6 +4,7 @@ import { POST as nativeComplete } from "@medusajs/medusa/api/store/carts/[id]/co
 import { authorizeCart, customerActor, sensitiveResponse } from "../../../../../lib/resource-access"
 import { applyCartFields } from "../../../../../lib/cart-fields"
 import { eligibleWelcomeCodes, type CheckoutCart } from "../../../../../lib/welcome-promotions"
+import { portraitCartReady } from "../../../../../lib/portrait-photos"
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   sensitiveResponse(res)
@@ -15,11 +16,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     await locking.execute(`cart-identity:${id}`, async () => {
       if (!(await authorizeCart(req, id))) return res.status(403).json({ type: "forbidden", message: "Cart access denied" })
       const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-      const { data } = await query.graph({ entity: "cart", fields: ["id", "email", "customer_id", "completed_at", "promotions.code", "payment_collection.payment_sessions.provider_id"], filters: { id } })
+      const { data } = await query.graph({ entity: "cart", fields: ["id", "email", "customer_id", "completed_at", "metadata", "items.metadata", "items.variant.product.handle", "promotions.code", "payment_collection.payment_sessions.provider_id"], filters: { id } })
       const cart = data?.[0] as unknown as CheckoutCart | undefined
       if (!cart) return res.status(403).json({ type: "forbidden", message: "Cart access denied" })
       // Preserve the native idempotent retry for the already committed order after mailbox/browser interruption.
       if (cart.completed_at) return nativeComplete(req as any, res)
+      if (!portraitCartReady(data[0], id)) return res.status(400).json({ type: "invalid_request", message: "Each pet portrait needs a valid photo and painting style. Please customize it again." })
       if (cart.payment_collection?.payment_sessions?.some(session => session?.provider_id !== "pp_stripe_stripe")) return res.status(403).json({ type: "forbidden", message: "Unsupported payment provider" })
       const codes = (cart.promotions || []).map(p => p?.code).filter((code): code is string => typeof code === "string" && /^ART15-/i.test(code))
       if (!codes.length) return nativeComplete(req as any, res)

@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { X, Search, ShoppingBag, FileText } from "lucide-react";
-import { searchProducts } from "@/lib/medusa";
+import { formatPrice, searchProducts } from "@/lib/medusa";
+import { lowestProductPrice } from "@/lib/money";
 import { ARTICLES } from "@/lib/constants";
 import { StoreProduct, Article } from "@/lib/types";
+import { portraitStyles, portraitStylesUrl, portraitUrl } from "@/lib/portrait";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -20,32 +23,34 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
   const [articleResults, setArticleResults] = useState<Article[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchGeneration = useRef(0);
   const router = useRouter();
 
   const trendingSearches = ["Dog Portrait", "Cat Portrait", "Multi-Pet Family", "Memorial Keepsake", "Custom Pet Portrait"];
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      setTimeout(() => inputRef.current?.focus(), 100);
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const timer = setTimeout(() => inputRef.current?.focus(), 100);
+    return () => { clearTimeout(timer); document.body.style.overflow = previousOverflow; };
   }, [isOpen]);
 
   // Debounced search
-  const performSearch = useCallback(async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string, generation: number) => {
     if (searchQuery.length < 2) {
       setProductResults([]);
       setArticleResults([]);
+      setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
-    
+
     try {
       // Search products from Medusa
       const products = await searchProducts(searchQuery, regionId);
+      if (generation !== searchGeneration.current) return;
       setProductResults(products.slice(0, 3));
 
       // Search articles locally
@@ -59,17 +64,26 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
     } catch (error) {
       console.error("Search error:", error);
     } finally {
-      setIsSearching(false);
+      if (generation === searchGeneration.current) setIsSearching(false);
     }
   }, [regionId]);
 
   useEffect(() => {
+    const generation = ++searchGeneration.current;
+    if (!isOpen) return;
     const debounceTimer = setTimeout(() => {
-      performSearch(query);
+      void performSearch(query.trim(), generation);
     }, 300);
 
-    return () => clearTimeout(debounceTimer);
-  }, [query, performSearch]);
+    return () => { clearTimeout(debounceTimer); searchGeneration.current += 1; };
+  }, [query, performSearch, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,10 +101,11 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-md animate-fade-in flex flex-col">
+    <div role="dialog" aria-modal="true" aria-label="Search the studio" className="fixed inset-0 z-[60] bg-cream/95 backdrop-blur-md animate-fade-in flex flex-col">
       {/* Header / Close */}
       <div className="flex justify-end p-6 lg:p-10">
         <button
+          aria-label="Close search"
           onClick={onClose}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors group"
         >
@@ -107,6 +122,7 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
         {/* Search Input */}
         <form onSubmit={handleSearchSubmit} className="mb-12 relative">
           <input
+            aria-label="Search products and stories"
             ref={inputRef}
             type="text"
             value={query}
@@ -143,47 +159,32 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
               </div>
 
               <h4 className="text-xs font-bold uppercase tracking-widest text-charcoal-light mb-6">
-                Popular Categories
+                Portrait Styles
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  {
-                    name: "Dog Portraits",
-                    href: "/shop?category=dogs",
-                    img: "/products/portrait.svg",
-                  },
-                  {
-                    name: "Cat Masterpieces",
-                    href: "/shop?category=cats",
-                    img: "/products/canvas.svg",
-                  },
-                  {
-                    name: "Multi-Pet & Family",
-                    href: "/shop?category=multi-pet",
-                    img: "/products/generic.svg",
-                  },
-                  {
-                    name: "Memorial Keepsakes",
-                    href: "/shop?category=memorial",
-                    img: "/placeholder.svg",
-                  },
-                ].map((cat, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleLinkClick(cat.href)}
-                    className="group relative aspect-square rounded-sm overflow-hidden"
+                {portraitStyles.map((style) => (
+                  <Link
+                    key={style.id}
+                    href={`${portraitUrl}?style=${style.id}`}
+                    onClick={onClose}
+                    className="group rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-toffee"
+                    aria-label={`Explore ${style.name}, style illustration`}
                   >
-                    <Image
-                      src={cat.img}
-                      alt={cat.name}
-                      fill
-                      className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-terracotta/20 transition-colors" />
-                    <span className="absolute bottom-4 left-4 text-white font-serif text-lg">
-                      {cat.name}
+                    <div className="relative aspect-[200/246] overflow-hidden rounded-sm bg-cream-card">
+                      <Image
+                        src={`/images/pet-oil/${style.id}.webp`}
+                        alt={`${style.name} pet portrait style illustration`}
+                        fill
+                        loading="lazy"
+                        sizes="(max-width: 767px) 44vw, 23vw"
+                        className="object-contain"
+                      />
+                    </div>
+                    <span className="mt-3 block font-serif text-lg text-charcoal group-hover:text-toffee transition-colors">
+                      {style.name}
                     </span>
-                  </button>
+                    <span className="mt-1 block text-xs text-charcoal-light">Style illustration</span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -202,9 +203,17 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                 ) : productResults.length > 0 ? (
                   <div className="space-y-6">
                     {productResults.map((p) => (
-                      <div
+                      <a
                         key={p.id}
-                        onClick={() => handleLinkClick(`/product/${p.handle}`)}
+                        href={p.handle ? `/product/${p.handle}` : portraitStylesUrl}
+                        onClick={(event) => {
+                          if (p.handle) {
+                            event.preventDefault();
+                            handleLinkClick(`/product/${p.handle}`);
+                          } else {
+                            onClose();
+                          }
+                        }}
                         className="flex gap-4 group cursor-pointer"
                       >
                         <div className="w-16 h-16 bg-gray-100 flex-shrink-0 rounded-sm overflow-hidden relative">
@@ -222,12 +231,12 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                             {p.title}
                           </h5>
                           <p className="text-sm text-charcoal-light">
-                            {p.variants?.[0]?.calculated_price?.calculated_amount
-                              ? `£${(p.variants[0].calculated_price.calculated_amount / 100).toFixed(2)}`
+                            {lowestProductPrice(p) !== undefined
+                              ? formatPrice(lowestProductPrice(p), p.variants?.find(variant => variant.calculated_price)?.calculated_price?.currency_code || "GBP")
                               : ""}
                           </p>
                         </div>
-                      </div>
+                      </a>
                     ))}
                     <button
                       onClick={handleSearchSubmit}
@@ -237,7 +246,12 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                     </button>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-400 italic">No products found.</p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-400 italic">No products found.</p>
+                    <a href={portraitStylesUrl} onClick={onClose} className="text-sm text-toffee underline">
+                      Explore Portrait Styles
+                    </a>
+                  </div>
                 )}
               </div>
 

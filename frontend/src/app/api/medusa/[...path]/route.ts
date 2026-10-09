@@ -12,7 +12,7 @@ async function proxyStore(request: NextRequest, context: Context) {
   if (request.nextUrl.search.length > 4096) return privateJson({ message: 'Invalid request.' }, 400);
   let body: Record<string, unknown> | undefined;
   try {
-    if (request.method !== 'GET') body = await readBoundedJson(request);
+    if (request.method !== 'GET') body = await readBoundedJson(request, /^store\/carts\/[\w-]+\/photos$/.test(path.join('/')) ? 14 * 1024 * 1024 : undefined);
   } catch (error) {
     return privateJson({ message: 'Invalid request.' }, error instanceof Error && error.message === 'Request too large' ? 413 : 400);
   }
@@ -22,6 +22,11 @@ async function proxyStore(request: NextRequest, context: Context) {
       ...(body ? { body: JSON.stringify(body) } : {}),
     }, request.headers.get('x-order-access-token') || undefined, request);
     if (!upstream.ok) return safeBackendFailure(upstream);
+    if (request.method === 'GET' && path.includes('photos')) {
+      const mime = upstream.headers.get('content-type')?.split(';')[0];
+      if (!mime || !['image/jpeg', 'image/png', 'image/webp'].includes(mime)) return privateJson({ message: 'Photo unavailable.' }, 502);
+      return new Response(upstream.body, { headers: { 'Content-Type': mime, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' } });
+    }
     if (upstream.status === 204) return new Response(null, { status: 204, headers: { 'Cache-Control': 'private, no-store' } });
     const data = await upstream.json();
     const cartToken = path.join('/') === 'store/carts' && request.method === 'POST' && typeof data.cart_access_token === 'string'

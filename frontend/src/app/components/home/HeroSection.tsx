@@ -1,6 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
+import { portraitStylesUrl } from "@/lib/portrait";
+import { STUDIO } from "@/lib/studio-content";
+import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -32,47 +33,31 @@ export function HeroSection() {
             </p>
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.6rem] text-charcoal leading-[1.08] mb-6">
               Capture Your Companion&rsquo;s Soul in{" "}
-              <em className="not-italic text-toffee">Museum-Grade Oil Art</em>
+              <em className="not-italic text-toffee">
+                Personal Portrait Concepts
+              </em>
             </h1>
             <p className="text-base sm:text-lg text-charcoal-light font-light leading-relaxed max-w-xl mb-9">
-              From casual phone snaps to timeless hand-painted oil canvases.
-              Review your master sketch online with unlimited revisions before
-              anything ships — love it, or we repaint it.
+              {STUDIO.description}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-9">
-              <Link
-                href="/shop?category=pet-portraits"
+              <a
+                href={portraitStylesUrl}
                 className="inline-flex justify-center items-center bg-toffee text-white px-8 py-4 text-xs uppercase tracking-widest font-bold rounded-xl shadow-[0_10px_28px_rgba(176,141,79,0.32)] hover:bg-toffee-dark hover:shadow-[0_10px_24px_rgba(143,111,53,0.30)] transition-all"
               >
-                Start Custom Portrait
+                Explore Portrait Styles
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/shop"
+              </a>
+              <a
+                href={portraitStylesUrl}
                 className="inline-flex justify-center items-center bg-cream-light/70 text-charcoal border border-charcoal/20 px-8 py-4 text-xs uppercase tracking-widest font-bold rounded-xl hover:border-toffee hover:text-toffee transition-colors backdrop-blur-sm"
               >
                 View Pet Gallery
-              </Link>
+              </a>
             </div>
 
-            {/* Trust card */}
-            <div className="inline-flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-cream-light border border-border-subtle px-5 py-3.5 shadow-[0_4px_16px_rgba(38,34,30,0.05)]">
-              <div className="flex items-center gap-1.5">
-                <span className="flex text-champagne-gold gap-0.5" aria-label="5 out of 5 stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={13} fill="currentColor" strokeWidth={0} />
-                  ))}
-                </span>
-                <span className="text-xs font-bold text-charcoal">4.9/5</span>
-              </div>
-              <span className="hidden sm:block w-px h-4 bg-border" aria-hidden="true" />
-              <p className="text-xs text-charcoal-light">
-                Loved by{" "}
-                <span className="font-semibold text-charcoal">12,000+ Pet Parents</span>{" "}
-                worldwide
-              </p>
-            </div>
+            <p className="text-xs text-charcoal-light">{STUDIO.readiness}</p>
           </div>
 
           {/* RIGHT: Sunlit cream living room with framed pet oil portrait */}
@@ -80,7 +65,7 @@ export function HeroSection() {
             <div className="relative aspect-[4/3.4] sm:aspect-[4/3] rounded-[24px] overflow-hidden shadow-[0_28px_64px_rgba(38,34,30,0.16)] ring-1 ring-border">
               <Image
                 src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=1400"
-                alt="Sunlit modern cream living room with a framed hand-painted pet oil portrait above the sofa"
+                alt="Illustrative living room inspiration"
                 fill
                 priority
                 className="object-cover"
@@ -95,7 +80,7 @@ export function HeroSection() {
                   <div className="relative aspect-[4/4.6] overflow-hidden">
                     <Image
                       src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=700"
-                      alt="Hand-painted oil portrait of a golden retriever with rich impasto brushstrokes"
+                      alt="Golden retriever reference concept"
                       fill
                       priority
                       className="object-cover"
@@ -106,19 +91,19 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Hand-painted seal badge */}
+            {/* Illustration label */}
             <div className="absolute -bottom-5 -left-3 sm:-left-6 flex items-center gap-3 rounded-2xl bg-charcoal text-cream px-5 py-4 shadow-[0_16px_36px_rgba(38,34,30,0.30)]">
               <span
                 className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-champagne-gold text-champagne-gold text-[10px] font-bold tracking-wider uppercase leading-tight text-center"
                 aria-hidden="true"
               >
-                100%
+                IDEA
               </span>
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-widest">
-                  Hand-Painted
+                  Style Illustration
                 </p>
-                <p className="text-[11px] text-cream/70">Real oils · No prints</p>
+                <p className="text-[11px] text-cream/70">Concept imagery</p>
               </div>
             </div>
           </div>

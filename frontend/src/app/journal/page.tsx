@@ -7,7 +7,6 @@ import {
 } from "@/lib/cms";
 import JournalHero from "@/components/journal/JournalHero";
 import JournalContent from "@/components/journal/JournalContent";
-import NewsletterSection from "@/components/journal/NewsletterSection";
 
 // Disable caching for this page (instant Strapi content updates)
 export const dynamic = 'force-dynamic';
@@ -63,8 +62,6 @@ export default async function JournalPage() {
         categories={CATEGORIES}
       />
 
-      {/* 3. NEWSLETTER */}
-      <NewsletterSection />
     </div>
   );
 }

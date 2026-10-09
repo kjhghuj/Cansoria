@@ -1,9 +1,11 @@
-import { COMPANY_INFO } from "@/lib/constants";
-
-export const metadata = {
+import type { Metadata } from "next";
+import Link from "next/link";
+import { STUDIO } from "@/lib/studio-content";
+export const metadata: Metadata = {
   title: "Shipping & Delivery | Cansoria",
+  description:
+    "Cansoria delivery arrangements are in preparation and will be confirmed before commissions open.",
 };
-
 export default function ShippingPage() {
   return (
     <div className="pt-24 pb-16">
@@ -11,43 +13,27 @@ export default function ShippingPage() {
         <h1 className="font-serif text-4xl text-charcoal mb-8">
           Shipping & Delivery
         </h1>
-
         <div className="prose prose-lg text-charcoal-light">
-          <h2>Production Times</h2>
+          <p>{STUDIO.readiness}</p>
+          <h2>Production and dispatch</h2>
           <p>
-            Custom paintings are made to order. Production timing depends on
-            canvas size, detail level, and current studio capacity.
+            Production locations, dispatch locations and lead times have not yet
+            been finalised. We will confirm them before commissions open.
           </p>
-
-          <h2>Preview Before Shipping</h2>
+          <h2>Destinations and costs</h2>
           <p>
-            For custom artwork, we provide a preview before the piece ships so
-            you can review the overall direction and presentation.
+            Supported destinations, delivery methods, shipping charges and any
+            insurance arrangements are still being determined. Delivery
+            availability and charges will be confirmed before orders open.
           </p>
-
-          <h2>Delivery</h2>
+          <h2>Packaging and tracking</h2>
           <p>
-            Available shipping methods and rates are shown in cart based on
-            your delivery address. Tracking details are sent once your order is
-            ready to leave the studio.
+            Packaging specifications, tracking arrangements and the procedure
+            for reporting delivery issues will be published once confirmed.
           </p>
-
-          <h2>Artwork Packaging</h2>
           <p>
-            Paintings are protected with careful packaging suited for canvas
-            artwork. If a shipment arrives damaged, keep the packaging and
-            contact us with photos within 48 hours.
+            Have a question? <Link href="/contact">Contact Us →</Link>
           </p>
-
-          <h2>Contact</h2>
-          <p>
-            For shipping questions, contact us at{" "}
-            <a href={`mailto:${COMPANY_INFO.supportEmail}`} className="text-terracotta">
-              {COMPANY_INFO.supportEmail}
-            </a>
-          </p>
-
-          <p className="text-sm text-gray-400 mt-8">{COMPANY_INFO.name}</p>
         </div>
       </div>
     </div>

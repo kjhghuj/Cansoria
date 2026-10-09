@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:security": "../backend/node_modules/.bin/jest --config jest.security.config.cjs --runInBand"
+    "test:security": "node ../backend/node_modules/jest/bin/jest.js --config jest.security.config.cjs --runInBand"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.3.0",

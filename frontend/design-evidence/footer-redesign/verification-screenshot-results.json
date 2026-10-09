@@ -1,0 +1,42 @@
+{
+  "baseURL": "http://localhost:3032",
+  "mockOnly": true,
+  "checks": [
+    "shared footer /",
+    "shared footer /shop",
+    "shared footer /product/pet-portrait-oil-painting",
+    "shared footer /contact",
+    "shared footer /privacy",
+    "shared footer /journal",
+    "footer layout 320px",
+    "footer layout 375px",
+    "footer layout 390px",
+    "footer layout 768px",
+    "footer layout 1024px",
+    "footer layout 1440px",
+    "footer destination /privacy",
+    "footer destination /",
+    "footer destination /shop",
+    "footer destination /gallery",
+    "footer destination /how-it-works",
+    "footer destination /upload-photo",
+    "footer destination /about",
+    "footer destination /our-studio",
+    "footer destination /contact",
+    "footer destination /order/lookup",
+    "footer destination /shipping",
+    "footer destination /returns",
+    "footer destination /faq",
+    "footer destination /terms",
+    "footer keyboard access and 200 percent text zoom"
+  ],
+  "failures": [],
+  "screenshots": [
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-320.png",
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-375.png",
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-390.png",
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-768.png",
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-1024.png",
+    "H:\\Cansoria\\frontend\\design-evidence\\footer-redesign\\footer-1440.png"
+  ]
+}

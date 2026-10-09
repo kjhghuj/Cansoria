@@ -51,7 +51,9 @@ export function TrustBadgeGrid({
   return (
     <div
       className={`grid gap-3 ${
-        compact ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+        compact
+          ? "grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4"
+          : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
       } ${className}`}
     >
       {items.map((item) => {
@@ -60,16 +62,19 @@ export function TrustBadgeGrid({
         return (
           <div
             key={`${item.kind}-${item.title}`}
-            className="border border-border bg-white px-4 py-3 text-charcoal"
+            className="min-w-0 border border-border bg-white px-4 py-3 text-charcoal"
           >
             <div className="flex items-center gap-3">
-              <Icon className="h-4 w-4 shrink-0 text-terracotta" aria-hidden="true" />
-              <p className="text-xs font-semibold uppercase tracking-[0.18em]">
+              <Icon
+                className="h-4 w-4 shrink-0 text-terracotta"
+                aria-hidden="true"
+              />
+              <p className="min-w-0 break-words text-xs font-semibold uppercase tracking-[0.18em]">
                 {item.title}
               </p>
             </div>
             {item.text && (
-              <p className="mt-2 text-xs leading-5 text-charcoal-light">
+              <p className="mt-2 break-words text-xs leading-5 text-charcoal-light">
                 {item.text}
               </p>
             )}

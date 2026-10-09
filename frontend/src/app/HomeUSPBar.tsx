@@ -1,23 +1,23 @@
 const usps = [
   {
     icon: "🎨",
-    title: "100% Hand-Painted",
-    text: "Master artists, real impasto oils — never digital prints",
+    title: "Four Style Concepts",
+    text: "Illustrated ideas for your preferred mood and colours",
   },
   {
     icon: "✍️",
-    title: "Free Proof & Revisions",
-    text: "Approve the sketch online, unlimited changes until you love it",
+    title: "Photo Guidance",
+    text: "Prepare a clear reference and the expression you love",
   },
   {
     icon: "🌿",
-    title: "Archival Fine Linen",
-    text: "Museum-grade, acid-free canvas with non-toxic oil paints",
+    title: "Personal Preferences",
+    text: "Describe the background and details that matter",
   },
   {
     icon: "📦",
-    title: "Insured Gift-Box Delivery",
-    text: "Damage-free, gift-ready packaging shipped worldwide",
+    title: "Commissions in Preparation",
+    text: "Production and service arrangements to be confirmed",
   },
 ];
 

@@ -25,7 +25,7 @@ interface ProductGalleryProps {
 }
 
 function isValidImage(
-  image: ProductImage | null | undefined
+  image: ProductImage | null | undefined,
 ): image is ProductImageWithUrl {
   return typeof image?.url === "string" && image.url.trim().length > 0;
 }
@@ -52,8 +52,11 @@ export default function ProductGallery({
 
     addImage(
       selectedVariant?.thumbnail
-        ? { id: `${selectedVariant.id}-thumbnail`, url: selectedVariant.thumbnail }
-        : null
+        ? {
+            id: `${selectedVariant.id}-thumbnail`,
+            url: selectedVariant.thumbnail,
+          }
+        : null,
     );
     selectedVariant?.images?.forEach(addImage);
     images.forEach(addImage);
@@ -71,13 +74,13 @@ export default function ProductGallery({
 
   const showPrevious = () => {
     setSelectedIndex((current) =>
-      current === 0 ? displayImages.length - 1 : current - 1
+      current === 0 ? displayImages.length - 1 : current - 1,
     );
   };
 
   const showNext = () => {
     setSelectedIndex((current) =>
-      current === displayImages.length - 1 ? 0 : current + 1
+      current === displayImages.length - 1 ? 0 : current + 1,
     );
   };
 
@@ -87,7 +90,7 @@ export default function ProductGallery({
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-[4/5] overflow-hidden border border-border bg-canvas sm:aspect-square">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border bg-canvas sm:aspect-square">
         {badges.length > 0 && (
           <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
             {badges.map((badge) => (
@@ -104,7 +107,7 @@ export default function ProductGallery({
         {mainImageSrc ? (
           <Image
             src={mainImageSrc}
-            alt={`${title} oil painting preview`}
+            alt={`${title} concept image`}
             fill
             priority
             className="object-cover"
@@ -146,7 +149,9 @@ export default function ProductGallery({
         <div className="grid grid-cols-5 gap-3 sm:grid-cols-6">
           {displayImages.map((image, index) => {
             const key = image.id || image.url || `image-${index}`;
-            const src = imageErrors[key] ? FALLBACK_IMAGE : image.url || FALLBACK_IMAGE;
+            const src = imageErrors[key]
+              ? FALLBACK_IMAGE
+              : image.url || FALLBACK_IMAGE;
 
             return (
               <button

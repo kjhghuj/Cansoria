@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { portraitStylesUrl } from "@/lib/portrait";
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 
@@ -35,7 +35,7 @@ const frames: Record<
   },
   canvas: {
     name: "Gallery Canvas Wrap",
-    note: "Pure art — museum wrap, no frame at all",
+    note: "Canvas concept — no frame",
     price: 0,
     swatch: "bg-[#EFE9DE]",
   },
@@ -123,9 +123,9 @@ export function PetFrameCustomizerPreview() {
             Try Frames &amp; Sizes in Your Own Space
           </h2>
           <p className="text-charcoal-light font-light leading-relaxed">
-            Every commission is finished by hand in your choice of frame. Play
-            with the options below — then we paint, proof, and deliver exactly
-            what you see.
+            Explore an illustrative room preview with different frame and size
+            concepts. Final materials, options and production details will be
+            confirmed before commissions open.
           </p>
         </div>
 
@@ -223,22 +223,21 @@ export function PetFrameCustomizerPreview() {
                     ${total}
                   </p>
                   <p className="text-[11px] text-charcoal-light mt-2">
-                    {sizes[size].label} · {frames[frame].name} · Free proof
-                    included
+                    {sizes[size].label} · {frames[frame].name} · Illustrative
+                    options
                   </p>
                 </div>
-                <Link
-                  href="/shop?category=pet-portraits"
+                <a
+                  href={portraitStylesUrl}
                   className="shrink-0 inline-flex items-center bg-toffee text-white px-6 py-3.5 text-[11px] uppercase tracking-widest font-bold rounded-xl hover:bg-toffee-dark transition-colors shadow-[0_8px_22px_rgba(176,141,79,0.30)]"
                 >
                   Customize This Look
                   <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                </Link>
+                </a>
               </div>
               <p className="text-xs text-charcoal-light leading-relaxed border-t border-border pt-4">
-                Every order starts with a free hand-drawn digital proof.
-                Approve it, revise it, or walk away — nothing ships until you
-                love it.
+                This room preview illustrates a possible layout. It is not a
+                production proof or a completed customer commission.
               </p>
             </div>
           </div>
@@ -272,7 +271,7 @@ export function PetFrameCustomizerPreview() {
             </div>
             <div className="flex items-center justify-between mt-4 px-1">
               <p className="text-xs uppercase tracking-widest text-charcoal-muted">
-                Live preview · {sizes[size].label}
+                Illustrative preview · {sizes[size].label}
               </p>
               <p className="text-xs font-semibold text-toffee">
                 {frames[frame].name}

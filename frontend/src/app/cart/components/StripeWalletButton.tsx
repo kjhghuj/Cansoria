@@ -5,6 +5,7 @@ import { useCart } from "@/lib/providers";
 import { useStripe, PaymentRequestButtonElement } from "@stripe/react-stripe-js";
 import type { PaymentRequest } from "@stripe/stripe-js";
 import { StoreCart } from "@/lib/types";
+import { toMinorUnits } from "@/lib/money";
 
 interface StripeWalletButtonProps {
   cart: StoreCart;
@@ -58,7 +59,7 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
       currency: currencyCode,
       total: {
         label: 'Total',
-        amount: amount > 0 ? amount : 0, // Amount in lowest denomination (e.g. cents)
+        amount: toMinorUnits(Math.max(0, amount), currencyCode),
       },
       requestPayerName: true,
       requestPayerEmail: true,

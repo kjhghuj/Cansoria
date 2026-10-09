@@ -1,25 +1,16 @@
+import { PREPARATION_STEPS } from "@/lib/studio-content";
 import { ImageUp, Paintbrush, PackageCheck } from "lucide-react";
 
-const steps = [
-  {
-    icon: <ImageUp size={22} />,
-    title: "Upload Your Favorite Photo",
-    text: "A clear phone snapshot is all it takes — single pet, siblings, or the whole family together.",
-    caption: "No studio photos needed",
-  },
-  {
-    icon: <Paintbrush size={22} />,
-    title: "Artist Hand-Paints & You Proof",
-    text: "A master artist builds your portrait in layers of rich impasto oil. Review the sketch online with unlimited revisions until it feels right.",
-    caption: "Free proof · Unlimited revisions",
-  },
-  {
-    icon: <PackageCheck size={22} />,
-    title: "Framed & Shipped to Your Door",
-    text: "We fit your handcrafted solid-wood frame, pack it in a protective gift box, and insure it all the way to your home. Unbox and hang.",
-    caption: "Worldwide insured delivery",
-  },
+const stepIcons = [
+  <ImageUp key="photo" size={22} />,
+  <Paintbrush key="style" size={22} />,
+  <PackageCheck key="details" size={22} />,
 ];
+const steps = PREPARATION_STEPS.map((step, index) => ({
+  ...step,
+  icon: stepIcons[index],
+  caption: step.link,
+}));
 
 export function CustomPaintingProcess() {
   return (
@@ -30,11 +21,11 @@ export function CustomPaintingProcess() {
             Wonderfully simple
           </p>
           <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-charcoal leading-tight mb-4">
-            Your Pet&rsquo;s Portrait in 3 Simple Steps
+            Prepare Your Portrait in 3 Simple Steps
           </h2>
           <p className="text-charcoal-light font-light leading-relaxed">
-            Custom art should feel effortless. Upload, approve, unbox — we
-            handle every brushstroke in between.
+            Explore styles, prepare a photo and discuss your ideas while our
+            commissioning service is in preparation.
           </p>
         </div>
 

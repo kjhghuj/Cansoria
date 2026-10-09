@@ -16,4 +16,6 @@ Visual target: `frontend/design-concepts/pet-oil-paintings/displayed-option-2.pn
 
 The hero edit removes the source's interface text and button while preserving the cream living room, Golden Retriever, framed oil portrait, and soft window light. The image is right-aligned within a bounded responsive slot so the full frame and seated dog remain visible in the requested 430–500px desktop Hero. On tablet/mobile the photograph follows the text.
 
-These images are design illustrations, not evidence of completed customer commissions. All four cards enter the existing `/product/pet-portrait-oil-painting` commission flow; no distinct backend style SKUs are added. The displayed “From $129” is the user-specified concept copy; checkout continues to use existing regional variant prices.
+These images are design illustrations, not evidence of completed customer commissions. All four cards enter the existing `/product/pet-portrait-oil-painting` commission flow; no distinct backend style SKUs are added. Catalog prices now use existing regional variant prices for local testing; public-sale pricing has not been confirmed.
+
+Public use: style cards show Style illustration; comparisons show Concept comparison. The artist-at-work illustration is retained as a source asset but is not rendered as production evidence.

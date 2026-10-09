@@ -4,10 +4,9 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCart, useRegion, useAuth } from "@/lib/providers";
-import { applyPromoCode, removePromoCode as removePromoCodeApi } from "@/lib/medusa";
 import { StoreProduct } from "@/lib/types";
-import { Elements } from "@stripe/react-stripe-js";
-import { stripePromise, productImageCache } from "./components/utils";
+import { STUDIO } from "@/lib/studio-content";
+import { productImageCache } from "./components/utils";
 import { TrustBadgeGrid } from "@/components/TrustBadgeGrid";
 import type { TrustBadgeItem } from "@/components/TrustBadgeGrid";
 
@@ -22,26 +21,44 @@ type CartPromotion = { code?: string | null };
 
 const cartTrustItems: TrustBadgeItem[] = [
   { kind: "secure", title: "Secure checkout" },
-  { kind: "preview", title: "Free preview before shipping" },
-  { kind: "guarantee", title: "Satisfaction guarantee" },
-  { kind: "shipping", title: "Worldwide shipping" },
+  { kind: "preview", title: "Commissions in preparation" },
+  { kind: "guarantee", title: "Service details to be confirmed" },
+  { kind: "shipping", title: "Delivery details to be confirmed" },
 ];
 
-function getCartPromotions(cart: { promotions?: CartPromotion[] | null } | null) {
+function getCartPromotions(
+  cart: { promotions?: CartPromotion[] | null } | null,
+) {
   return cart?.promotions ?? [];
 }
 
 // Main Cart Page Component
 function CartContent() {
-  const { cart, cartLoading, cartCount, updateItem, removeItem, applyBetterCoupon, removePromoCode, refreshCart: refreshCartFn } = useCart();
+  const {
+    cart,
+    cartLoading,
+    cartCount,
+    updateItem,
+    removeItem,
+    applyBetterCoupon,
+    applySavedCoupons,
+    removePromoCode,
+    refreshCart: refreshCartFn,
+  } = useCart();
   const { region } = useRegion();
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
-  const [resolvedImages, setResolvedImages] = useState<Record<string, string>>({});
+  const [cartError, setCartError] = useState("");
+  const attemptedUrlCodes = useRef(new Set<string>());
+  const [resolvedImages, setResolvedImages] = useState<Record<string, string>>(
+    {},
+  );
   // Map variant_id -> image URL for variant-specific images
-  const [variantImageMap, setVariantImageMap] = useState<Record<string, string>>({});
+  const [variantImageMap, setVariantImageMap] = useState<
+    Record<string, string>
+  >({});
 
   // Fetch product data with variant images to resolve variant-specific cart images
   // This replicates ProductGallery logic: variant.images > product.thumbnail > placeholder
@@ -52,7 +69,11 @@ function CartContent() {
       // Collect unique product IDs that need fetching
       const productIds = new Set<string>();
       cart.items.forEach((item) => {
-        if (item.variant_id && !variantImageMap[item.variant_id] && item.product_id) {
+        if (
+          item.variant_id &&
+          !variantImageMap[item.variant_id] &&
+          item.product_id
+        ) {
           productIds.add(item.product_id);
         }
       });
@@ -62,7 +83,10 @@ function CartContent() {
       try {
         // Use getProductsByIds but with variant images included
         const { getProductsWithVariantImages } = await import("@/lib/medusa");
-        const products = await getProductsWithVariantImages(Array.from(productIds), region.id);
+        const products = await getProductsWithVariantImages(
+          Array.from(productIds),
+          region.id,
+        );
 
         if (!products || products.length === 0) return;
 
@@ -87,7 +111,7 @@ function CartContent() {
                 newVariantImages[variant.id] = variant.thumbnail;
               } else if (variant.images && variant.images.length > 0) {
                 const sorted = [...variant.images].sort(
-                  (a, b) => (a.rank ?? 999) - (b.rank ?? 999)
+                  (a, b) => (a.rank ?? 999) - (b.rank ?? 999),
                 );
                 newVariantImages[variant.id] = sorted[0].url;
               } else if (productImage) {
@@ -98,10 +122,10 @@ function CartContent() {
         });
 
         if (Object.keys(newResolvedImages).length > 0) {
-          setResolvedImages(prev => ({ ...prev, ...newResolvedImages }));
+          setResolvedImages((prev) => ({ ...prev, ...newResolvedImages }));
         }
         if (Object.keys(newVariantImages).length > 0) {
-          setVariantImageMap(prev => ({ ...prev, ...newVariantImages }));
+          setVariantImageMap((prev) => ({ ...prev, ...newVariantImages }));
         }
       } catch (error) {
         console.error("Failed to fetch variant images:", error);
@@ -111,95 +135,77 @@ function CartContent() {
     fetchVariantImages();
   }, [cart?.items, region?.id, variantImageMap]);
 
-
   // Auto-apply coupon from URL
   useEffect(() => {
-    const codeParam = searchParams.get('code');
+    const codeParam = searchParams.get("code");
     if (codeParam && cart && !cartLoading) {
       // Check if already applied to avoid loop
       const alreadyApplied = getCartPromotions(cart).some(
-        (promotion) => promotion.code === codeParam.toUpperCase()
+        (promotion) => promotion.code === codeParam.toUpperCase(),
       );
+      const key = `${cart.id}:${codeParam.toUpperCase()}`;
+      if (attemptedUrlCodes.current.has(key)) return;
+      attemptedUrlCodes.current.add(key);
       if (!alreadyApplied) {
-        applyBetterCoupon(codeParam.toUpperCase());
+        void applyBetterCoupon(codeParam.toUpperCase()).then((result) => {
+          if (!result.success) setCartError(result.message);
+        });
       }
     }
   }, [searchParams, cart, cartLoading, applyBetterCoupon]);
 
-  // Auto-apply best coupon from customer's coupon wallet
-  const autoApplyAttempted = useRef(false);
+  // Check saved codes once per account/cart, within the provider's mutation lock.
+  const autoApplyAttempted = useRef(new Set<string>());
   useEffect(() => {
-    async function autoApplyBestCoupon() {
-      // Only run once, when cart is loaded and user is logged in
-      if (autoApplyAttempted.current) return;
-      if (!cart?.id || cartLoading || !user) return;
-
-      const userCoupons: string[] = (user?.metadata?.coupons as string[]) || [];
-      if (userCoupons.length === 0) return;
-
-      // Skip if a coupon is already applied
-      const existingPromotions = cart.promotions || [];
-      if (existingPromotions.length > 0) return;
-
-      autoApplyAttempted.current = true;
-
-      // Try each coupon and find the one giving the highest discount
-      let bestCode: string | null = null;
-      let bestDiscount = 0;
-
-      for (const code of userCoupons) {
-        try {
-          // Apply this coupon
-          const cartAfterApply = await applyPromoCode(cart.id, code);
-          const discountAmount = cartAfterApply?.discount_total || 0;
-
-          if (discountAmount > bestDiscount) {
-            // This coupon is better: remove previous best (if any) first
-            if (bestCode) {
-              // Previous best was already removed below
-            }
-            bestDiscount = discountAmount;
-            bestCode = code;
-          }
-
-          // Remove this coupon so we can try the next one
-          await removePromoCodeApi(cart.id, code);
-    } catch {
-      // Coupon invalid or expired, skip silently
-      console.log(`[AutoCoupon] Code ${code} failed, skipping`);
-        }
-      }
-
-      // Apply the best coupon permanently
-      if (bestCode) {
-        try {
-          await applyPromoCode(cart.id, bestCode);
-          // Refresh the cart context to reflect the applied coupon
-          await refreshCartFn();
-          console.log(`[AutoCoupon] Applied best coupon: ${bestCode} (saves ${bestDiscount})`);
-        } catch (err) {
-          console.error(`[AutoCoupon] Failed to apply best coupon ${bestCode}:`, err);
-        }
-      }
-    }
-
-    autoApplyBestCoupon();
-  }, [cart?.id, cart?.promotions, cartLoading, user, refreshCartFn]);
+    if (
+      !cart?.id ||
+      cartLoading ||
+      !cart.items?.length ||
+      !user ||
+      searchParams.get("code") ||
+      cart.promotions?.length
+    )
+      return;
+    if (!Array.isArray(user.metadata?.coupons) || !user.metadata.coupons.length)
+      return;
+    const key = user.id + ":" + cart.id;
+    if (autoApplyAttempted.current.has(key)) return;
+    autoApplyAttempted.current.add(key);
+    void applySavedCoupons(user.metadata?.coupons).catch((error) =>
+      setCartError(
+        error instanceof Error
+          ? error.message
+          : "Unable to apply saved codes. Please try again.",
+      ),
+    );
+  }, [cart, cartLoading, user, searchParams, applySavedCoupons]);
 
   // Auto-reset if cart is completed (fixes "Cart already completed" stuck state)
   useEffect(() => {
     if (cart && cart.completed_at) {
-      refreshCartFn();
+      void refreshCartFn().catch(() =>
+        setCartError("Unable to refresh your cart. Please try again."),
+      );
     }
   }, [cart, refreshCartFn]);
 
-  const currencyCode = cart?.currency_code?.toUpperCase() || region?.currency_code?.toUpperCase() || "GBP";
+  const currencyCode =
+    cart?.currency_code?.toUpperCase() ||
+    region?.currency_code?.toUpperCase() ||
+    "GBP";
 
   const handleUpdateQuantity = async (lineItemId: string, quantity: number) => {
     if (quantity < 1) return;
     setUpdatingItemId(lineItemId);
+    setCartError("");
     try {
       await updateItem(lineItemId, quantity);
+    } catch (error) {
+      setCartError(
+        error instanceof Error
+          ? error.message
+          : "Unable to change the quantity. Please try again.",
+      );
     } finally {
       setUpdatingItemId(null);
     }
@@ -207,14 +213,22 @@ function CartContent() {
 
   const handleRemoveItem = async (lineItemId: string) => {
     setUpdatingItemId(lineItemId);
+    setCartError("");
     try {
       await removeItem(lineItemId);
+    } catch (error) {
+      setCartError(
+        error instanceof Error
+          ? error.message
+          : "Unable to remove this artwork. Please try again.",
+      );
     } finally {
       setUpdatingItemId(null);
     }
   };
 
   const handleApplyPromoCode = async (code: string) => {
+    setCartError("");
     setPromoLoading(true);
     try {
       // Use the smart "better coupon" logic instead of basic apply
@@ -229,7 +243,11 @@ function CartContent() {
     try {
       await removePromoCode(code);
     } catch (error) {
-      console.error("Failed to remove promo code:", error);
+      setCartError(
+        error instanceof Error
+          ? error.message
+          : "Unable to remove this code. Please try again.",
+      );
     } finally {
       setPromoLoading(false);
     }
@@ -237,10 +255,13 @@ function CartContent() {
 
   // Calculate totals
   const subtotal = cart?.item_subtotal || 0;
-  const shipping = typeof cart?.shipping_total === 'number' ? cart.shipping_total : null;
+  const shipping =
+    cart?.shipping_methods?.length && typeof cart.shipping_total === "number"
+      ? cart.shipping_total
+      : null;
   const tax = cart?.tax_total || 0;
   const discount = cart?.discount_total || 0;
-  const total = cart?.total || subtotal;
+  const total = cart?.total ?? subtotal;
 
   // Get applied promo codes from cart
   const appliedCodes = getCartPromotions(cart)
@@ -278,12 +299,12 @@ function CartContent() {
                   Your Cart
                 </h1>
                 <p className="text-charcoal-light mt-3 max-w-md">
-                  Review your custom artwork before checkout — every piece
-                  still includes a free sketch proof.
+                  {STUDIO.readiness}
                 </p>
                 {cartCount > 0 && !cartLoading && (
                   <p className="text-charcoal-light mt-3 text-sm">
-                    {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your cart
+                    {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your
+                    cart
                   </p>
                 )}
               </div>
@@ -294,9 +315,17 @@ function CartContent() {
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <TrustBadgeGrid items={cartTrustItems} compact className="mt-8 mb-10" />
+        {cartError && (
+          <p
+            role="alert"
+            className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          >
+            {cartError}
+          </p>
+        )}
 
         {/* Loading State */}
-        {cartLoading && <CartLoading />}
+        {cartLoading && !cart && <CartLoading />}
 
         {/* Empty Cart */}
         {!cartLoading && (!cart || !cart.items || cart.items.length === 0) && (
@@ -304,7 +333,7 @@ function CartContent() {
         )}
 
         {/* Cart Content */}
-        {!cartLoading && cart && cart.items && cart.items.length > 0 && (
+        {cart && cart.items && cart.items.length > 0 && (
           <div className="lg:grid lg:grid-cols-3 lg:gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
@@ -316,11 +345,24 @@ function CartContent() {
                   <CartItem
                     item={item}
                     currencyCode={currencyCode}
-                    onUpdateQuantity={(qty) => handleUpdateQuantity(item.id, qty)}
+                    onUpdateQuantity={(qty) =>
+                      handleUpdateQuantity(item.id, qty)
+                    }
                     onRemove={() => handleRemoveItem(item.id)}
-                    isUpdating={updatingItemId === item.id}
-                    variantImage={item.variant_id ? variantImageMap[item.variant_id] : undefined}
-                    fallbackImage={item.product_id ? (resolvedImages[item.product_id] || productImageCache[item.product_id]) : null}
+                    isUpdating={
+                      cartLoading || promoLoading || updatingItemId !== null
+                    }
+                    variantImage={
+                      item.variant_id
+                        ? variantImageMap[item.variant_id]
+                        : undefined
+                    }
+                    fallbackImage={
+                      item.product_id
+                        ? resolvedImages[item.product_id] ||
+                          productImageCache[item.product_id]
+                        : null
+                    }
                   />
                 </div>
               ))}
@@ -333,25 +375,25 @@ function CartContent() {
                   currencyCode={currencyCode}
                   onApplyCode={handleApplyPromoCode}
                   onRemoveCode={handleRemovePromoCode}
-                  isLoading={promoLoading}
+                  isLoading={cartLoading || promoLoading}
                 />
               </div>
 
               {/* Mobile Order Summary Trigger */}
               <div className="lg:hidden mt-4">
-                <Elements stripe={stripePromise}>
-                  <OrderSummary
-                    cart={cart}
-                    subtotal={subtotal}
-                    shipping={shipping}
-                    tax={tax}
-                    discount={discount}
-                    total={total}
-                    currencyCode={currencyCode}
-                    itemCount={cartCount}
-                    isLoading={updatingItemId !== null}
-                  />
-                </Elements>
+                <OrderSummary
+                  cart={cart}
+                  subtotal={subtotal}
+                  shipping={shipping}
+                  tax={tax}
+                  discount={discount}
+                  total={total}
+                  currencyCode={currencyCode}
+                  itemCount={cartCount}
+                  isLoading={
+                    cartLoading || promoLoading || updatingItemId !== null
+                  }
+                />
               </div>
             </div>
 
@@ -364,22 +406,22 @@ function CartContent() {
                 currencyCode={currencyCode}
                 onApplyCode={handleApplyPromoCode}
                 onRemoveCode={handleRemovePromoCode}
-                isLoading={promoLoading}
+                isLoading={cartLoading || promoLoading}
               />
 
-              <Elements stripe={stripePromise}>
-                <OrderSummary
-                  cart={cart}
-                  subtotal={subtotal}
-                  shipping={shipping}
-                  tax={tax}
-                  discount={discount}
-                  total={total}
-                  currencyCode={currencyCode}
-                  itemCount={cartCount}
-                  isLoading={updatingItemId !== null}
-                />
-              </Elements>
+              <OrderSummary
+                cart={cart}
+                subtotal={subtotal}
+                shipping={shipping}
+                tax={tax}
+                discount={discount}
+                total={total}
+                currencyCode={currencyCode}
+                itemCount={cartCount}
+                isLoading={
+                  cartLoading || promoLoading || updatingItemId !== null
+                }
+              />
             </div>
           </div>
         )}

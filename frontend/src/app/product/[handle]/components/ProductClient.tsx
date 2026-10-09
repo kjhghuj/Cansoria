@@ -2,13 +2,20 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Check, Star, Truck } from "lucide-react";
+import { Check, Truck } from "lucide-react";
 import ProductGallery from "./ProductGallery";
 import ProductActions from "./ProductActions";
+import {
+  STUDIO,
+  STUDIO_FAQ,
+  PREPARATION_STEPS,
+  studioProduct,
+} from "@/lib/studio-content";
+import { portraitStyles, type PortraitStyle } from "@/lib/portrait";
 import ProductInfo from "./ProductInfo";
 import { formatPrice } from "@/lib/medusa";
-import { StoreProduct, StoreProductCategory, StoreProductVariant } from "@/lib/types";
+import { StoreProduct, StoreProductCategory } from "@/lib/types";
+import { findSelectedVariant } from "@/lib/product-options";
 import { TrustBadgeGrid } from "@/components/TrustBadgeGrid";
 import type { TrustBadgeItem } from "@/components/TrustBadgeGrid";
 
@@ -18,6 +25,7 @@ interface ProductImage {
 }
 
 interface ProductClientProps {
+  initialStyle: PortraitStyle;
   product: StoreProduct;
   images: ProductImage[];
   thumbnail?: string | null;
@@ -39,29 +47,6 @@ function getInitialSelectedOptions(product: StoreProduct): SelectedOptions {
   }, {});
 }
 
-function findSelectedVariant(
-  product: StoreProduct,
-  selectedOptions: SelectedOptions
-): StoreProductVariant | null {
-  const variants = product.variants ?? [];
-  const options = product.options ?? [];
-
-  if (variants.length === 0) return null;
-  if (options.length === 0) return variants[0];
-
-  const allOptionsSelected = options.every((option) => selectedOptions[option.id]);
-  if (!allOptionsSelected) return null;
-
-  return (
-    variants.find((variant) =>
-      variant.options?.every((variantOption) => {
-        const selectedValue = selectedOptions[variantOption.option_id || ""];
-        return selectedValue === variantOption.value;
-      })
-    ) ?? null
-  );
-}
-
 function getPriceSummary(product: StoreProduct, currencyCode: string) {
   const pricedVariants =
     product.variants
@@ -70,8 +55,12 @@ function getPriceSummary(product: StoreProduct, currencyCode: string) {
         originalAmount: variant.calculated_price?.original_amount,
       }))
       .filter(
-        (variant): variant is { amount: number; originalAmount: number | null | undefined } =>
-          typeof variant.amount === "number"
+        (
+          variant,
+        ): variant is {
+          amount: number;
+          originalAmount: number | null | undefined;
+        } => typeof variant.amount === "number",
       ) ?? [];
 
   if (pricedVariants.length === 0) {
@@ -83,151 +72,101 @@ function getPriceSummary(product: StoreProduct, currencyCode: string) {
   }
 
   const lowest = pricedVariants.reduce((min, variant) =>
-    variant.amount < min.amount ? variant : min
+    variant.amount < min.amount ? variant : min,
   );
-  const highestAmount = Math.max(...pricedVariants.map((variant) => variant.amount));
+  const highestAmount = Math.max(
+    ...pricedVariants.map((variant) => variant.amount),
+  );
   const label = `${highestAmount > lowest.amount ? "From " : ""}${formatPrice(
     lowest.amount,
-    currencyCode
+    currencyCode,
   )}`;
   const compareAtLabel =
-    typeof lowest.originalAmount === "number" && lowest.originalAmount > lowest.amount
+    typeof lowest.originalAmount === "number" &&
+    lowest.originalAmount > lowest.amount
       ? formatPrice(lowest.originalAmount, currencyCode)
       : undefined;
   const salePercent =
-    typeof lowest.originalAmount === "number" && lowest.originalAmount > lowest.amount
-      ? Math.round(((lowest.originalAmount - lowest.amount) / lowest.originalAmount) * 100)
+    typeof lowest.originalAmount === "number" &&
+    lowest.originalAmount > lowest.amount
+      ? Math.round(
+          ((lowest.originalAmount - lowest.amount) / lowest.originalAmount) *
+            100,
+        )
       : undefined;
 
   return { label, compareAtLabel, salePercent };
 }
 
-function getProductBadges(product: StoreProduct, salePercent?: number) {
-  const tagValues = product.tags?.map((tag) => tag.value?.toLowerCase() || "") ?? [];
-  const isBestSeller = tagValues.some(
-    (tag) => tag.includes("best") || tag.includes("popular")
-  );
-  const isNew = tagValues.some((tag) => tag.includes("new"));
-
+function getProductBadges(salePercent?: number) {
   return [
-    isBestSeller ? "Best Seller" : null,
-    isNew ? "New Arrival" : null,
-    salePercent ? `-${salePercent}%` : null,
+    "Style illustration",
+    salePercent ? "-" + salePercent + "%" : null,
   ].filter((badge): badge is string => Boolean(badge));
 }
 
 const sellingPoints = [
-  "100% hand-painted by real artists",
-  "Free digital preview before shipping",
-  "Premium stretched canvas",
-  "Worldwide delivery",
-  "Secure checkout",
+  "Four illustrated style concepts",
+  "Reference and preferences together",
+  "Production details to be confirmed",
+  "Questions welcome before commissioning",
 ];
-
 const trustItems: TrustBadgeItem[] = [
   {
-    kind: "guarantee",
-    title: "Satisfaction Guarantee",
-    text: "Preview approval and careful support before your canvas ships.",
-  },
-  {
-    kind: "secure",
-    title: "Secure Payment",
-    text: "Protected checkout with trusted payment providers.",
-  },
-  {
     kind: "artist",
-    title: "Artist-Made",
-    text: "Painted by real artists, not printed or machine generated.",
+    title: "Style Concepts",
+    text: "Illustrations to help you describe a preferred direction.",
   },
   {
     kind: "preview",
-    title: "Free Preview",
-    text: "Review the digital preview before your canvas ships.",
+    title: "Photo Guidance",
+    text: "Prepare a clear reference with the expression you love.",
+  },
+  {
+    kind: "guarantee",
+    title: "Personal Details",
+    text: "Note the colours, composition and memories that matter.",
+  },
+  {
+    kind: "secure",
+    title: "Clear Expectations",
+    text: "Service arrangements will be confirmed before commissions open.",
   },
 ];
-
-const customSteps = [
-  {
-    title: "Upload Photo",
-    text: "A clear phone snapshot is all it takes — single pet or the whole family.",
-  },
-  {
-    title: "We Paint",
-    text: "A master artist hand-paints your portrait in layered museum-grade oils.",
-  },
-  {
-    title: "Preview & Ship",
-    text: "Approve your free sketch proof, then it arrives framed and gift-boxed.",
-  },
-];
-
-const conversionAnswers = [
-  {
-    title: "Will it look like my photo?",
-    text: "Your artist works from your reference to preserve likeness, expression, posture, and key details while giving the piece a painterly oil finish.",
-  },
-  {
-    title: "Can I see it first?",
-    text: "Yes. You receive a digital preview before shipping so you can review the direction before the finished canvas leaves the studio.",
-  },
-  {
-    title: "How do I upload the photo?",
-    text: "After checkout, we request your reference photo and notes for names, background, mood, or details you want the artist to emphasize.",
-  },
-  {
-    title: "What if something feels off?",
-    text: "Use the preview step to share concerns. If an approved artwork arrives damaged or materially different, support will help with a resolution.",
-  },
-  {
-    title: "When will it arrive?",
-    text: "Timing depends on size and complexity. Your order moves through artist preparation, painting, preview approval, packing, and tracked delivery.",
-  },
-  {
-    title: "What is the canvas quality?",
-    text: "Cansoria focuses on premium stretched canvas, layered oil paint texture, and careful packing for display-ready wall art.",
-  },
-];
-
-const reviewHighlights = [
-  {
-    quote:
-      "The preview made the process feel calm. We could see the direction before it shipped, and the final canvas felt personal.",
-    author: "Megan R.",
-  },
-  {
-    quote:
-      "Our pet portrait captured the expression from the photo without looking like a printed copy.",
-    author: "Daniel K.",
-  },
-];
+const customSteps = PREPARATION_STEPS;
+const conversionAnswers = STUDIO_FAQ;
 
 export default function ProductClient({
-  product,
+  initialStyle,
+  product: rawProduct,
   images,
   thumbnail,
   category,
   currencyCode,
 }: ProductClientProps) {
+  const product = useMemo(() => studioProduct(rawProduct), [rawProduct]);
+  const isPortrait = product.handle === "pet-portrait-oil-painting";
+  const [previewStyle, setPreviewStyle] = useState(initialStyle);
+  const previewStyleName =
+    portraitStyles.find((style) => style.id === previewStyle)?.name ||
+    "Classic Oil";
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(() =>
-    getInitialSelectedOptions(product)
+    getInitialSelectedOptions(product),
   );
 
   const selectedVariant = useMemo(
     () => findSelectedVariant(product, selectedOptions),
-    [product, selectedOptions]
+    [product, selectedOptions],
   );
   const priceSummary = useMemo(
     () => getPriceSummary(product, currencyCode),
-    [product, currencyCode]
+    [product, currencyCode],
   );
   const galleryBadges = useMemo(
-    () => getProductBadges(product, priceSummary.salePercent),
-    [product, priceSummary.salePercent]
+    () => getProductBadges(priceSummary.salePercent),
+    [priceSummary.salePercent],
   );
-  const description =
-    product.description ||
-    "A hand-painted canvas artwork made with expressive brushwork, thoughtful composition, and heirloom-quality presentation.";
+  const description = product.description || STUDIO.productDescription;
 
   const handleOptionChange = (optionId: string, value: string) => {
     setSelectedOptions((current) => ({ ...current, [optionId]: value }));
@@ -236,24 +175,41 @@ export default function ProductClient({
   return (
     <>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-16">
-        <ProductGallery
-          key={selectedVariant?.id || "product-gallery"}
-          images={images}
-          thumbnail={thumbnail}
-          title={product.title || "Cansoria Oil Painting"}
-          selectedVariant={selectedVariant}
-          badges={galleryBadges}
-        />
+        <div className="min-w-0">
+          <ProductGallery
+            key={
+              isPortrait
+                ? previewStyle
+                : selectedVariant?.id || "product-gallery"
+            }
+            images={
+              isPortrait
+                ? [
+                    { url: `/images/pet-oil/${previewStyle}.webp` },
+                    { url: "/images/pet-oil/hero-room.png" },
+                  ]
+                : images
+            }
+            thumbnail={isPortrait ? null : thumbnail}
+            title={
+              isPortrait
+                ? `${previewStyleName} style example`
+                : product.title || "Cansoria Oil Painting"
+            }
+            selectedVariant={isPortrait ? null : selectedVariant}
+            badges={galleryBadges}
+          />
+          <p className="studio-image-caption">{STUDIO.illustration}</p>
+        </div>
 
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="space-y-7">
             {category?.name && (
-              <Link
-                href={category.handle ? `/shop?category=${category.handle}` : "/shop"}
-                className="inline-block text-xs uppercase tracking-[0.28em] text-terracotta transition-colors hover:text-terracotta-dark"
+              <span
+                className="inline-block text-xs uppercase tracking-[0.28em] text-terracotta"
               >
                 {category.name}
-              </Link>
+              </span>
             )}
 
             <div className="space-y-4">
@@ -283,7 +239,9 @@ export default function ProductClient({
               )}
             </div>
 
-            <p className="text-base leading-8 text-charcoal-light">{description}</p>
+            <p className="text-base leading-8 text-charcoal-light">
+              {description}
+            </p>
 
             <ul className="grid gap-3 border border-border bg-white p-5">
               {sellingPoints.map((point) => (
@@ -298,6 +256,8 @@ export default function ProductClient({
             </ul>
 
             <ProductActions
+              initialStyle={initialStyle}
+              onStyleChange={setPreviewStyle}
               product={product}
               selectedOptions={selectedOptions}
               selectedVariant={selectedVariant}
@@ -317,7 +277,7 @@ export default function ProductClient({
               Custom Order
             </p>
             <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
-              How Custom Painting Works
+              Preparing Your Portrait
             </h2>
           </div>
           <div className="relative grid gap-6 sm:grid-cols-3">
@@ -327,14 +287,19 @@ export default function ProductClient({
               className="hidden sm:block absolute top-7 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-toffee/15 via-toffee/50 to-toffee/15"
             />
             {customSteps.map((step, index) => (
-              <div key={step.title} className="relative text-center sm:text-left">
+              <div
+                key={step.title}
+                className="relative text-center sm:text-left"
+              >
                 <span
                   aria-hidden="true"
                   className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-full border-2 border-toffee bg-cream-light font-serif text-lg font-semibold text-toffee shadow-[0_6px_18px_rgba(176,141,79,0.25)] sm:mx-0 mx-auto"
                 >
                   {index + 1}
                 </span>
-                <h3 className="font-serif text-xl text-charcoal">{step.title}</h3>
+                <h3 className="font-serif text-xl text-charcoal">
+                  {step.title}
+                </h3>
                 <p className="mt-2 text-sm leading-6 text-charcoal-light">
                   {step.text}
                 </p>
@@ -347,14 +312,14 @@ export default function ProductClient({
       <section className="mt-16 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-            Order With Confidence
+            Before Commissions Open
           </p>
           <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
-            The Questions Most Customers Ask Before They Order
+            A Few Helpful Questions
           </h2>
           <p className="mt-4 text-sm leading-7 text-charcoal-light">
-            Custom artwork is personal. Here is how Cansoria handles likeness,
-            preview approval, timing, upload, canvas quality, and support.
+            Our service is in preparation. Here is what is known and what will
+            be confirmed before commissions open.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -373,26 +338,26 @@ export default function ProductClient({
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?auto=format&fit=crop&q=80&w=700"
-              alt="Casual reference photo of a pet before custom painting"
+              src="/images/pet-oil/original-photo.webp"
+              alt="Pet reference photo concept"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
-              Photo
+              Reference Concept
             </span>
           </div>
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=700"
-              alt="Hand-painted oil portrait transformation of the same pet"
+              src="/images/pet-oil/finished-oil.webp"
+              alt="Pet portrait style concept"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
-              Painting
+              Portrait Concept
             </span>
           </div>
         </div>
@@ -402,29 +367,12 @@ export default function ProductClient({
             Photo to Painting
           </p>
           <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
-            A Keepsake With Brushwork, Not a Print
+            An Idea Inspired by Your Photo
           </h2>
           <p className="mt-4 text-sm leading-7 text-charcoal-light">
-            Artists use your photo as the reference, then add the depth, texture,
-            and warmth that make oil painting feel at home on the wall.
+            {STUDIO.comparison} These illustrations explore a possible mood and
+            composition; they do not document a completed painting.
           </p>
-          <div className="mt-7 space-y-4">
-            {reviewHighlights.map((review) => (
-              <div key={review.author} className="border border-border bg-white p-5">
-                <div className="mb-3 flex gap-1 text-terracotta">
-                  {[...Array(5)].map((_, index) => (
-                    <Star key={index} className="h-3.5 w-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-sm leading-6 text-charcoal-light">
-                  &ldquo;{review.quote}&rdquo;
-                </p>
-                <p className="mt-3 text-xs uppercase tracking-[0.2em] text-charcoal">
-                  {review.author}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -434,7 +382,7 @@ export default function ProductClient({
         <span>Need help choosing a size or style?</span>
         <span className="flex items-center gap-2 text-charcoal">
           <Truck className="h-4 w-4 text-terracotta" aria-hidden="true" />
-          Worldwide delivery options appear at checkout.
+          Delivery arrangements will be confirmed before commissions open.
         </span>
       </div>
       <div className="h-24 lg:hidden" aria-hidden="true" />

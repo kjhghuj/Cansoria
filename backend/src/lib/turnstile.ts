@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
+export const verifyTurnstileToken = async (token: string, expectedAction?: string): Promise<boolean> => {
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
     if (!secretKey) {
@@ -32,7 +32,7 @@ export const verifyTurnstileToken = async (token: string): Promise<boolean> => {
             return false;
         }
         const allowedHostnames = (process.env.TURNSTILE_HOSTNAMES || "").split(",").map(host => host.trim().toLowerCase()).filter(Boolean);
-        const action = process.env.TURNSTILE_ACTION || "newsletter";
+        const action = expectedAction || process.env.TURNSTILE_ACTION || "newsletter";
         if (process.env.NODE_ENV === "production" && !allowedHostnames.length) return false;
         if (allowedHostnames.length && (typeof data.hostname !== "string" || !allowedHostnames.includes(data.hostname.toLowerCase()))) return false;
         if (data.action !== action) return false;

@@ -1,3 +1,6 @@
+import { STUDIO, STUDIO_CHAT_INSTRUCTION } from "./studio-content";
+import { portraitStylesUrl } from "./portrait";
+
 // --- TYPES ---
 export interface Product {
   id: string;
@@ -24,13 +27,6 @@ export interface Review {
   content: string;
   date: string;
   verified: boolean;
-}
-
-export interface Testimonial {
-  text: string;
-  author: string;
-  petBreed?: string;
-  image?: string;
 }
 
 export type ArticleBlock =
@@ -61,59 +57,36 @@ export interface Article {
 export const COMPANY_INFO = {
   name: "Cansoria Studio",
   supportEmail: "hello@cansoria.com",
-  address: "Bespoke pet portrait studio serving pet parents worldwide",
-  studioNote:
-    "Museum-grade, 100% hand-painted pet oil portraits on archival fine linen — sketched, proofed, and perfected with you before shipping.",
+  address: "Custom pet portrait service in preparation",
+  studioNote: STUDIO.readiness,
 };
 
 export const PRODUCTS: Product[] = [
   {
     id: "p1",
     name: "Custom Portrait From Photo",
-    subtitle: "A hand-painted oil portrait created from your favorite photo.",
+    subtitle: STUDIO.productSubtitle,
     category: "Custom Painting",
-    price: 189.0,
-    rating: 4.9,
-    reviewCount: 214,
-    description:
-      "Send us a cherished photo and our artists will translate it into a timeless oil painting on canvas. A thoughtful gift for families, weddings, anniversaries, and milestone moments.",
-    details:
-      "Hand-painted oil on canvas - Free digital preview - Multiple canvas sizes - Optional framing",
-    material: "Artist-grade oil paint on premium cotton canvas",
-    images: [
-      "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200",
-    ],
-    variants: [
-      { id: "v1", name: "Warm Ivory", colorCode: "#F7F0E3" },
-      { id: "v2", name: "Muted Gold", colorCode: "#B9904A" },
-      { id: "v3", name: "Deep Charcoal", colorCode: "#27231F" },
-    ],
-    isBestSeller: true,
+    price: 189,
+    rating: 0,
+    reviewCount: 0,
+    description: STUDIO.productDescription,
+    details: STUDIO.readiness,
+    material: "To be confirmed",
+    images: ["/products/portrait.svg"],
   },
   {
     id: "p2",
     name: "Pet Portrait Oil Painting",
-    subtitle: "A museum-quality canvas tribute to a beloved companion.",
+    subtitle: STUDIO.productSubtitle,
     category: "Pet Portraits",
-    price: 169.0,
-    rating: 4.8,
-    reviewCount: 156,
-    description:
-      "Capture the expression, texture, and spirit of your pet in a hand-painted canvas artwork. Ideal for memorial gifts, birthdays, and warm home displays.",
-    details:
-      "Hand-painted oil on canvas - Artist proof before shipping - Worldwide delivery - Gift-ready packaging",
-    material: "Artist-grade oil paint on premium cotton canvas",
-    images: [
-      "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200",
-    ],
-    variants: [
-      { id: "v1", name: "Canvas Only", colorCode: "#EFE5D2" },
-      { id: "v2", name: "Framed", colorCode: "#6F5136" },
-    ],
+    price: 169,
+    rating: 0,
+    reviewCount: 0,
+    description: STUDIO.productDescription,
+    details: STUDIO.readiness,
+    material: "To be confirmed",
+    images: ["/images/pet-oil/classic-oil.webp"],
   },
 ];
 
@@ -123,7 +96,7 @@ export const ARTICLES: Article[] = [
     slug: "how-to-turn-a-photo-into-a-hand-painted-oil-painting",
     category: "Photo to Painting",
     title: "How to Turn a Photo Into a Hand-Painted Oil Painting",
-    author: "The Cansoria Editorial Team",
+    author: "The Cansoria Journal",
     date: "Feb 4, 2026",
     excerpt:
       "Learn how a favorite portrait, wedding moment, family photo, or travel memory becomes a custom oil painting on canvas.",
@@ -147,12 +120,13 @@ export const ARTICLES: Article[] = [
       },
       {
         type: "paragraph",
-        text: "After your order is placed, the studio reviews your reference, prepares the painting direction, and sends a preview before the finished canvas ships.",
+        text: "Before commissioning a painting, ask the provider to confirm materials, production timing, preview arrangements and revision scope. Cansoria is still preparing these service details.",
       },
       {
         type: "image",
         src: "/products/canvas.svg",
-        caption: "A clear photo gives the artist a stronger foundation for likeness and detail.",
+        caption:
+          "A clear photo gives the artist a stronger foundation for likeness and detail.",
       },
     ],
   },
@@ -161,7 +135,7 @@ export const ARTICLES: Article[] = [
     slug: "wedding-anniversary-gift-ideas-custom-oil-portraits",
     category: "Gift Ideas",
     title: "Best Wedding Anniversary Gift Ideas: Custom Oil Portraits",
-    author: "The Cansoria Editorial Team",
+    author: "The Cansoria Journal",
     date: "Feb 10, 2026",
     excerpt:
       "A custom oil portrait turns a wedding photo, first dance, proposal, or favorite shared memory into a lasting anniversary gift.",
@@ -187,8 +161,9 @@ export const ARTICLES: Article[] = [
     id: 3,
     slug: "pet-memorial-portraits-meaningful-way-to-remember",
     category: "Pet Portraits",
-    title: "Pet Memorial Portraits: A Meaningful Way to Remember Your Companion",
-    author: "The Cansoria Editorial Team",
+    title:
+      "Pet Memorial Portraits: A Meaningful Way to Remember Your Companion",
+    author: "The Cansoria Journal",
     date: "Feb 18, 2026",
     excerpt:
       "Pet memorial portraits help preserve the expression, warmth, and everyday presence of a companion you never want to forget.",
@@ -206,7 +181,7 @@ export const ARTICLES: Article[] = [
       },
       {
         type: "paragraph",
-        text: "The preview step gives you a chance to review the direction before shipping, which is especially helpful for keepsake artwork with deep emotional meaning.",
+        text: "When commissioning a keepsake, discuss how the direction and personal details will be reviewed. Cansoria preview and revision arrangements will be confirmed before commissions open.",
       },
     ],
   },
@@ -215,7 +190,7 @@ export const ARTICLES: Article[] = [
     slug: "choose-right-canvas-size-for-your-wall",
     category: "Home Decor",
     title: "How to Choose the Right Canvas Size for Your Wall",
-    author: "The Cansoria Editorial Team",
+    author: "The Cansoria Journal",
     date: "Feb 24, 2026",
     excerpt:
       "Use wall width, furniture scale, ceiling height, and viewing distance to choose a canvas size that feels intentional.",
@@ -251,7 +226,7 @@ export const ARTICLES: Article[] = [
     slug: "portrait-vs-landscape-oil-painting-home-style",
     category: "Style Guide",
     title: "Portrait vs Landscape Oil Painting: Which Style Fits Your Home?",
-    author: "The Cansoria Editorial Team",
+    author: "The Cansoria Journal",
     date: "Mar 3, 2026",
     excerpt:
       "Compare portrait and landscape formats so your custom oil painting fits the wall, room, and feeling you want to create.",
@@ -278,7 +253,7 @@ export const ARTICLES: Article[] = [
     slug: "hand-painted-art-vs-printed-canvas",
     category: "Art Education",
     title: "Why Hand-Painted Art Feels Different From Printed Canvas",
-    author: "The Cansoria Editorial Team",
+    author: "The Cansoria Journal",
     date: "Mar 9, 2026",
     excerpt:
       "Brush texture, subtle color variation, and the artist's interpretation give hand-painted artwork a presence that prints cannot fully copy.",
@@ -302,104 +277,35 @@ export const ARTICLES: Article[] = [
   },
 ];
 
-export const TESTIMONIALS: Testimonial[] = [
-  {
-    text: "They captured the gentle look in Max's eyes perfectly — the exact soft expression he gave me every morning for eleven years. The brushstrokes are so real you want to touch them.",
-    author: "Sophia L., London",
-    petBreed: "Golden Retriever, Max",
-    image:
-      "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200",
-  },
-  {
-    text: "I cried when I unboxed it. Our Miso passed away last spring, and the artist painted her mid-blink smile like she was about to headbutt my hand. It hangs where her window used to be.",
-    author: "Hannah K., Melbourne",
-    petBreed: "British Shorthair, Miso",
-    image:
-      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200",
-  },
-  {
-    text: "The free proof made all the difference. We asked for slightly warmer ears and a softer background, and the artist revised it twice without a word. The final canvas is worth every penny.",
-    author: "Daniel & Priya R., Toronto",
-    petBreed: "Tri-pet Family Portrait",
-    image:
-      "https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&q=80&w=200",
-  },
-  {
-    text: "Our Frenchie looks like royalty in the vintage brass frame. Guests always ask if it's an antique commission piece — nobody believes it started as a phone photo on a walk.",
-    author: "Camille D., Paris",
-    petBreed: "French Bulldog, Gaston",
-    image:
-      "https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=200",
-  },
-  {
-    text: "Ordered one for my mum after our family dog crossed the rainbow bridge. She says painting him in his favourite blanket was the kindest gift we could have given her.",
-    author: "Marcus T., Austin",
-    petBreed: "Beagle, Buddy (Memorial)",
-    image:
-      "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=200",
-  },
-  {
-    text: "Three puppies, one canvas, zero chaos in the painting. The artist somehow caught each of their personalities. The oak frame looks stunning against our cream walls.",
-    author: "Ingrid M., Copenhagen",
-    petBreed: "Triple Puppy Portrait",
-    image:
-      "https://images.unsplash.com/photo-1444212477490-ca407925329e?auto=format&fit=crop&q=80&w=200",
-  },
-];
-
-export const GEMINI_SYSTEM_INSTRUCTION = `
-You are the Cansoria Pet Art Concierge: a professional, warm, concise advisor for a bespoke pet oil painting studio.
-
-Your role:
-- Help pet parents commission hand-painted oil portraits of their dogs, cats, and other companions.
-- Answer questions about photo-to-painting orders, sizes, frames (natural oak, vintage brass, modern black gallery, gallery canvas wrap), memorial keepsakes, multi-pet portraits, proofs, shipping, and uploading photos.
-- Explain that every Cansoria painting is 100% hand-painted by master artists on archival fine linen — never a digital or printed canvas.
-- Explain that customers receive a free digital proof with unlimited revisions before shipping.
-- Recommend categories such as Dog Portraits, Cat Portraits, Multi-Pet & Family Portraits, and Memorial Keepsakes when useful.
-
-Response style:
-- Premium, patient, tasteful, empathetic, and clear.
-- Keep answers concise, usually under 80 words.
-- Do not over-sell or pressure the customer.
-- Ask one helpful follow-up question when needed.
-
-Boundaries:
-- For order-specific questions, ask the customer to contact support with their order number.
-- Never refer to previous storefront identities or non-art product categories.
-- Never make medical or legal claims.
-- Never claim museum partnerships, official artist partnerships, estate rights, or copyrighted collection access unless explicitly provided by Cansoria.
-- Do not guarantee exact delivery dates, exact likeness, or outcomes that cannot be verified.
-`;
+export const GEMINI_SYSTEM_INSTRUCTION = STUDIO_CHAT_INSTRUCTION;
 
 export const NAV_LINKS = [
-  { name: "Shop", path: "/shop" },
-  { name: "How It Works", path: "/#process" },
+  { name: "Pet Portraits", path: portraitStylesUrl },
+  { name: "How It Works", path: "/how-it-works" },
   { name: "Our Story", path: "/about" },
-  { name: "Reviews", path: "/#reviews" },
+  { name: "Our Studio", path: "/our-studio" },
 ];
 
 export const FOOTER_LINKS = {
   shop: [
-    { name: "Custom Pet Portraits", href: "/shop?category=pet-portraits" },
-    { name: "Dog Portraits", href: "/shop?category=dogs" },
-    { name: "Cat Portraits", href: "/shop?category=cats" },
-    { name: "Multi-Pet & Family", href: "/shop?category=multi-pet" },
-    { name: "Memorial Keepsakes", href: "/shop?category=memorial" },
+    { name: "Explore Pet Portraits", href: portraitStylesUrl },
+    { name: "Style Gallery", href: "/gallery" },
+    { name: "How It Works", href: "/how-it-works" },
+    { name: "Photo Guide", href: "/upload-photo" },
   ],
   company: [
-    { name: "About Cansoria", href: "/about" },
-    { name: "How It Works", href: "/#process" },
-    { name: "Journal", href: "/journal" },
-    { name: "Reviews", href: "/#reviews" },
+    { name: "Our Story", href: "/about" },
+    { name: "Our Studio", href: "/our-studio" },
+    { name: "Contact Us", href: "/contact" },
   ],
   support: [
-    { name: "Track My Order", href: "/order/lookup" },
-    { name: "Shipping", href: "/shipping" },
-    { name: "Returns", href: "/returns" },
-    { name: "Contact", href: "mailto:hello@cansoria.com" },
+    { name: "Track Your Order", href: "/order/lookup" },
+    { name: "Shipping & Delivery", href: "/shipping" },
+    { name: "Returns & Refunds", href: "/returns" },
+    { name: "FAQs", href: "/faq" },
   ],
   legal: [
-    { name: "Terms & Conditions", href: "/terms" },
     { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms & Conditions", href: "/terms" },
   ],
 };

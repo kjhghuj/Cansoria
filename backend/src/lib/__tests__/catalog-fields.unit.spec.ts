@@ -36,6 +36,13 @@ describe("public catalog Graph projections", () => {
     expect(req.queryConfig.fields.some(field => field.startsWith("*"))).toBe(false)
     expect(req.queryConfig.fields.some(field => field.includes("groups.customers"))).toBe(false)
   })
+  it("uses the native shipping type relation so delivery choices can be listed", () => {
+    const req = { originalUrl: "/store/shipping-options", query: { cart_id: "cart_a" }, queryConfig: { fields: [] } } as any
+    forceCatalogFields(req, {} as any, jest.fn())
+    expect(req.queryConfig.fields).toEqual(expect.arrayContaining(["type.id", "type.label", "type.description", "type.code"]))
+    expect(req.queryConfig.fields.some((field: string) => field.startsWith("shipping_option_type."))).toBe(false)
+    expect(req.query.cart_id).toBe("cart_a")
+  })
   it.each(["carts.email", "cart_items.cart.email", "products.sales_channels.carts.shipping_address.*"])("globally rejects %s on other Store graph endpoints", fields => {
     expect(() => prepareListQuery({ fields }, { restricted: STORE_RESTRICTED_FIELDS })).toThrow()
   })

@@ -1,11 +1,18 @@
-﻿import { Metadata } from "next";
+﻿import { formatPrice, lowestProductPrice } from "@/lib/money";
+import { STUDIO } from "@/lib/studio-content";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
 import Link from "next/link";
 import { Share2, Facebook, Twitter, Link as LinkIcon } from "lucide-react";
 import ImageWithFallback from "@/components/ImageWithFallback";
-import { getProductById, getRegion, getProductByHandle, getProductPrice, getProductImage } from "@/lib/medusa";
+import {
+  getProductById,
+  getRegion,
+  getProductByHandle,
+  getProductImage,
+} from "@/lib/medusa";
 import {
   getArticleBySlug,
   getFallbackArticleBySlug,
@@ -20,7 +27,7 @@ import HtmlContentRenderer from "./HtmlContentRenderer";
 import InlineProductBlock from "@/components/journal/InlineProductBlock";
 
 // Disable caching for this page (instant Strapi content updates)
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -31,7 +38,8 @@ export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
+  const article =
+    (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
 
   if (!article) {
     return {
@@ -61,11 +69,21 @@ export async function generateMetadata({
 
 // --- SUB-COMPONENTS (Server) ---
 
-const StickySidebar = ({ product }: { product: StoreProduct | null | undefined }) => {
+const StickySidebar = ({
+  product,
+}: {
+  product: StoreProduct | null | undefined;
+}) => {
   if (!product) return null;
 
-  const price = getProductPrice(product);
-  const imageUrl = getProductImage(product);
+  const imageUrl =
+    product.handle === "pet-portrait-oil-painting"
+      ? "/images/pet-oil/classic-oil.webp"
+      : getProductImage(product) || "/products/generic.svg";
+  const currency =
+    product.variants?.find((variant) => variant.calculated_price?.currency_code)
+      ?.calculated_price?.currency_code || "GBP";
+  const price = lowestProductPrice(product, currency);
   const category = product.categories?.[0]?.name || "Wall Art";
 
   return (
@@ -98,14 +116,19 @@ const StickySidebar = ({ product }: { product: StoreProduct | null | undefined }
             </div>
             <div className="text-right">
               <p className="text-terracotta font-bold text-sm">
-                {"$" + price.toFixed(2)}
+                {price === undefined
+                  ? "Contact for Price"
+                  : formatPrice(price, currency)}
               </p>
             </div>
           </div>
 
-          <button className="w-full bg-charcoal text-white py-3 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-terracotta transition-colors shadow-sm">
+          <p className="mb-3 text-xs text-charcoal-light">
+            {STUDIO.illustration}
+          </p>
+          <span className="block text-center w-full bg-charcoal text-white py-3 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-terracotta transition-colors shadow-sm">
             View Details
-          </button>
+          </span>
         </Link>
       </div>
     </div>
@@ -128,8 +151,9 @@ const ContentRenderer = ({
           return (
             <div
               key={idx}
-              className={`text-lg md:text-xl font-light leading-[1.8] text-charcoal-light ${isFirst ? "flow-root" : ""
-                }`}
+              className={`text-lg md:text-xl font-light leading-[1.8] text-charcoal-light ${
+                isFirst ? "flow-root" : ""
+              }`}
             >
               {isFirst && block.text ? (
                 <span className="float-left mr-3 text-6xl font-serif text-terracotta leading-[0.8] pt-2">
@@ -184,11 +208,31 @@ const ContentRenderer = ({
 
         // Heading blocks from Strapi
         if (block.type === "heading") {
-          const className = "font-serif text-2xl md:text-3xl text-charcoal mt-12 mb-6";
-          if (block.level === 1) return <h1 key={idx} className={className}>{block.text}</h1>;
-          if (block.level === 3) return <h3 key={idx} className={className}>{block.text}</h3>;
-          if (block.level === 4) return <h4 key={idx} className={className}>{block.text}</h4>;
-          return <h2 key={idx} className={className}>{block.text}</h2>;
+          const className =
+            "font-serif text-2xl md:text-3xl text-charcoal mt-12 mb-6";
+          if (block.level === 1)
+            return (
+              <h1 key={idx} className={className}>
+                {block.text}
+              </h1>
+            );
+          if (block.level === 3)
+            return (
+              <h3 key={idx} className={className}>
+                {block.text}
+              </h3>
+            );
+          if (block.level === 4)
+            return (
+              <h4 key={idx} className={className}>
+                {block.text}
+              </h4>
+            );
+          return (
+            <h2 key={idx} className={className}>
+              {block.text}
+            </h2>
+          );
         }
 
         // List blocks from Strapi
@@ -215,7 +259,7 @@ const ContentRenderer = ({
 // Matches [product:handle]
 const extractProductHandles = (html: string): string[] => {
   const matches = html.matchAll(/\[product:([a-zA-Z0-9-]+)\]/g);
-  return Array.from(matches, m => m[1]);
+  return Array.from(matches, (m) => m[1]);
 };
 
 function uniqueArticlesBySlug<T extends { slug: string }>(articles: T[]): T[] {
@@ -231,7 +275,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
 
   // Fetch article from Strapi CMS
-  const article = (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
+  const article =
+    (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
 
   if (!article) {
     notFound();
@@ -241,8 +286,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const relatedArticles = article.relatedArticleIds
     ? uniqueArticlesBySlug(
         (await getRelatedArticles(article.relatedArticleIds)).concat(
-          getFallbackRelatedArticles(article.relatedArticleIds)
-        )
+          getFallbackRelatedArticles(article.relatedArticleIds),
+        ),
       )
     : [];
 
@@ -264,12 +309,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       const uniqueHandles = Array.from(new Set(handles));
 
       // Fetch products in parallel
-      await Promise.all(uniqueHandles.map(async (handle) => {
-        const product = await getProductByHandle(handle, region?.id);
-        if (product) {
-          shortcodeProductsMap.set(handle, product);
-        }
-      }));
+      await Promise.all(
+        uniqueHandles.map(async (handle) => {
+          const product = await getProductByHandle(handle, region?.id);
+          if (product) {
+            shortcodeProductsMap.set(handle, product);
+          }
+        }),
+      );
     }
   }
 
@@ -371,12 +418,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Author Bio */}
           <div className="mt-16 pt-8 border-t border-gray-200">
             <h4 className="font-serif text-lg text-charcoal mb-2">
-              About The Editorial Team
+              About Cansoria Journal
             </h4>
             <p className="text-sm font-light text-charcoal-light leading-relaxed">
-              Our editorial team shares practical guidance on custom portraits,
-              canvas wall art, thoughtful gifting, and creating a warmer home
-              with hand-painted artwork.
+              Cansoria Journal shares ideas for reference photos, portrait
+              concepts, thoughtful gifting and displaying art at home.
             </p>
           </div>
         </div>
@@ -444,7 +490,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             "@type": "Article",
             headline: article.title,
             image: [article.image],
-            datePublished: article.date ? new Date(article.date).toISOString() : undefined,
+            datePublished: article.date
+              ? new Date(article.date).toISOString()
+              : undefined,
             author: {
               "@type": "Person",
               name: article.author || "The Editorial Team",
@@ -454,7 +502,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               name: "Cansoria",
               logo: {
                 "@type": "ImageObject",
-                url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/logo.png`,
+                url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/brand/cansoria-wordmark.png`,
               },
             },
             description: article.excerpt,

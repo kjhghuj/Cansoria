@@ -1,5 +1,7 @@
 import Medusa from "@medusajs/js-sdk";
 import type { StoreCart, StoreProduct } from "@/lib/types";
+import { lowestProductPrice } from "./money";
+export { formatPrice } from "./money";
 
 // Initialize Medusa client
 const MEDUSA_BACKEND_URL = typeof window === "undefined"
@@ -253,8 +255,14 @@ export async function getCart(cartId: string) {
   }
 }
 
-export async function addToCart(cartId: string, variantId: string, quantity: number = 1) {
+export async function addToCart(cartId: string, variantId: string, quantity: number = 1, customization?: import("./portrait").PortraitCustomization) {
   try {
+    if (customization) {
+      const response = await fetch(`/api/medusa/store/carts/${encodeURIComponent(cartId)}/portrait-items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ variant_id: variantId, quantity, ...customization }) });
+      const data = await response.json();
+      if (!response.ok || !data.cart) throw new Error(data.message || "Unable to add your portrait.");
+      return data.cart as import("./types").StoreCart;
+    }
     const { cart } = await sdk.store.cart.createLineItem(cartId, {
       variant_id: variantId,
       quantity,
@@ -539,14 +547,6 @@ export async function searchProducts(query: string, regionId?: string) {
 }
 
 // Format price helper
-export function formatPrice(amount: number | null | undefined, currencyCode: string = "GBP") {
-  if (amount === null || amount === undefined) return "N/A";
-
-  return new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: currencyCode,
-  }).format(amount / 100); // Medusa stores prices in cents
-}
 
 // Stripe Payment Functions
 
@@ -632,8 +632,7 @@ export async function addShippingMethod(cartId: string, optionId: string) {
 
 // Helper to get price
 export const getProductPrice = (product: Pick<StoreProduct, "variants">) => {
-  const price = product.variants?.[0]?.calculated_price?.calculated_amount;
-  return price ? price / 100 : 0;
+  return lowestProductPrice(product) ?? 0;
 };
 
 // Helper to get image

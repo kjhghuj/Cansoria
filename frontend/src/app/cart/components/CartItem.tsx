@@ -2,6 +2,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/medusa";
 import { StoreCartLineItem } from "@/lib/types";
+import { portraitSummary } from "@/lib/portrait";
 import { FALLBACK_IMAGE, MinusIcon, PlusIcon, TrashIcon } from "./utils";
 
 export default function CartItem({
@@ -22,7 +23,8 @@ export default function CartItem({
   fallbackImage?: string | null;
 }) {
   const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
-  const preferredImage = variantImage || item.thumbnail || fallbackImage || FALLBACK_IMAGE;
+  const portrait = portraitSummary(item.metadata);
+  const preferredImage = portrait?.image || variantImage || item.thumbnail || fallbackImage || FALLBACK_IMAGE;
   const imageSrc = failedImageSrc === preferredImage ? FALLBACK_IMAGE : preferredImage;
   const productTitle =
     item.product_title || item.variant?.product?.title || "Custom Artwork";
@@ -33,7 +35,7 @@ export default function CartItem({
   const lineTotal = item.total ?? unitPrice * item.quantity;
 
   return (
-    <div className={`flex gap-4 py-5 sm:py-6 ${isUpdating ? 'opacity-50' : ''}`}>
+    <div className={`flex flex-col gap-4 py-5 min-[400px]:flex-row sm:py-6 ${isUpdating ? 'opacity-50' : ''}`}>
       {/* Product Image */}
       <div className="relative w-24 h-28 sm:w-32 sm:h-36 flex-shrink-0 bg-canvas overflow-hidden rounded-xl border border-border-subtle">
         <Image
@@ -49,8 +51,8 @@ export default function CartItem({
       {/* Product Details */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
-          <div>
-            <h3 className="font-serif text-lg text-charcoal truncate pr-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-serif text-lg text-charcoal break-words pr-2">
               {productTitle}
             </h3>
             {variantTitle && variantTitle !== productTitle && (
@@ -61,13 +63,14 @@ export default function CartItem({
             <p className="mt-2 text-xs uppercase tracking-[0.18em] text-toffee">
               Custom artwork
             </p>
+            {portrait && <div className="mt-2 space-y-1 text-sm text-charcoal-light"><p>{portrait.style}</p><p className="break-all">Photo: {portrait.photoName}</p></div>}
           </div>
 
           {/* Remove Button - Desktop */}
           <button
             onClick={onRemove}
             disabled={isUpdating}
-            className="hidden sm:flex items-center justify-center w-8 h-8 text-charcoal-light hover:text-toffee transition-colors disabled:opacity-50"
+            className="hidden sm:flex shrink-0 items-center justify-center w-8 h-8 text-charcoal-light hover:text-toffee transition-colors disabled:opacity-50"
             aria-label="Remove item"
           >
             <TrashIcon />
@@ -80,7 +83,7 @@ export default function CartItem({
         </p>
 
         {/* Quantity Controls & Mobile Remove */}
-        <div className="flex items-center justify-between mt-4">
+        <div className="flex flex-wrap gap-3 items-center justify-between mt-4">
           <div className="inline-flex h-9 items-center rounded-full border border-border bg-white">
             <button
               onClick={() => onUpdateQuantity(item.quantity - 1)}

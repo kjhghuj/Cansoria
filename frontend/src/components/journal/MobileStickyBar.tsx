@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { portraitStylesUrl } from "@/lib/portrait";
 
 export default function MobileStickyBar() {
     const [showMobileSticky, setShowMobileSticky] = useState(false);
@@ -35,12 +35,12 @@ export default function MobileStickyBar() {
                         Explore the collection
                     </span>
                 </div>
-                <Link
-                    href="/shop"
+                  <a
+                    href={portraitStylesUrl}
                     className="bg-charcoal text-white px-6 py-3 text-xs uppercase font-bold tracking-widest rounded-sm shadow-lg whitespace-nowrap"
                 >
                     Shop Now
-                </Link>
+                </a>
             </div>
         </div>
     );

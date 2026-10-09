@@ -1,8 +1,3 @@
-import { loadStripe } from "@stripe/stripe-js";
-
-// Stripe Init
-export const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY || "");
-
 // Placeholder images
 export const PLACEHOLDER_IMAGE = "/placeholder.svg";
 export const FALLBACK_IMAGE = "/products/generic.svg";

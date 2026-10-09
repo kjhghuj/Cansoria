@@ -109,7 +109,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         const result = await locking.execute(`cart-identity:${id}`, async () => {
             if (!(await authorizeCart(req, id))) return null;
             const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
-            const { data } = await query.graph({ entity: "cart", fields: ["id", "customer_id", "customer.has_account"], filters: { id } });
+            const { data } = await query.graph({ entity: "cart", fields: ["id", "customer_id", "customer.has_account", "metadata"], filters: { id } });
+            if ("metadata" in input && Array.isArray(data[0]?.metadata?.portrait_photos)) {
+                input.metadata = { ...(input.metadata || {}), portrait_photos: data[0].metadata.portrait_photos };
+            }
             if (!registeredOwner(data[0]) && typeof input.email === "string") {
                 const customerId = await guestCustomer(req, input.email);
                 if (customerId) await req.scope.resolve(Modules.CART).updateCarts(id, { customer_id: customerId });
