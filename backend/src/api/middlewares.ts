@@ -1,6 +1,5 @@
 import { defineMiddlewares } from "@medusajs/medusa"
 import cors from "cors"
-import { productImageCleanupMiddleware } from "./middlewares/product-image-cleanup"
 import { variantThumbnailProcessor } from "./middlewares/variant-thumbnail-processor"
 import { authenticate } from "@medusajs/framework/http"
 import { cartAccessGuard, paymentAccessGuard, disableOrderTransfer } from "../lib/resource-access"
@@ -9,6 +8,7 @@ import { welcomePromotionGuard } from "../lib/welcome-promotions"
 import { forceCartFields, forcePaymentFields } from "../lib/cart-fields"
 import { forceCatalogFields, PROJECTED_STORE_RESOURCES } from "../lib/catalog-fields"
 import { POST as retiredReturns } from "./store/returns/route"
+import { POST as retiredFileDeletion } from "./admin/delete-file/route"
 
 const STORE_CORS = process.env.STORE_CORS || "http://localhost:3030"
 
@@ -68,6 +68,10 @@ export default defineMiddlewares({
             middlewares: [createRateLimiter({ name: "authentication", limit: 20, windowSeconds: 900 })],
         },
         {
+            matcher: "/auth/customer/emailpass/reset-password", method: "POST",
+            middlewares: [createRateLimiter({ name: "password-reset", limit: 5, windowSeconds: 3600 })],
+        },
+        {
             matcher: "/store/customers", method: "POST",
             middlewares: [createRateLimiter({ name: "account-create", limit: 5, windowSeconds: 3600 }), createRateLimiter({ name: "welcome-email-budget", limit: 500, windowSeconds: 86400, global: true })],
         },
@@ -76,9 +80,9 @@ export default defineMiddlewares({
             middlewares: [createRateLimiter({ name: "email-check", limit: 20, windowSeconds: 900 })],
         },
         {
-            matcher: "/admin/products/:id",
-            method: "POST",
-            middlewares: [productImageCleanupMiddleware],
+            matcher: "/admin/uploads/:id",
+            method: "DELETE",
+            middlewares: [retiredFileDeletion],
         },
         {
             matcher: "/store/products",

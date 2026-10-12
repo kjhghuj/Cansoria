@@ -46,6 +46,31 @@ describe("preparation-stage public facts", () => {
     expect(legacy.description).toContain("unlimited revisions");
     expect(legacy.metadata?.free_preview).toBe(true);
   });
+  it("presents reviewed admin content once orders are open", () => {
+    const product = studioProduct(legacy, { ordersOpen: true });
+    expect(product.description).toBe(legacy.description);
+    expect(product.subtitle).toBe(legacy.subtitle);
+    expect(product.material).toBe("Archival linen");
+    // Story sections survive; they are no longer unconditionally cleared.
+    expect(product.metadata?.story_sections).toEqual(
+      legacy.metadata?.story_sections,
+    );
+    // Verified review claims survive; the legacy fixture is marked verified.
+    expect(product.metadata?.reviews_verified).toBe(true);
+    expect(product.metadata?.rating).toBe(4.8);
+    // Unverified review claims stay suppressed even when orders are open.
+    const unverified = studioProduct(
+      { ...legacy, metadata: { ...legacy.metadata, reviews_verified: false } },
+      { ordersOpen: true },
+    );
+    expect(unverified.metadata?.reviews_verified).toBe(false);
+    expect(unverified.metadata?.review_count).toBe(0);
+    expect(unverified.metadata?.rating).toBeNull();
+  });
+  it("keeps open-store SEO aligned with the reviewed admin description", () => {
+    const seo = studioProductSeo(legacy, { ordersOpen: true });
+    expect(seo.description).toBe(legacy.description);
+  });
   it("uses safe catalog copy and concept imagery in SEO", () => {
     const seo = studioProductSeo(legacy);
     expect(seo.description).toBe(STUDIO.productDescription);

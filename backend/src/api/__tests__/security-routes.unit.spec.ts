@@ -53,7 +53,7 @@ describe("unsafe public routes", () => {
   it("only returns an existing unexpired coupon for the authenticated account email", async () => {
     const req = request(), res = response()
     req.auth_context = { actor_id: "cus_a" }; req.body = { email: "owner@example.com", turnstile_token: "valid" }
-    req.scope.resolve.mockImplementation((key: string) => key === "promotion" ? { listPromotions: async () => [{ rules: [{ attribute: "customer.id", operator: "eq", values: [{ value: "cus_a" }] }, { attribute: "email", operator: "eq", values: [{ value: "owner@example.com" }] }], campaign: { budget: { type: "usage", limit: 1 } } }] } : { retrieveCustomer: async () => ({ id: "cus_a", email: "owner@example.com", metadata: { welcome_discount_code: "ART15-SAFE", welcome_discount_valid_until: new Date(Date.now() + 60000).toISOString() } }) })
+    req.scope.resolve.mockImplementation((key: string) => key === "promotion" ? { listPromotions: async () => [{ status: "active", rules: [{ attribute: "customer.id", operator: "eq", values: [{ value: "cus_a" }] }, { attribute: "email", operator: "eq", values: [{ value: "owner@example.com" }] }], campaign: { budget: { type: "usage", limit: 1, used: 0 } } }] } : { retrieveCustomer: async () => ({ id: "cus_a", email: "owner@example.com", has_account: true, created_at: new Date().toISOString(), metadata: { welcome_discount_code: "ART15-SAFE", welcome_discount_valid_until: new Date(Date.now() + 60000).toISOString() } }) })
     await newsletter(req, res)
     expect(res.json.mock.calls[0][0].discount_code).toBe("ART15-SAFE")
     req.body.email = "other@example.com"

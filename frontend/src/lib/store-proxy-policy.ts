@@ -22,11 +22,38 @@ const deletePaths = [
   new RegExp(`^store/customers/me/addresses/${ID}$`),
 ];
 
+// Query parameter allowlist per proxied path; default-deny. The backend's own
+// field projection remains the authority — this stops the BFF from forwarding
+// filter or expansion parameters the storefront never uses.
+const queryKeysByPath: Array<[RegExp, string[]]> = [
+  [/^store\/products$/, ["fields", "limit", "offset", "q", "id", "handle", "region_id", "sales_channel_id", "category_id", "collection_id", "type_id", "tag_id"]],
+  [/^store\/regions$/, ["fields", "limit", "offset", "id"]],
+  [/^store\/collections$/, ["fields", "limit", "offset", "id"]],
+  [/^store\/product-categories$/, ["fields", "limit", "offset", "id", "include_descendants_tree"]],
+  [/^store\/shipping-options$/, ["fields", "limit", "offset", "cart_id"]],
+  [/^store\/orders$/, ["fields", "limit", "offset", "id"]],
+  [new RegExp(`^store/carts/${ID}$`), ["fields"]],
+  [new RegExp(`^store/orders/${ID}$`), ["fields"]],
+  [/^store\/customers\/me$/, ["fields"]],
+  [new RegExp(`^store/customers/me/addresses(/${ID})?$`), ["fields", "limit", "offset"]],
+];
+
 export function isStorePathAllowed(segments: string[], method: string): boolean {
   if (!segments.length || segments.some((part) => !/^[A-Za-z0-9_-]+$/.test(part))) return false;
   const path = segments.join('/');
   const patterns = method === 'GET' ? readPaths : method === 'POST' ? writePaths : method === 'DELETE' ? deletePaths : [];
   return patterns.some((pattern) => pattern.test(path));
+}
+
+export function isStoreQueryAllowed(segments: string[], search: string): boolean {
+  if (!search || search === '?') return true;
+  const path = segments.join('/');
+  const allowed = new Set(queryKeysByPath.find(([pattern]) => pattern.test(path))?.[1] ?? []);
+  const params = new URLSearchParams(search);
+  for (const key of new Set(params.keys())) {
+    if (!allowed.has(key)) return false;
+  }
+  return true;
 }
 
 export function isSameOriginWrite(request: Request): boolean {

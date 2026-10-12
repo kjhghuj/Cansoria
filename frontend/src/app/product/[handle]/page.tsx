@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
-import { getProductByHandle, getRegion } from "@/lib/medusa";
+import { getProductByHandle, getRegion, getStoreOrdersOpen } from "@/lib/medusa";
 import ProductClient from "./components/ProductClient";
 import { studioProduct, studioProductSeo } from "@/lib/studio-content";
 import { getPortraitStyle } from "@/lib/portrait";
@@ -48,9 +48,9 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params;
-  const region = await getRegion("gb");
+  const [region, ordersOpen] = await Promise.all([getRegion("gb"), getStoreOrdersOpen()]);
   const rawProduct = await getProductByHandle(handle, region?.id);
-  const product = rawProduct ? studioProduct(rawProduct) : null;
+  const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
 
   if (!product) {
     return {
@@ -59,7 +59,7 @@ export async function generateMetadata({
     };
   }
 
-  return studioProductSeo(product);
+  return studioProductSeo(product, { ordersOpen });
 }
 
 export default async function ProductPage({
@@ -68,9 +68,9 @@ export default async function ProductPage({
 }: ProductPageProps) {
   const { handle } = await params;
   const initialStyle = getPortraitStyle((await searchParams).style);
-  const region = await getRegion("gb");
+  const [region, ordersOpen] = await Promise.all([getRegion("gb"), getStoreOrdersOpen()]);
   const rawProduct = await getProductByHandle(handle, region?.id);
-  const product = rawProduct ? studioProduct(rawProduct) : null;
+  const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
 
   if (!product) {
     notFound();

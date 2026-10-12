@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ContainerRegistrationKeys, QueryContext } from "@medusajs/framework/utils";
 import { wrapProductsWithTaxPrices } from "@medusajs/medusa/api/store/products/helpers";
+import { projectCatalogMetadata } from "../../../../lib/catalog-fields";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HANDLE_REGEX = /^[a-z0-9-_]+$/i;
@@ -78,6 +79,7 @@ export async function GET(
         }
 
         await wrapProductsWithTaxPrices(req as any, [product]);
+        projectCatalogMetadata({ product });
         return res.json({ product });
     } catch (error) {
         console.error("[API Error] Failed to fetch product:", error instanceof Error ? error.message : "Unknown error");

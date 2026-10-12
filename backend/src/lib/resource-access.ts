@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse, MedusaNextFunction, AuthenticatedMe
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { verifyAccessToken } from "./access-tokens"
 import { portraitCartReady, PORTRAIT_CART_FIELDS } from "./portrait-photos"
+import { ORDERS_CLOSED_MESSAGE, storeOrdersOpenForScope } from "./store-status"
 
 export function sensitiveResponse(res: MedusaResponse) {
   res.setHeader("Cache-Control", "no-store")
@@ -70,6 +71,11 @@ export async function paymentAccessGuard(req: MedusaRequest, res: MedusaResponse
     }
     if (!cartId || !(await authorizeCart(req, cartId))) {
       return res.status(403).json({ type: "forbidden", message: "Payment access denied" })
+    }
+    if (req.method === "POST" && /\/payment-sessions\/?$/i.test(pathname)) {
+      // Do not create new payment intents while the store is closed to orders.
+      if (!(await storeOrdersOpenForScope(req.scope)))
+        return res.status(403).json({ type: "not_allowed", message: ORDERS_CLOSED_MESSAGE })
     }
     if (req.method === "POST") {
       const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)

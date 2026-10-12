@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
-import { transferCartCustomerWorkflowId } from "@medusajs/medusa/core-flows"
+import { cansoriaClaimCartWorkflowId } from "../../../../../workflows/cansoria-claim-cart"
 import { refetchCart } from "@medusajs/medusa/api/store/carts/helpers"
 import { authorizeCart, customerActor, sensitiveResponse } from "../../../../../lib/resource-access"
 import { applyCartFields } from "../../../../../lib/cart-fields"
@@ -14,7 +14,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     const locking = req.scope.resolve(Modules.LOCKING)
     const cart = await locking.execute(`cart-identity:${id}`, async () => {
       if (!(await authorizeCart(req, id))) return null
-      await req.scope.resolve(Modules.WORKFLOW_ENGINE).run(transferCartCustomerWorkflowId, { input: { id, customer_id: actor, additional_data: (req.validatedBody as any)?.additional_data } })
+      await req.scope.resolve(Modules.WORKFLOW_ENGINE).run(cansoriaClaimCartWorkflowId, { input: { id, customer_id: actor, additional_data: (req.validatedBody as any)?.additional_data } })
       return refetchCart(id, req.scope, req.queryConfig.fields)
     }, { timeout: 300 })
     if (!cart) return res.status(403).json({ type: "forbidden", message: "Cart claim denied" })

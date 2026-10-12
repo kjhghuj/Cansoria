@@ -1,9 +1,8 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
-import { updateCartWorkflowId } from "@medusajs/medusa/core-flows";
+import { cansoriaUpdateCartWorkflowId } from "../../../../workflows/cansoria-update-cart";
 import { refetchCart } from "@medusajs/medusa/api/store/carts/helpers";
-import { authorizeCart, sensitiveResponse, registeredOwner } from "../../../../lib/resource-access";
-import { guestCustomer } from "../../../../lib/guest-customer";
+import { authorizeCart, sensitiveResponse } from "../../../../lib/resource-access";
 import { applyCartFields, safeCartInput } from "../../../../lib/cart-fields";
 
 
@@ -108,16 +107,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         const locking = req.scope.resolve(Modules.LOCKING);
         const result = await locking.execute(`cart-identity:${id}`, async () => {
             if (!(await authorizeCart(req, id))) return null;
-            const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
-            const { data } = await query.graph({ entity: "cart", fields: ["id", "customer_id", "customer.has_account", "metadata"], filters: { id } });
-            if ("metadata" in input && Array.isArray(data[0]?.metadata?.portrait_photos)) {
-                input.metadata = { ...(input.metadata || {}), portrait_photos: data[0].metadata.portrait_photos };
-            }
-            if (!registeredOwner(data[0]) && typeof input.email === "string") {
-                const customerId = await guestCustomer(req, input.email);
-                if (customerId) await req.scope.resolve(Modules.CART).updateCarts(id, { customer_id: customerId });
-            }
-            await req.scope.resolve(Modules.WORKFLOW_ENGINE).run(updateCartWorkflowId, { input: { ...input, id } });
+            await req.scope.resolve(Modules.WORKFLOW_ENGINE).run(cansoriaUpdateCartWorkflowId, { input: { ...input, id } });
             return refetchCart(id, req.scope, req.queryConfig.fields);
         }, { timeout: 300 });
         if (!result) return res.status(403).json({ type: "forbidden", message: "Cart access denied" });

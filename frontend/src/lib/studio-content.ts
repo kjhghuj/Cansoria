@@ -75,8 +75,42 @@ export const STUDIO_CHAT_INSTRUCTION = [
   "Never make medical or legal claims, guarantee likeness or dates, or disclose collaborators' personal contacts.",
 ].join("\n");
 
+export interface StudioPresentationOptions {
+  /**
+   * Commerce readiness from the store record. While closed (preparation), legacy
+   * marketing claims are replaced with confirmed preparation facts. Once the
+   * business opens orders, reviewed admin content — subtitle, description,
+   * material and story sections — is presented as managed in the backend.
+   */
+  ordersOpen?: boolean;
+}
+
+/** Neutralize review/rating claims that the product record has not verified. */
+function verifiedReviewsOnly(metadata: Record<string, unknown>) {
+  if (metadata.reviews_verified === true) return metadata;
+  return {
+    ...metadata,
+    reviews_verified: false,
+    rating: null,
+    average_rating: null,
+    review_rating: null,
+    review_count: 0,
+    reviews: 0,
+    rating_count: 0,
+  };
+}
+
 /** Replace unconfirmed legacy copy without modifying the product's commerce data. */
-export function studioProduct(product: StoreProduct): StoreProduct {
+export function studioProduct(
+  product: StoreProduct,
+  options: StudioPresentationOptions = {},
+): StoreProduct {
+  if (options.ordersOpen) {
+    return {
+      ...product,
+      metadata: verifiedReviewsOnly(product.metadata ?? {}),
+    };
+  }
   return {
     ...product,
     subtitle: STUDIO.productSubtitle,
@@ -101,21 +135,28 @@ export function studioProduct(product: StoreProduct): StoreProduct {
   };
 }
 
-export function studioProductSeo(product: StoreProduct) {
-  const presented = studioProduct(product);
+export function studioProductSeo(
+  product: StoreProduct,
+  options: StudioPresentationOptions = {},
+) {
+  const presented = studioProduct(product, options);
   const image =
     product.handle === "pet-portrait-oil-painting"
       ? "/images/pet-oil/classic-oil.webp"
       : product.thumbnail || product.images?.[0]?.url;
+  const description =
+    presented.description ||
+    (options.ordersOpen ? product.description : undefined) ||
+    STUDIO.productDescription;
   return {
     title: (product.title || "Portrait Concept") + " | Cansoria",
-    description: presented.description || STUDIO.productDescription,
+    description,
     alternates: {
       canonical: product.handle ? "/product/" + product.handle : "/",
     },
     openGraph: {
       title: product.title || "Cansoria Portrait Concepts",
-      description: presented.description || STUDIO.productDescription,
+      description,
       images: image ? [{ url: image, alt: STUDIO.illustration }] : [],
       type: "website" as const,
     },

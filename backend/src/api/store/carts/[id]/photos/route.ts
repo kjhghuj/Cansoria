@@ -62,19 +62,25 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           mime: input.mime,
           size: input.size,
         });
-        try {
-          await req.scope
-            .resolve(Modules.CART)
-            .updateCarts(cart.id, {
-              metadata: {
-                ...cart.metadata,
-                portrait_photos: [...photos, photo],
-              },
-            });
-        } catch (error) {
-          await files.deleteFiles(file.id);
-          throw error;
-        }
+        // A rejected update does not prove that the database rolled back.
+        // Retain the file even on failure: a committed reference must stay readable.
+        const appended = await req.scope.resolve(Modules.LOCKING).execute(cart.id, async () => {
+          // Upload outside this short cart lock. Re-read active state and registry under the native completion lock.
+          const { data: current } = await req.scope.resolve(ContainerRegistrationKeys.QUERY).graph({ entity: "cart", fields: ["id", "completed_at", "metadata"], filters: { id: cart.id } });
+          const active = current[0];
+          if (!active || active.completed_at) return "inactive";
+          const registry = Array.isArray(active.metadata?.portrait_photos) ? active.metadata.portrait_photos : [];
+          if (registry.length >= 20) return "limit";
+          await req.scope.resolve(Modules.CART).updateCarts(cart.id, {
+            metadata: {
+              ...active.metadata,
+              portrait_photos: [...registry, photo],
+            },
+          });
+          return "appended";
+        }, { timeout: 30 });
+        if (appended === "inactive") return res.status(409).json({ message: "This cart is no longer active" });
+        if (appended === "limit") return res.status(400).json({ message: "Photo limit reached for this cart" });
         return res.status(201).json({ photo: publicPhoto(photo) });
       },
       { timeout: 30 },

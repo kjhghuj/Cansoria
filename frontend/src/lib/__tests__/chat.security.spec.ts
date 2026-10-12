@@ -17,13 +17,20 @@ describe("chat API abuse controls", () => {
   });
   afterEach(() => { jest.useRealTimers(); });
 
-  const request = (message: unknown, headers: Record<string, string> = {}) => new Request("https://cansoria.com/api/chat", { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify({ message }) });
+  const request = (message: unknown, headers: Record<string, string> = {}) => new Request("https://cansoria.com/api/chat", { method: "POST", headers: { "content-type": "application/json", Origin: "https://cansoria.com", ...headers }, body: JSON.stringify({ message }) });
+
+  it("rejects cross-site and origin-less posts before any paid call", async () => {
+    expect((await post(request("hello", { Origin: "https://evil.test" }))).status).toBe(403);
+    const originless = await post(new Request("https://cansoria.com/api/chat", { method: "POST", body: JSON.stringify({ message: "hello" }) }));
+    expect(originless.status).toBe(403);
+    expect(generateContent).not.toHaveBeenCalled();
+  });
 
   it("rejects long, missing, malformed, and invalid messages before a paid call", async () => {
     for (const message of ["x".repeat(2001), " ".repeat(2001) + "hi", null, 123, "   "]) {
       expect((await post(request(message))).status).toBe(400);
     }
-    expect((await post(new Request("https://cansoria.com/api/chat", { method: "POST", body: "{" }))).status).toBe(400);
+    expect((await post(new Request("https://cansoria.com/api/chat", { method: "POST", headers: { "content-type": "application/json", Origin: "https://cansoria.com" }, body: "{" }))).status).toBe(400);
     expect(generateContent).not.toHaveBeenCalled();
   });
 
@@ -36,7 +43,7 @@ describe("chat API abuse controls", () => {
   });
 
   it("rejects actual oversized bodies even without content length", async () => {
-    const req = new Request("https://cansoria.com/api/chat", { method: "POST", body: JSON.stringify({ message: "hi", padding: "x".repeat(16384) }) });
+    const req = new Request("https://cansoria.com/api/chat", { method: "POST", headers: { Origin: "https://cansoria.com" }, body: JSON.stringify({ message: "hi", padding: "x".repeat(16384) }) });
     expect((await post(req)).status).toBe(413);
     expect(generateContent).not.toHaveBeenCalled();
   });

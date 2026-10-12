@@ -33,6 +33,17 @@ describe("resource capability tokens", () => {
     expect(() => issueAccessToken("cart", "cart_a")).toThrow()
     process.env.NODE_ENV = env
   })
+  it("treats a missing or unrecognized NODE_ENV as production for secrets", () => {
+    const env = process.env.NODE_ENV, secret = process.env.JWT_SECRET
+    for (const value of [undefined, "staging", "prod"]) {
+      if (value === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = value
+      process.env.JWT_SECRET = "supersecret"
+      expect(() => issueAccessToken("cart", "cart_a")).toThrow()
+    }
+    process.env.NODE_ENV = env
+    if (secret === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = secret
+  })
   it.each([["cart", "bad", 60], ["cart", "order_a", 60], ["cart", "cart_a", 0], ["order", "order_a", 604801]])("rejects invalid issued token arguments %p/%p/%p", (purpose, id, ttl) => {
     expect(() => issueAccessToken(purpose as any, id as string, ttl as number)).toThrow()
   })
@@ -55,6 +66,10 @@ describe("production storefront URL", () => {
   it("accepts HTTPS and the configured frontend fallback", () => {
     process.env.FRONTEND_URL = "https://cansoria.test/"
     expect(storefrontUrl()).toBe("https://cansoria.test")
+  })
+  it("rejects a missing storefront URL even when NODE_ENV is unset", () => {
+    delete process.env.NODE_ENV
+    expect(() => storefrontUrl()).toThrow()
   })
 })
 
@@ -198,6 +213,15 @@ describe("shared rate limit", () => {
     process.env.NODE_ENV = "production"; delete process.env.REDIS_URL
     const res = response(), next = jest.fn()
     await createRateLimiter({ name: "production", limit: 5, windowSeconds: 60, global: true })({ headers: {} } as any, res, next)
+    expect(res.status).toHaveBeenCalledWith(503)
+    expect(next).not.toHaveBeenCalled()
+    process.env.NODE_ENV = env; if (redisUrl) process.env.REDIS_URL = redisUrl
+  })
+  it("does not fall back to process memory when NODE_ENV is unset", async () => {
+    const env = process.env.NODE_ENV, redisUrl = process.env.REDIS_URL
+    delete process.env.NODE_ENV; delete process.env.REDIS_URL
+    const res = response(), next = jest.fn()
+    await createRateLimiter({ name: "unset-env", limit: 5, windowSeconds: 60, global: true })({ headers: {} } as any, res, next)
     expect(res.status).toHaveBeenCalledWith(503)
     expect(next).not.toHaveBeenCalled()
     process.env.NODE_ENV = env; if (redisUrl) process.env.REDIS_URL = redisUrl

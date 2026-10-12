@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import {
-  getArticles,
+  getArticlesDetailed,
   getFallbackArticles,
   getFeaturedArticle,
   Article,
@@ -35,15 +35,18 @@ const CATEGORIES = [
 ];
 
 export default async function JournalPage() {
-  // Fetch articles and featured article from Strapi CMS
-  const [cmsArticles, cmsFeaturedArticle] = await Promise.all([
-    getArticles(),
+  // Distinguish a reachable-but-empty CMS from an unavailable/disabled one:
+  // only the latter falls back to the built-in editorial content.
+  const [articlesResult, cmsFeaturedArticle] = await Promise.all([
+    getArticlesDetailed(),
     getFeaturedArticle(),
   ]);
+  const cmsHealthy = articlesResult.source === "cms";
   const fallbackArticles = getFallbackArticles();
-  const articles = cmsArticles.length > 0 ? cmsArticles : fallbackArticles;
+  const articles = cmsHealthy ? articlesResult.articles : fallbackArticles;
   const featuredArticle =
-    cmsFeaturedArticle || (cmsArticles.length === 0 ? fallbackArticles[0] : null);
+    cmsFeaturedArticle ||
+    (cmsHealthy ? null : fallbackArticles[0] || null);
 
   // Filter out the featured article from the grid (if it exists)
   const gridArticles = featuredArticle
@@ -61,6 +64,17 @@ export default async function JournalPage() {
         focusArticle={undefined}
         categories={CATEGORIES}
       />
+
+      {cmsHealthy && articles.length === 0 && (
+        <div className="mx-auto max-w-3xl px-6 pb-20 text-center">
+          <h2 className="font-serif text-2xl text-charcoal mb-2">
+            Journal stories are coming soon
+          </h2>
+          <p className="text-sm text-charcoal-light">
+            The studio journal is connected and will publish new stories shortly.
+          </p>
+        </div>
+      )}
 
     </div>
   );

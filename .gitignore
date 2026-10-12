@@ -39,6 +39,8 @@ backend/public-uploads/
 !**/.env.template
 
 # Logs and local dumps
+.local-backups/
+audits/
 **/*.log
 **/logs/
 **/medusa-db.sql

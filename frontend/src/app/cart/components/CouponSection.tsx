@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { formatPrice } from "@/lib/medusa";
 import {
   CouponIcon,
@@ -26,17 +26,19 @@ export default function CouponSection({
   onRemoveCode: (code: string) => Promise<void>;
   isLoading: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(appliedCodes.length > 0);
   const [inputCode, setInputCode] = useState("");
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [applying, setApplying] = useState(false);
 
-  // Auto-expand if there's a message (e.g. from auto-apply) or codes are applied
-  useEffect(() => {
+  // Adjust the expanded state when its trigger changes, while keeping manual collapse.
+  const [previousTrigger, setPreviousTrigger] = useState({ count: appliedCodes.length, message });
+  if (previousTrigger.count !== appliedCodes.length || previousTrigger.message !== message) {
+    setPreviousTrigger({ count: appliedCodes.length, message });
     if (appliedCodes.length > 0 || message) {
       setIsOpen(true);
     }
-  }, [appliedCodes.length, message]);
+  }
 
   // Helper to parse error messages
   const getUserFriendlyError = (msg: string) => {

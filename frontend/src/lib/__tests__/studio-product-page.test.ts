@@ -1,6 +1,6 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import type { StoreProduct } from "../types";
-import { getProductByHandle, getRegion } from "../medusa";
+import { getProductByHandle, getRegion, getStoreOrdersOpen } from "../medusa";
 import ProductPage, { generateMetadata } from "@/app/product/[handle]/page";
 import { STUDIO } from "../studio-content";
 import { portraitStyles } from "../portrait";
@@ -9,6 +9,7 @@ jest.mock("../medusa", () => ({
   ...jest.requireActual("../medusa"),
   getProductByHandle: jest.fn(),
   getRegion: jest.fn(),
+  getStoreOrdersOpen: jest.fn(),
 }));
 jest.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-nonce": "unit-test-nonce" }),
@@ -58,6 +59,7 @@ describe("actual product route presentation", () => {
     jest
       .mocked(getRegion)
       .mockResolvedValue({ id: "reg_test", currency_code: "gbp" } as never);
+    jest.mocked(getStoreOrdersOpen).mockResolvedValue(false);
   });
   it("does not inherit unverified catalog copy in the route metadata", async () => {
     const metadata = await generateMetadata(props());
@@ -68,6 +70,13 @@ describe("actual product route presentation", () => {
     expect(JSON.stringify(metadata)).not.toMatch(
       /master artists|archival linen|unlimited revisions/i,
     );
+  });
+  it("presents reviewed admin copy once the store opens orders", async () => {
+    jest.mocked(getStoreOrdersOpen).mockResolvedValue(true);
+    const metadata = await generateMetadata(props());
+    expect(metadata.description).toBe(legacy.description);
+    const data = findJsonLd(await ProductPage(props()));
+    expect(data?.description).toBe(legacy.description);
   });
   it("keeps concept imagery and safe copy in JSON-LD without advertising an available sale", async () => {
     const data = findJsonLd(await ProductPage(props()));

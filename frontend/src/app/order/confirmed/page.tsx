@@ -1,10 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { portraitStylesUrl } from "@/lib/portrait";
 import { useAuth } from "@/lib/providers";
-import { readOrderConfirmation } from "@/lib/order-confirmation";
+import { readOrderConfirmation, type OrderConfirmation } from "@/lib/order-confirmation";
+
+const subscribeToConfirmation = () => () => {};
+const getConfirmationSnapshot = () => JSON.stringify(readOrderConfirmation());
+const getServerConfirmationSnapshot = () => null;
+
+// Capture the redirect reference once; after the address bar is cleaned the
+// snapshot must keep returning it. Server snapshot stays null so hydration
+// begins from the same render the server produced.
+let cachedOrderRef: string | null | undefined;
+function getOrderRefSnapshot() {
+  cachedOrderRef ??= new URLSearchParams(window.location.search).get("ref");
+  return cachedOrderRef;
+}
+const getServerOrderRefSnapshot = () => null;
 
 
 function CheckIcon() {
@@ -39,27 +53,46 @@ function getErrorMessage(error: unknown) {
 
 export default function OrderConfirmedPage() {
   const { user, register } = useAuth();
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState("Customer");
-  const [lastName, setLastName] = useState("");
+  const confirmationSnapshot = useSyncExternalStore(subscribeToConfirmation, getConfirmationSnapshot, getServerConfirmationSnapshot);
+  const confirmation: OrderConfirmation | null = confirmationSnapshot ? JSON.parse(confirmationSnapshot) : null;
+  // Checkout appends ?ref=<orderId> only when browser storage rejected the
+  // confirmation cache; the id alone grants no access to the order itself.
+  const urlRef = useSyncExternalStore(subscribeToConfirmation, getOrderRefSnapshot, getServerOrderRefSnapshot);
+  const urlOrderId =
+    urlRef && /^order_[A-Za-z0-9_-]{1,128}$/.test(urlRef) ? urlRef : null;
+  const orderId = confirmation?.orderId ?? urlOrderId;
+  const email = confirmation?.email ?? null;
+  const firstName = confirmation?.firstName ?? "Customer";
+  const lastName = confirmation?.lastName ?? "";
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(true);
+  const loading = confirmationSnapshot === null;
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [recovered, setRecovered] = useState<{ email?: string } | null>(null);
 
   useEffect(() => {
-    const confirmation = readOrderConfirmation();
-    if (confirmation) {
-      setOrderId(confirmation.orderId);
-      setEmail(confirmation.email);
-      setFirstName(confirmation.firstName);
-      setLastName(confirmation.lastName);
-    }
     if (window.location.search) window.history.replaceState(null, "", window.location.pathname);
-    setLoading(false);
   }, []);
+
+  // Storage-less recovery: with only an order reference, re-read the order
+  // server-authorized (completion issued a short-lived order capability cookie).
+  useEffect(() => {
+    if (confirmation || !urlOrderId) return;
+    let cancelled = false;
+    fetch(`/api/medusa/store/orders/${encodeURIComponent(urlOrderId)}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.order?.email) setRecovered({ email: data.order.email });
+      })
+      .catch(() => {
+        // Unauthorized or unavailable: the page keeps its generic copy and the
+        // secure lookup link; no order data is exposed without authorization.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [confirmation, urlOrderId]);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,11 +129,24 @@ export default function OrderConfirmedPage() {
     return (
       <div className="min-h-screen bg-cream pt-24 pb-16 px-6">
         <div className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-          <h1 className="font-serif text-2xl text-charcoal mb-4">Order Not Found</h1>
-          <p className="text-charcoal-light mb-8">We could not retrieve the order details.</p>
-          <a href={portraitStylesUrl} className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
-            Explore Pet Portraits
-          </a>
+          <h1 className="font-serif text-2xl text-charcoal mb-4">Order Reference Not Found</h1>
+          <p className="text-charcoal-light mb-3">
+            This browser does not hold a recent order confirmation. If you just
+            placed an order, it is safe: your confirmation email is on its way,
+            and you can always view the order through secure verification.
+          </p>
+          <p className="text-sm text-charcoal-light mb-8">
+            Never resubmit payment to recover an order — use the secure lookup
+            below or the link in your email.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link href="/order/lookup" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
+              Find Your Order
+            </Link>
+            <a href={portraitStylesUrl} className="text-terracotta font-medium hover:underline">
+              Explore Pet Portraits
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -113,7 +159,10 @@ export default function OrderConfirmedPage() {
           <CheckIcon />
           <h1 className="font-serif text-3xl sm:text-4xl text-charcoal mb-3">Order Confirmed!</h1>
           <p className="text-charcoal-light text-lg mb-6">
-            Thank you for your purchase. We have received your order and sent a confirmation email to <span className="font-medium text-charcoal">{email || "your email"}</span>.
+            We have received your order. A confirmation email for{" "}
+            <span className="font-medium text-charcoal">{email || recovered?.email || "your email"}</span>{" "}
+            is on its way; if it does not arrive within a few minutes, you can
+            open your order through secure verification at any time.
           </p>
 
           <div className="bg-gray-50 rounded-xl p-6 mb-6 inline-block w-full max-w-lg mx-auto">
@@ -137,7 +186,9 @@ export default function OrderConfirmedPage() {
               <div className="md:flex-1">
                 <h2 className="font-serif text-2xl text-charcoal mb-3">Save your information?</h2>
                 <p className="text-charcoal-light mb-4">
-                  Create an account to checkout faster next time, track your orders, and receive studio offers.
+                  Create an account to check out faster next time and receive
+                  studio offers. After verifying your email you can securely
+                  claim this order into your order history.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-charcoal-light">
                   <CheckIconSmall />
@@ -155,9 +206,9 @@ export default function OrderConfirmedPage() {
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-white border border-terracotta/30 rounded-lg focus:outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta"
-                        placeholder="Create a password"
+                        placeholder="At least 8 characters"
                         required
-                        minLength={6}
+                        minLength={8}
                       />
                       <div className="absolute left-3 top-3.5">
                         <LockIcon />
@@ -188,10 +239,15 @@ export default function OrderConfirmedPage() {
               <CheckIconSmall />
             </div>
             <h2 className="font-serif text-xl text-charcoal mb-2">Account Created!</h2>
-            <p className="text-charcoal-light">
-              Your account has been successfully created. You can now log in to view your order history.
+            <p className="text-charcoal-light mb-4">
+              Check your inbox to verify your email address. To add this order
+              to your account history, use the secure claim below — orders move
+              only after you verify ownership, never automatically.
             </p>
-            <Link href="/account" className="inline-block mt-4 text-terracotta font-medium hover:underline">
+            <Link href="/order/lookup" className="inline-block mt-2 bg-terracotta text-white px-6 py-3 rounded-full hover:bg-terracotta-dark transition-colors font-medium">
+              Verify &amp; Claim This Order
+            </Link>
+            <Link href="/account" className="block mt-3 text-terracotta font-medium hover:underline">
               Go to My Account
             </Link>
           </div>

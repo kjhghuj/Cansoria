@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { backendFetch, CART_COOKIE, cookieOptions, privateJson, safeBackendFailure } from '@/lib/server-medusa';
-import { isSameOriginWrite, isStorePathAllowed, readBoundedJson } from '@/lib/store-proxy-policy';
+import { backendFetch, CART_COOKIE, cookieOptions, ORDER_COOKIE, privateJson, safeBackendFailure } from '@/lib/server-medusa';
+import { isSameOriginWrite, isStorePathAllowed, isStoreQueryAllowed, readBoundedJson } from '@/lib/store-proxy-policy';
 
 export const runtime = 'nodejs';
 type Context = { params: Promise<{ path: string[] }> };
@@ -10,6 +10,7 @@ async function proxyStore(request: NextRequest, context: Context) {
   if (!isStorePathAllowed(path, request.method)) return privateJson({ message: 'Not found.' }, 404);
   if (!isSameOriginWrite(request)) return privateJson({ message: 'Access denied.' }, 403);
   if (request.nextUrl.search.length > 4096) return privateJson({ message: 'Invalid request.' }, 400);
+  if (!isStoreQueryAllowed(path, request.nextUrl.search)) return privateJson({ message: 'Invalid request.' }, 400);
   let body: Record<string, unknown> | undefined;
   try {
     if (request.method !== 'GET') body = await readBoundedJson(request, /^store\/carts\/[\w-]+\/photos$/.test(path.join('/')) ? 14 * 1024 * 1024 : undefined);
@@ -29,11 +30,18 @@ async function proxyStore(request: NextRequest, context: Context) {
     }
     if (upstream.status === 204) return new Response(null, { status: 204, headers: { 'Cache-Control': 'private, no-store' } });
     const data = await upstream.json();
-    const cartToken = path.join('/') === 'store/carts' && request.method === 'POST' && typeof data.cart_access_token === 'string'
+    const joinedPath = path.join('/');
+    const cartToken = joinedPath === 'store/carts' && request.method === 'POST' && typeof data.cart_access_token === 'string'
       ? data.cart_access_token : undefined;
     delete data.cart_access_token;
+    // Completion mints a short-lived authorized read capability for the order so
+    // the confirmation page can recover details without browser storage.
+    const orderToken = /\/complete\/?$/.test(joinedPath) && typeof data.order_access_token === 'string'
+      ? data.order_access_token : undefined;
+    delete data.order_access_token;
     const response = privateJson(data, upstream.status);
     if (cartToken) response.cookies.set(CART_COOKIE, cartToken, { ...cookieOptions, maxAge: 7 * 24 * 3600 });
+    if (orderToken) response.cookies.set(ORDER_COOKIE, orderToken, { ...cookieOptions, maxAge: 1800 });
     return response;
   } catch {
     return privateJson({ message: 'The service is temporarily unavailable.' }, 503);

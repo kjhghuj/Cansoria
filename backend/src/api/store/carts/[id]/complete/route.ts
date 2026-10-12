@@ -1,10 +1,9 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { MedusaError, Modules } from "@medusajs/framework/utils"
 import { POST as nativeComplete } from "@medusajs/medusa/api/store/carts/[id]/complete/route"
-import { authorizeCart, customerActor, sensitiveResponse } from "../../../../../lib/resource-access"
+import { authorizeCart, sensitiveResponse } from "../../../../../lib/resource-access"
 import { applyCartFields } from "../../../../../lib/cart-fields"
-import { eligibleWelcomeCodes, type CheckoutCart } from "../../../../../lib/welcome-promotions"
-import { portraitCartReady } from "../../../../../lib/portrait-photos"
+import { CheckoutCompletionError } from "../../../../../lib/checkout-completion"
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   sensitiveResponse(res)
@@ -13,27 +12,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     const locking = req.scope.resolve(Modules.LOCKING)
     // Identity updates and explicit claims use this same lock; authorization is checked again inside it.
-    await locking.execute(`cart-identity:${id}`, async () => {
+    return await locking.execute(`cart-identity:${id}`, async () => {
       if (!(await authorizeCart(req, id))) return res.status(403).json({ type: "forbidden", message: "Cart access denied" })
-      const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-      const { data } = await query.graph({ entity: "cart", fields: ["id", "email", "customer_id", "completed_at", "metadata", "items.metadata", "items.variant.product.handle", "promotions.code", "payment_collection.payment_sessions.provider_id"], filters: { id } })
-      const cart = data?.[0] as unknown as CheckoutCart | undefined
-      if (!cart) return res.status(403).json({ type: "forbidden", message: "Cart access denied" })
-      // Preserve the native idempotent retry for the already committed order after mailbox/browser interruption.
-      if (cart.completed_at) return nativeComplete(req as any, res)
-      if (!portraitCartReady(data[0], id)) return res.status(400).json({ type: "invalid_request", message: "Each pet portrait needs a valid photo and painting style. Please customize it again." })
-      if (cart.payment_collection?.payment_sessions?.some(session => session?.provider_id !== "pp_stripe_stripe")) return res.status(403).json({ type: "forbidden", message: "Unsupported payment provider" })
-      const codes = (cart.promotions || []).map(p => p?.code).filter((code): code is string => typeof code === "string" && /^ART15-/i.test(code))
-      if (!codes.length) return nativeComplete(req as any, res)
-      const actor = customerActor(req)
-      if (!actor || actor !== cart.customer_id || !cart.email) return res.status(403).json({ type: "forbidden", message: "Welcome code requires its eligible account" })
-      return locking.execute(Array.from(new Set(codes)).sort().map(code => `welcome-usage:${code}`), async () => {
-        if (!(await eligibleWelcomeCodes(req, codes, actor, cart.email!))) return res.status(403).json({ type: "forbidden", message: "Welcome code is not eligible for this account" })
-        // Await the workflow promise itself. A browser disconnect cannot release this lock early.
-        return await nativeComplete(req as any, res)
-      }, { timeout: 300 })
+      // Shared native validate hook also covers the payment callback and order-link retries.
+      return await nativeComplete(req as Parameters<typeof nativeComplete>[0], res)
     }, { timeout: 300 })
-  } catch {
-    if (!res.headersSent && !res.destroyed) return res.status(503).json({ type: "unavailable", message: "Checkout completion unavailable" })
+  } catch (error) {
+    if (res.headersSent || res.destroyed) return
+    if (error instanceof CheckoutCompletionError) return res.status(error.status).json({ type: error.status === 403 ? "forbidden" : "invalid_request", message: error.message })
+    if (error && MedusaError.isMedusaError(error) && [MedusaError.Types.INVALID_DATA, MedusaError.Types.NOT_ALLOWED, MedusaError.Types.CONFLICT].includes(error.type)) return res.status(error.type === MedusaError.Types.NOT_ALLOWED ? 403 : error.type === MedusaError.Types.CONFLICT ? 409 : 400).json({ type: error.type, message: error.message })
+    return res.status(503).json({ type: "unavailable", message: "Checkout completion unavailable" })
   }
 }

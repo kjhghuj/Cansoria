@@ -22,6 +22,9 @@ interface ProductVariant {
     }
 }
 
+interface MediaView { productId: string }
+interface MediaOperation { view: MediaView; productId: string }
+
 // ============================================================================
 // Custom Media Manager Widget
 // ============================================================================
@@ -31,36 +34,91 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     const [thumbnail, setThumbnail] = useState<string>("")
     const [variants, setVariants] = useState<ProductVariant[]>([])
     const [isUploading, setIsUploading] = useState(false)
-    const [isDeleting, setIsDeleting] = useState<string | null>(null)
+    const [isRemoving, setIsRemoving] = useState<string | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     const [showVariantSelector, setShowVariantSelector] = useState<string | null>(null)
     const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set())
+    const [loadedView, setLoadedView] = useState<MediaView | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const viewRef = useRef<MediaView>({ productId: data.id })
+    const operationRef = useRef<MediaOperation | null>(null)
+    const refreshRequestRef = useRef<object | null>(null)
+    const variantRequestRef = useRef<object | null>(null)
+    const mountedRef = useRef(true)
+    // Invalidate old handlers immediately, including A -> B -> A navigation.
+    if (viewRef.current.productId !== data.id) {
+        viewRef.current = { productId: data.id }
+        operationRef.current = null
+        refreshRequestRef.current = null
+        variantRequestRef.current = null
+    }
+    const view = viewRef.current
+    const isCurrentView = (target: MediaView) => mountedRef.current && viewRef.current === target
+    const isCurrentOperation = (operation: MediaOperation) =>
+        isCurrentView(operation.view) && operationRef.current === operation
+    const beginOperation = () => {
+        if (!isCurrentView(view) || loadedView !== view || operationRef.current) return null
+        const operation = { view, productId: view.productId }
+        operationRef.current = operation
+        refreshRequestRef.current = null
+        return operation
+    }
+    const finishOperation = (operation: MediaOperation) => {
+        if (!isCurrentOperation(operation)) return
+        operationRef.current = null
+        setIsUploading(false)
+        setIsRemoving(null)
+        setIsSaving(false)
+    }
+    const isBusy = isUploading || isRemoving !== null || isSaving
 
     // --------------------------------------------------------------------------
     // Load Data
     // --------------------------------------------------------------------------
 
+    useEffect(() => {
+        mountedRef.current = true
+        return () => {
+            mountedRef.current = false
+            operationRef.current = null
+            refreshRequestRef.current = null
+            variantRequestRef.current = null
+        }
+    }, [])
+
     const loadProductData = useCallback(async () => {
-        if (data) {
+        if (isCurrentView(view) && !operationRef.current) {
+            const request = {}
+            variantRequestRef.current = request
+            refreshRequestRef.current = null
             console.log('[MediaManager] Loading product data:', data.id)
             setImages(data.images || [])
             setThumbnail(data.thumbnail || "")
+            setVariants([])
+            setSelectedImages(new Set())
+            setShowVariantSelector(null)
+            setIsUploading(false)
+            setIsRemoving(null)
+            setIsSaving(false)
+            setLoadedView(view)
 
             // Load variants
             try {
-                const response = await fetch(`/admin/products/${data.id}/variants?limit=100`, {
+                const response = await fetch(`/admin/products/${view.productId}/variants?limit=100`, {
                     credentials: 'include',
                 })
                 if (response.ok) {
                     const result = await response.json()
+                    if (!isCurrentView(view) || variantRequestRef.current !== request) return
                     setVariants(result.variants || [])
                 }
             } catch (error) {
-                console.error('[MediaManager] Failed to load variants:', error)
+                if (isCurrentView(view) && variantRequestRef.current === request) {
+                    console.error('[MediaManager] Failed to load variants:', error)
+                }
             }
         }
-    }, [data])
+    }, [data, view])
 
     useEffect(() => {
         loadProductData()
@@ -132,21 +190,29 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     // Refresh Product Data
     // --------------------------------------------------------------------------
 
-    const refreshProductData = async () => {
+    const refreshProductData = async (operation: MediaOperation) => {
+        if (!isCurrentOperation(operation)) return
+        const request = {}
+        refreshRequestRef.current = request
         try {
-            const response = await fetch(`/admin/products/${data.id}`, {
+            const response = await fetch(`/admin/products/${operation.productId}`, {
                 credentials: 'include',
             })
             if (response.ok) {
                 const result = await response.json()
-                if (result.product) {
+                if (!isCurrentOperation(operation) || refreshRequestRef.current !== request) return
+                if (result.product?.id === operation.productId) {
                     setImages(result.product.images || [])
                     setThumbnail(result.product.thumbnail || "")
+                    const remainingUrls = new Set((result.product.images || []).map((image: ProductImage) => image.url))
+                    setSelectedImages(previous => new Set([...previous].filter(url => remainingUrls.has(url))))
                     console.log('[MediaManager] Data refreshed')
                 }
             }
         } catch (error) {
-            console.error('[MediaManager] Failed to refresh data:', error)
+            if (isCurrentOperation(operation) && refreshRequestRef.current === request) {
+                console.error('[MediaManager] Failed to refresh data:', error)
+            }
         }
     }
 
@@ -155,8 +221,11 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     // --------------------------------------------------------------------------
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files
+        const input = event.currentTarget
+        const files = input.files
         if (!files || files.length === 0) return
+        const operation = beginOperation()
+        if (!operation) return
 
         setIsUploading(true)
 
@@ -175,6 +244,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
             if (!uploadResponse.ok) throw new Error('Upload failed')
 
             const uploadResult = await uploadResponse.json()
+            if (!isCurrentOperation(operation)) return
             const uploadedImages = uploadResult.files || []
 
             const newImages = [
@@ -182,7 +252,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                 ...uploadedImages.map((file: { url: string }) => ({ url: file.url }))
             ]
 
-            const updateResponse = await fetch(`/admin/products/${data.id}`, {
+            const updateResponse = await fetch(`/admin/products/${operation.productId}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -190,35 +260,40 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
             })
 
             if (!updateResponse.ok) throw new Error('Failed to update product')
-
-            await refreshProductData()
+            if (!isCurrentOperation(operation)) return
+            await refreshProductData(operation)
+            if (!isCurrentOperation(operation)) return
             toast.success("上传成功", { description: `已上传 ${uploadedImages.length} 张图片` })
 
         } catch (error) {
-            console.error('[MediaManager] Upload error:', error)
-            toast.error("上传失败")
+            if (isCurrentOperation(operation)) {
+                console.error('[MediaManager] Upload error:', error)
+                toast.error("上传失败")
+            }
         } finally {
-            setIsUploading(false)
-            if (fileInputRef.current) fileInputRef.current.value = ''
+            if (isCurrentOperation(operation)) input.value = ''
+            finishOperation(operation)
         }
     }
 
     // --------------------------------------------------------------------------
-    // Delete Handler
+    // Remove image references; retain stored assets for any other references.
     // --------------------------------------------------------------------------
 
-    const handleDeleteImage = async (imageUrl: string) => {
-        setIsDeleting(imageUrl)
+    const handleRemoveImage = async (imageUrl: string) => {
+        if (!images.some(image => image.url === imageUrl)) return
+        const operation = beginOperation()
+        if (!operation) return
+        setIsRemoving(imageUrl)
 
         try {
-            const fileKey = extractFileKeyFromUrl(imageUrl)
             const newImages = images.filter(img => img.url !== imageUrl).map(img => ({ url: img.url }))
             const newThumbnail = thumbnail === imageUrl ? "" : undefined
 
             const updatePayload: { images: { url: string }[]; thumbnail?: string } = { images: newImages }
             if (newThumbnail !== undefined) updatePayload.thumbnail = newThumbnail
 
-            const updateResponse = await fetch(`/admin/products/${data.id}`, {
+            const updateResponse = await fetch(`/admin/products/${operation.productId}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -226,36 +301,32 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
             })
 
             if (!updateResponse.ok) throw new Error('Failed to update product')
-
-            if (fileKey) {
-                await fetch('/admin/delete-file', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileKey }),
-                }).catch(() => { })
-            }
-
-            await refreshProductData()
-            toast.success("删除成功")
+            if (!isCurrentOperation(operation)) return
+            await refreshProductData(operation)
+            if (!isCurrentOperation(operation)) return
+            toast.success("图片已从商品移除", { description: "存储文件保留，其他引用不受影响" })
 
         } catch (error) {
-            console.error('[MediaManager] Delete error:', error)
-            toast.error("删除失败")
+            if (isCurrentOperation(operation)) {
+                console.error('[MediaManager] Remove image error:', error)
+                toast.error("移除失败")
+            }
         } finally {
-            setIsDeleting(null)
+            finishOperation(operation)
         }
     }
 
     // --------------------------------------------------------------------------
-    // Batch Delete Handler
+    // Batch Remove Handler
     // --------------------------------------------------------------------------
 
-    const handleBatchDelete = async () => {
+    const handleBatchRemove = async () => {
         if (selectedImages.size === 0) return
+        const operation = beginOperation()
+        if (!operation) return
 
-        setIsDeleting('batch')
-        const urlsToDelete = Array.from(selectedImages)
+        setIsRemoving('batch')
+        const urlsToRemove = Array.from(selectedImages)
 
         try {
             // Filter out selected images
@@ -263,12 +334,12 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                 .filter(img => !selectedImages.has(img.url))
                 .map(img => ({ url: img.url }))
 
-            // Check if thumbnail is being deleted
+            // Remove the product thumbnail reference if selected.
             const newThumbnail = selectedImages.has(thumbnail) ? "" : undefined
             const updatePayload: { images: { url: string }[]; thumbnail?: string } = { images: newImages }
             if (newThumbnail !== undefined) updatePayload.thumbnail = newThumbnail
 
-            const updateResponse = await fetch(`/admin/products/${data.id}`, {
+            const updateResponse = await fetch(`/admin/products/${operation.productId}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -276,34 +347,25 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
             })
 
             if (!updateResponse.ok) throw new Error('Failed to update product')
-
-            // Delete files from R2
-            for (const url of urlsToDelete) {
-                const fileKey = extractFileKeyFromUrl(url)
-                if (fileKey) {
-                    await fetch('/admin/delete-file', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fileKey }),
-                    }).catch(() => { })
-                }
-            }
-
+            if (!isCurrentOperation(operation)) return
             setSelectedImages(new Set())
-            await refreshProductData()
-            toast.success("批量删除成功", { description: `已删除 ${urlsToDelete.length} 张图片` })
+            await refreshProductData(operation)
+            if (!isCurrentOperation(operation)) return
+            toast.success("图片已从商品移除", { description: `已移除 ${urlsToRemove.length} 张图片的商品引用，存储文件保留` })
 
         } catch (error) {
-            console.error('[MediaManager] Batch delete error:', error)
-            toast.error("批量删除失败")
+            if (isCurrentOperation(operation)) {
+                console.error('[MediaManager] Batch remove error:', error)
+                toast.error("批量移除失败")
+            }
         } finally {
-            setIsDeleting(null)
+            finishOperation(operation)
         }
     }
 
     // Toggle image selection
     const toggleImageSelection = (imageUrl: string) => {
+        if (!isCurrentView(view) || loadedView !== view || operationRef.current) return
         setSelectedImages(prev => {
             const newSet = new Set(prev)
             if (newSet.has(imageUrl)) {
@@ -317,6 +379,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
 
     // Select/deselect all
     const toggleSelectAll = () => {
+        if (!isCurrentView(view) || loadedView !== view || operationRef.current) return
         if (selectedImages.size === images.length) {
             setSelectedImages(new Set())
         } else {
@@ -329,21 +392,25 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     // --------------------------------------------------------------------------
 
     const handleSetThumbnail = async (imageUrl: string) => {
+        if (!images.some(image => image.url === imageUrl)) return
+        const operation = beginOperation()
+        if (!operation) return
         setIsSaving(true)
         try {
-            const response = await fetch(`/admin/products/${data.id}`, {
+            const response = await fetch(`/admin/products/${operation.productId}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ thumbnail: imageUrl }),
             })
             if (!response.ok) throw new Error('Failed to set thumbnail')
+            if (!isCurrentOperation(operation)) return
             setThumbnail(imageUrl)
             toast.success("缩略图已设置")
         } catch (error) {
-            toast.error("设置失败")
+            if (isCurrentOperation(operation)) toast.error("设置失败")
         } finally {
-            setIsSaving(false)
+            finishOperation(operation)
         }
     }
 
@@ -352,14 +419,17 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     // --------------------------------------------------------------------------
 
     const handleSetVariantImage = async (imageUrl: string, variantId: string) => {
+        const variant = variants.find(v => v.id === variantId)
+        if (!variant || !images.some(image => image.url === imageUrl)) return
+        const operation = beginOperation()
+        if (!operation) return
+        variantRequestRef.current = null
         setIsSaving(true)
         try {
-            const variant = variants.find(v => v.id === variantId)
-
             // 覆盖模式：一个变体只能关联一张图片
             const newImages = [{ url: imageUrl }]
 
-            const response = await fetch(`/admin/products/${data.id}/variants/${variantId}`, {
+            const response = await fetch(`/admin/products/${operation.productId}/variants/${variantId}`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -372,6 +442,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
             })
 
             if (!response.ok) throw new Error('Failed to update variant')
+            if (!isCurrentOperation(operation)) return
 
             // Update local state
             setVariants(prev => prev.map(v =>
@@ -382,11 +453,13 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
 
             toast.success("已关联到变体", { description: variant?.title || variantId })
         } catch (error) {
-            console.error('[MediaManager] Set variant image error:', error)
-            toast.error("设置失败")
+            if (isCurrentOperation(operation)) {
+                console.error('[MediaManager] Set variant image error:', error)
+                toast.error("设置失败")
+            }
         } finally {
-            setIsSaving(false)
-            setShowVariantSelector(null)
+            if (isCurrentOperation(operation)) setShowVariantSelector(null)
+            finishOperation(operation)
         }
     }
 
@@ -394,25 +467,23 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
     // Utility
     // --------------------------------------------------------------------------
 
-    const extractFileKeyFromUrl = (url: string): string | null => {
-        try {
-            const urlObj = new URL(url)
-            const pathname = urlObj.pathname
-            return pathname.startsWith('/') ? pathname.slice(1) : pathname
-        } catch {
-            return null
-        }
-    }
-
     const getVariantCountForImage = (imageUrl: string): number => {
         return variants.filter(v =>
             (v.metadata?.images as { url: string }[] | undefined)?.some(img => img.url === imageUrl)
         ).length
     }
 
+    const showVariantsForImage = (imageUrl: string | null) => {
+        if (!isCurrentView(view) || loadedView !== view || operationRef.current) return
+        setShowVariantSelector(imageUrl)
+    }
+
     // --------------------------------------------------------------------------
     // Render
     // --------------------------------------------------------------------------
+
+    // Until this view's state is loaded, never expose the previous product's handlers.
+    if (loadedView !== view) return <Container><Text size="small">正在加载媒体...</Text></Container>
 
     return (
         <Container className="divide-y p-0">
@@ -434,6 +505,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                             variant="secondary"
                             size="small"
                             onClick={toggleSelectAll}
+                            disabled={isBusy}
                         >
                             {selectedImages.size === images.length ? '取消全选' : '全选'}
                         </Button>
@@ -442,17 +514,17 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                         <Button
                             variant="danger"
                             size="small"
-                            onClick={handleBatchDelete}
-                            disabled={isDeleting === 'batch'}
+                            onClick={handleBatchRemove}
+                            disabled={isBusy}
                         >
-                            {isDeleting === 'batch' ? '删除中...' : `删除 (${selectedImages.size})`}
+                            {isRemoving === 'batch' ? '移除中...' : `移除图片 (${selectedImages.size})`}
                         </Button>
                     )}
                     <Button
                         variant="secondary"
                         size="small"
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
+                        disabled={isBusy}
                     >
                         <Plus className="w-3 h-3 mr-1" />{isUploading ? '上传中...' : '上传'}
                     </Button>
@@ -466,6 +538,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                 multiple
                 className="hidden"
                 onChange={handleFileSelect}
+                disabled={isBusy}
             />
 
             {/* Image Grid */}
@@ -501,6 +574,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                                         checked={selectedImages.has(image.url)}
                                         onChange={() => toggleImageSelection(image.url)}
                                         onClick={(e) => e.stopPropagation()}
+                                        disabled={isBusy}
                                         className="w-4 h-4 rounded border-gray-300 text-blue-500 cursor-pointer"
                                     />
                                 </div>
@@ -519,24 +593,24 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleSetThumbnail(image.url); }}
-                                        disabled={isSaving || thumbnail === image.url}
+                                        disabled={isBusy || thumbnail === image.url}
                                         className="w-full text-center py-1 px-1 bg-white/90 hover:bg-white rounded text-xs disabled:opacity-50"
                                     >
                                         缩略图
                                     </button>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); setShowVariantSelector(image.url); }}
-                                        disabled={isSaving}
+                                        onClick={(e) => { e.stopPropagation(); showVariantsForImage(image.url); }}
+                                        disabled={isBusy}
                                         className="w-full text-center py-1 px-1 bg-white/90 hover:bg-white rounded text-xs"
                                     >
                                         变体
                                     </button>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteImage(image.url); }}
-                                        disabled={isDeleting === image.url}
+                                        onClick={(e) => { e.stopPropagation(); handleRemoveImage(image.url); }}
+                                        disabled={isBusy}
                                         className="w-full text-center py-1 px-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs disabled:opacity-50"
                                     >
-                                        {isDeleting === image.url ? '...' : '删除'}
+                                        {isRemoving === image.url ? '...' : '移除'}
                                     </button>
                                 </div>
 
@@ -544,7 +618,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                                     <div className="absolute inset-0 bg-white/95 flex flex-col p-2 z-10" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex justify-between items-center mb-1">
                                             <Text weight="plus" size="xsmall">选择变体</Text>
-                                            <button onClick={(e) => { e.stopPropagation(); setShowVariantSelector(null); }} className="text-ui-fg-subtle hover:text-ui-fg-base">
+                                            <button onClick={(e) => { e.stopPropagation(); showVariantsForImage(null); }} disabled={isBusy} className="text-ui-fg-subtle hover:text-ui-fg-base">
                                                 <XMark className="w-3 h-3" />
                                             </button>
                                         </div>
@@ -560,7 +634,7 @@ const ProductMediaManagerWidget = ({ data }: DetailWidgetProps<AdminProduct>) =>
                                                         <button
                                                             key={variant.id}
                                                             onClick={(e) => { e.stopPropagation(); handleSetVariantImage(image.url, variant.id); }}
-                                                            disabled={isSaving || isLinked}
+                                                            disabled={isBusy || isLinked}
                                                             className={clx(
                                                                 "w-full text-left px-1 py-1 rounded text-xs transition-colors",
                                                                 isLinked

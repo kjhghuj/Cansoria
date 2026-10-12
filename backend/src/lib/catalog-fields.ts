@@ -41,6 +41,14 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
   const resource = pathname.match(/^\/store\/([^/]+)/i)?.[1].toLowerCase()
   const defaults = resource === "customers" && req.method === "GET" && /\/addresses(?:\/|$)/i.test(pathname) ? defaultStoreCustomerAddressFields : resource && policies[resource]
   if (!defaults) return next()
+  // Medusa 2.21 uses an explicit Store allowlist. Only this public catalog
+  // field is missing from its native policy; client fields never extend it.
+  if (resource === "products") req.allowed = Array.from(new Set([...(req.allowed || []), "variants.metadata"]))
+  if (resource === "orders") req.allowed = Array.from(new Set([...(req.allowed || []), ...SAFE_ORDER_FIELDS.filter(field => field.startsWith("items."))]))
+  if ((resource === "products" || resource === "product-variants") && typeof _res.json === "function") {
+    const original = _res.json
+    _res.json = function (body: any) { projectCatalogMetadata(body); return original.call(this, body) } as any
+  }
   if (resource === "orders" && typeof _res.json === "function") {
     const original = _res.json
     _res.json = function (body: any) { projectOrderMetadata(body); return original.call(this, body) } as any
@@ -55,4 +63,37 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
   req.query = { ...req.query, fields: fields.join(",") } as any
   if (req.queryConfig) req.queryConfig.fields = fields.map(field => field.startsWith("*") ? `${field.slice(1)}.*` : field)
   return next()
+}
+
+// Admin-written catalog metadata is not public by default. Only these keys are
+// consumed by the storefront; anything else (internal notes, costs, source
+// links) must stay behind the admin API.
+export const PUBLIC_PRODUCT_METADATA_KEYS = ["story_sections", "rating", "average_rating", "review_rating", "reviews", "rating_count", "review_count", "reviews_verified"]
+export const PUBLIC_VARIANT_METADATA_KEYS = ["images"]
+export const PUBLIC_STORE_METADATA_KEYS = ["announcement_bar", "orders_open"]
+
+export function publicCatalogMetadata(metadata: unknown, allowedKeys: readonly string[]): Record<string, unknown> | undefined {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return undefined
+  const source = metadata as Record<string, unknown>
+  const projected: Record<string, unknown> = {}
+  for (const key of allowedKeys) if (key in source) projected[key] = source[key]
+  return Object.keys(projected).length ? projected : undefined
+}
+
+/** Strips store responses ({ product, products, product_variants }) down to the public metadata keys. */
+export function projectCatalogMetadata(body: unknown): void {
+  if (!body || typeof body !== "object") return
+  const container = body as { product?: unknown; products?: unknown; product_variants?: unknown }
+  const products = Array.isArray(container.products) ? container.products : container.product ? [container.product] : []
+  for (const entry of products as Record<string, unknown>[]) {
+    if (!entry || typeof entry !== "object") continue
+    if ("metadata" in entry) entry.metadata = publicCatalogMetadata(entry.metadata, PUBLIC_PRODUCT_METADATA_KEYS)
+    const variants = Array.isArray(entry.variants) ? entry.variants : []
+    for (const variant of variants as Record<string, unknown>[]) {
+      if (variant && typeof variant === "object" && "metadata" in variant) variant.metadata = publicCatalogMetadata(variant.metadata, PUBLIC_VARIANT_METADATA_KEYS)
+    }
+  }
+  for (const variant of (Array.isArray(container.product_variants) ? container.product_variants : []) as Record<string, unknown>[]) {
+    if (variant && typeof variant === "object" && "metadata" in variant) variant.metadata = publicCatalogMetadata(variant.metadata, PUBLIC_VARIANT_METADATA_KEYS)
+  }
 }

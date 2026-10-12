@@ -1,10 +1,11 @@
 
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { isLocalDevelopment } from "../../lib/env-mode"
 
 export const AUTHENTICATE = false
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  if (process.env.NODE_ENV === "production") return res.status(410).json({ message: "Test interface is unavailable" })
+  if (!isLocalDevelopment()) return res.status(410).json({ message: "Test interface is unavailable" })
   const html = `
 <!DOCTYPE html>
 <html lang="en">

@@ -26,6 +26,10 @@ import {
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 import { ApiKey } from "../../.medusa/types/query-entry-points";
+import {
+  artworkPrices, artworkSizes, artworkSku, artworkUsdPrice,
+  framingOptions, orientations, shippingPrice,
+} from "../lib/studio-prices";
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -55,46 +59,21 @@ const updateStoreCurrencies = createWorkflow(
   }
 );
 
-const artworkSizes = ["8x10", "12x16", "16x20", "24x36"];
-const framingOptions = ["Canvas Only", "Framed"];
-const orientations = ["Portrait", "Landscape", "Square"];
-
-const sizeBasePrices: Record<string, number> = {
-  "8x10": 12900,
-  "12x16": 18900,
-  "16x20": 25900,
-  "24x36": 39900,
-};
-
-function money(amountUsd: number) {
-  return [
-    { amount: Math.round(amountUsd * 0.78), currency_code: "gbp" },
-    { amount: Math.round(amountUsd * 0.92), currency_code: "eur" },
-    { amount: amountUsd, currency_code: "usd" },
-  ];
-}
-
-function slug(value: string) {
-  return value.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
 function createArtworkVariants(skuPrefix: string, priceOffset = 0) {
   return artworkSizes.flatMap((size) =>
     framingOptions.flatMap((framing) =>
       orientations.map((orientation) => {
-        const framedPremium = framing === "Framed" ? 7000 : 0;
-        const squareAdjustment = orientation === "Square" ? 1500 : 0;
-        const amount = sizeBasePrices[size] + framedPremium + squareAdjustment + priceOffset;
+        const amount = artworkUsdPrice(size, framing, orientation, priceOffset);
 
         return {
           title: `${size} / ${framing} / ${orientation}`,
-          sku: `${skuPrefix}-${slug(size)}-${slug(framing)}-${slug(orientation)}`,
+          sku: artworkSku(skuPrefix, size, framing, orientation),
           options: {
             Size: size,
             Framing: framing,
             Orientation: orientation,
           },
-          prices: money(amount),
+          prices: artworkPrices(amount),
           metadata: {
             size,
             framing,
@@ -323,12 +302,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
           code: "standard-art-delivery",
         },
         prices: [
-          { currency_code: "gbp", amount: 900 },
-          { currency_code: "eur", amount: 1100 },
-          { currency_code: "usd", amount: 1400 },
-          { region_id: ukRegion.id, amount: 900 },
-          { region_id: usRegion.id, amount: 1400 },
-          { region_id: euRegion.id, amount: 1100 },
+          { currency_code: "gbp", amount: shippingPrice("Standard Art Delivery", "gbp") },
+          { currency_code: "eur", amount: shippingPrice("Standard Art Delivery", "eur") },
+          { currency_code: "usd", amount: shippingPrice("Standard Art Delivery", "usd") },
+          { region_id: ukRegion.id, amount: shippingPrice("Standard Art Delivery", "gbp") },
+          { region_id: usRegion.id, amount: shippingPrice("Standard Art Delivery", "usd") },
+          { region_id: euRegion.id, amount: shippingPrice("Standard Art Delivery", "eur") },
         ],
         rules: [
           { attribute: "enabled_in_store", value: "true", operator: "eq" },
@@ -347,12 +326,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
           code: "priority-art-delivery",
         },
         prices: [
-          { currency_code: "gbp", amount: 1800 },
-          { currency_code: "eur", amount: 2200 },
-          { currency_code: "usd", amount: 2800 },
-          { region_id: ukRegion.id, amount: 1800 },
-          { region_id: usRegion.id, amount: 2800 },
-          { region_id: euRegion.id, amount: 2200 },
+          { currency_code: "gbp", amount: shippingPrice("Priority Art Delivery", "gbp") },
+          { currency_code: "eur", amount: shippingPrice("Priority Art Delivery", "eur") },
+          { currency_code: "usd", amount: shippingPrice("Priority Art Delivery", "usd") },
+          { region_id: ukRegion.id, amount: shippingPrice("Priority Art Delivery", "gbp") },
+          { region_id: usRegion.id, amount: shippingPrice("Priority Art Delivery", "usd") },
+          { region_id: euRegion.id, amount: shippingPrice("Priority Art Delivery", "eur") },
         ],
         rules: [
           { attribute: "enabled_in_store", value: "true", operator: "eq" },
@@ -511,9 +490,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Seeding Cansoria Studio products...");
 
   const commonOptions = [
-    { title: "Size", values: artworkSizes },
-    { title: "Framing", values: framingOptions },
-    { title: "Orientation", values: orientations },
+    { title: "Size", values: [...artworkSizes] },
+    { title: "Framing", values: [...framingOptions] },
+    { title: "Orientation", values: [...orientations] },
   ];
 
   await createProductsWorkflow(container).run({
@@ -565,7 +544,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-PET", -2000),
+          variants: createArtworkVariants("CAN-PET", -20),
           metadata: {
             customizable: true,
             upload_required: true,
@@ -594,7 +573,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-WEDDING", 1500),
+          variants: createArtworkVariants("CAN-WEDDING", 15),
           metadata: {
             customizable: true,
             upload_required: true,
@@ -623,7 +602,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-LANDSCAPE", -1000),
+          variants: createArtworkVariants("CAN-LANDSCAPE", -10),
           metadata: {
             customizable: false,
             upload_required: false,
@@ -652,7 +631,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-ABSTRACT", -500),
+          variants: createArtworkVariants("CAN-ABSTRACT", -5),
           metadata: {
             customizable: false,
             upload_required: false,
@@ -681,7 +660,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-CLASSIC", 2500),
+          variants: createArtworkVariants("CAN-CLASSIC", 25),
           metadata: {
             customizable: false,
             upload_required: false,
@@ -710,7 +689,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-HOME", -1500),
+          variants: createArtworkVariants("CAN-HOME", -15),
           metadata: {
             customizable: false,
             upload_required: false,

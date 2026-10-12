@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import Newsletter from "./Newsletter";
 import { COMPANY_INFO, FOOTER_LINKS } from "@/lib/constants";
 import { portraitStylesUrl } from "@/lib/portrait";
+import { useStoreStatus } from "@/lib/providers";
 
 export default function Footer() {
+  // The subscription entry is shown only when the entire opt-in chain
+  // (Turnstile site key + backend verification + Klaviyo list) is configured.
+  const { newsletterEnabled } = useStoreStatus();
   const columns = [
     { title: "Pet Portraits", links: FOOTER_LINKS.shop },
     { title: "Our Studio", links: FOOTER_LINKS.company },
@@ -13,7 +19,7 @@ export default function Footer() {
 
   return (
     <footer className="cansoria-footer">
-      <Newsletter />
+      {newsletterEnabled && <Newsletter />}
       <div className="cansoria-footer-container">
         <div className="cansoria-footer-main">
           <div className="cansoria-footer-brand">

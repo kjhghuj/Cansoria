@@ -2,9 +2,12 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { isIP } from 'node:net';
 import { upstreamError } from './store-proxy-policy';
+import { issueVisitorCookie, readVisitorCookie, visitorRequestProof, VISITOR_COOKIE, VISITOR_MAX_AGE, VISITOR_PROOF_HEADER } from './server-visitor';
 
 export const SESSION_COOKIE = 'cansoria_session';
 export const CART_COOKIE = 'cansoria_cart_access';
+/** Short-lived order read capability issued by cart completion. */
+export const ORDER_COOKIE = 'cansoria_order_access';
 export const cookieOptions = {
   httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' as const, path: '/',
 };
@@ -24,6 +27,18 @@ export async function backendFetch(path: string, init: RequestInit = {}, orderTo
   url.search = queryIndex < 0 ? '' : path.slice(queryIndex + 1);
   const jar = await cookies();
   const headers = new Headers(init.headers);
+  // Never carry caller-supplied proxy identities into the backend.
+  headers.delete('x-real-ip');
+  headers.delete(VISITOR_PROOF_HEADER);
+  if (request) {
+    let visitor = readVisitorCookie(jar.get(VISITOR_COOKIE)?.value);
+    if (!visitor) {
+      const cookie = issueVisitorCookie();
+      visitor = readVisitorCookie(cookie)!;
+      jar.set(VISITOR_COOKIE, cookie, { ...cookieOptions, maxAge: VISITOR_MAX_AGE });
+    }
+    headers.set(VISITOR_PROOF_HEADER, visitorRequestProof(visitor, (init.method || 'GET').toUpperCase(), `${url.pathname}${url.search}`));
+  }
   headers.set('Content-Type', 'application/json');
   headers.set('x-publishable-api-key', process.env.MEDUSA_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '');
   const session = jar.get(SESSION_COOKIE)?.value;
@@ -32,6 +47,10 @@ export async function backendFetch(path: string, init: RequestInit = {}, orderTo
   const capability = jar.get(CART_COOKIE)?.value;
   if (capability) headers.set('x-cart-access-token', capability);
   if (orderToken && orderToken.length <= 2048) headers.set('x-order-access-token', orderToken);
+  else {
+    const orderCapability = jar.get(ORDER_COOKIE)?.value;
+    if (orderCapability && orderCapability.length <= 2048) headers.set('x-order-access-token', orderCapability);
+  }
   // Enable only behind an ingress that overwrites this header and blocks direct access.
   // The backend separately verifies that this request comes from its trusted BFF IP.
   const ipHeader = process.env.STORE_TRUSTED_IP_HEADER?.toLowerCase();

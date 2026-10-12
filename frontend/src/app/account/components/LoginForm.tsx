@@ -82,7 +82,7 @@ export function LoginForm({ justRegistered }: { justRegistered: boolean }) {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="#" className="text-sm text-charcoal-light hover:text-terracotta">
+            <Link href="/account/forgot-password" className="text-sm text-charcoal-light hover:text-terracotta">
               Forgot password?
             </Link>
           </div>

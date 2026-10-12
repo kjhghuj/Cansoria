@@ -69,6 +69,7 @@ interface CartContextType {
   updateItem: (lineItemId: string, quantity: number) => Promise<void>;
   removeItem: (lineItemId: string) => Promise<void>;
   refreshCart: () => Promise<void>;
+  ensureCart: () => Promise<StoreCart>;
   applyPromoCode: (code: string) => Promise<boolean>;
   removePromoCode: (code: string) => Promise<boolean>;
   applyBetterCoupon: (
@@ -83,10 +84,20 @@ interface RegionContextType {
   regionLoading: boolean;
 }
 
+interface StoreStatusContextType {
+  ordersOpen: boolean;
+  storeStatusLoading: boolean;
+  /** Newsletter entry is shown only when the whole delivery chain is configured. */
+  newsletterEnabled: boolean;
+}
+
 // Contexts
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const CartContext = createContext<CartContextType | undefined>(undefined);
 const RegionContext = createContext<RegionContextType | undefined>(undefined);
+const StoreStatusContext = createContext<StoreStatusContextType | undefined>(
+  undefined,
+);
 
 function getProviderErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "";
@@ -110,7 +121,12 @@ export function Providers({ children }: ProvidersProps) {
   const [authLoading, setAuthLoading] = useState(true);
 
   // Cart State
-  const [cart, setCart] = useState<StoreCart | null>(null);
+  const [cart, setCartState] = useState<StoreCart | null>(null);
+  const cartRef = useRef<StoreCart | null>(null);
+  const setCart = useCallback((value: StoreCart | null) => {
+    cartRef.current = value;
+    setCartState(value);
+  }, []);
   const [cartLoading, setCartLoading] = useState(true);
   const mutationPending = useRef(false);
   const cartRevision = useRef(0);
@@ -119,6 +135,11 @@ export function Providers({ children }: ProvidersProps) {
   // Region State
   const [region, setRegion] = useState<StoreRegion | null>(null);
   const [regionLoading, setRegionLoading] = useState(true);
+
+  // Store commerce-readiness State (orders open/closed)
+  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [storeStatusLoading, setStoreStatusLoading] = useState(true);
+  const [newsletterEnabled, setNewsletterEnabled] = useState(false);
 
   // Initialize Region
   useEffect(() => {
@@ -134,15 +155,48 @@ export function Providers({ children }: ProvidersProps) {
     initRegion();
   }, []);
 
+  // Initialize store status; a missing or failed response leaves orders closed.
+  useEffect(() => {
+    let cancelled = false;
+    async function initStoreStatus() {
+      try {
+        const response = await fetch("/api/medusa/store/store-info");
+        if (!response.ok) return;
+        const data = await response.json();
+        if (cancelled) return;
+        if (data?.store?.orders_open === true) setOrdersOpen(true);
+        if (
+          data?.store?.capabilities?.newsletter === true &&
+          process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+        )
+          setNewsletterEnabled(true);
+      } catch {
+      } finally {
+        if (!cancelled) setStoreStatusLoading(false);
+      }
+    }
+    initStoreStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Initialize Auth
   useEffect(() => {
     async function initAuth() {
-      // Remove credentials persisted by older storefront releases.
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      // Remove credentials persisted by older storefront releases. Storage can be
+      // disabled or full; cleanup must never block session initialization.
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      } catch {
+        // Best-effort cleanup only.
+      }
       try {
         const customer = await getCustomer();
         if (customer) setUser(customer as unknown as User);
+      } catch {
+        // Treat an unavailable auth service as signed out; loading still ends.
       } finally {
         setAuthLoading(false);
       }
@@ -154,6 +208,7 @@ export function Providers({ children }: ProvidersProps) {
   useEffect(() => {
     let cancelled = false;
     const generation = sessionGeneration.current;
+    const revision = cartRevision.current;
     async function initCart() {
       if (authLoading || regionLoading) return;
       if (!region) {
@@ -226,34 +281,14 @@ export function Providers({ children }: ProvidersProps) {
           }
         }
 
-        // 5. Final fallback: Create new cart
-        if (!currentCart) {
-          const newCart = await createCart(region.id);
-          if (cancelled || generation !== sessionGeneration.current) return;
-          if (newCart) {
-            currentCart = newCart;
-            localStorage.setItem(CART_ID_KEY, newCart.id);
-
-            if (user) {
-              await updateCartOwnership(newCart.id);
-              if (cancelled || generation !== sessionGeneration.current) return;
-              await updateCustomerMetadata({
-                ...user.metadata,
-                active_cart_id: newCart.id,
-              });
-            }
-          }
-        }
-
-        if (currentCart) {
-          if (!cancelled && generation === sessionGeneration.current)
-            setCart(currentCart);
-        }
+        // Restore only. A new cart requires an add or a valid photo selection.
+        if (!cancelled && generation === sessionGeneration.current && revision === cartRevision.current)
+          setCart(currentCart);
       } catch {
-        if (!cancelled && generation === sessionGeneration.current)
+        if (!cancelled && generation === sessionGeneration.current && revision === cartRevision.current)
           setCart(null);
       } finally {
-        if (!cancelled && generation === sessionGeneration.current)
+        if (!cancelled && generation === sessionGeneration.current && revision === cartRevision.current)
           setCartLoading(false);
       }
     }
@@ -262,7 +297,7 @@ export function Providers({ children }: ProvidersProps) {
     return () => {
       cancelled = true;
     };
-  }, [region, regionLoading, authLoading, user]); // Re-run when user changes (login/logout)
+  }, [region, regionLoading, authLoading, user, setCart]); // Re-run when user changes (login/logout)
 
   // Auth Handlers
   const handleLogin = async (email: string, pass: string) => {
@@ -305,16 +340,17 @@ export function Providers({ children }: ProvidersProps) {
     localStorage.removeItem(CART_ID_KEY); // Clear local cart reference on logout to avoid mixing
     setUser(null);
     setCart(null);
-    // Effect will trigger, create a new Guest cart
+    // The effect restores only; the next shopping action may create a guest cart.
   };
 
   // Cart Handlers (Wrapped to ensure check)
+  const cartId = cart?.id;
   const refreshCart = useCallback(async () => {
-    if (!cart?.id) return;
+    if (!cartId) return;
     const generation = sessionGeneration.current;
     const revision = cartRevision.current;
     try {
-      const updatedCart = await getCart(cart.id);
+      const updatedCart = await getCart(cartId);
       if (
         generation !== sessionGeneration.current ||
         revision !== cartRevision.current
@@ -326,24 +362,6 @@ export function Providers({ children }: ProvidersProps) {
         localStorage.removeItem(CART_ID_KEY);
         setCart(null);
 
-        // Create a new fresh cart immediately
-        if (region) {
-          const newCart = await createCart(region.id);
-          if (generation !== sessionGeneration.current) return;
-          if (newCart) {
-            setCart(newCart);
-            localStorage.setItem(CART_ID_KEY, newCart.id);
-
-            // Sync with user if logged in (persist new cart ID)
-            if (user) {
-              await updateCartOwnership(newCart.id);
-              await updateCustomerMetadata({
-                ...user.metadata,
-                active_cart_id: newCart.id,
-              });
-            }
-          }
-        }
       } else {
         // Valid active cart
         setCart(updatedCart);
@@ -351,7 +369,7 @@ export function Providers({ children }: ProvidersProps) {
     } catch (error) {
       throw error;
     }
-  }, [cart?.id, region, user]);
+  }, [cartId, setCart]);
 
   const runCartMutation = useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
@@ -380,8 +398,44 @@ export function Providers({ children }: ProvidersProps) {
         throw new Error("Your account changed. Please try again.");
       setCart(updatedCart);
     },
-    [],
+    [setCart],
   );
+
+  const getOrCreateCart = useCallback(async (generation: number): Promise<StoreCart> => {
+    const assertActive = () => {
+      if (generation !== sessionGeneration.current)
+        throw new Error("Your account changed. Please try again.");
+    };
+    assertActive();
+    if (authLoading || regionLoading || !region)
+      throw new Error("Your cart is not ready. Please try again.");
+    let active = cartRef.current;
+    if (!active || active.completed_at) {
+      active = await createCart(region.id);
+      assertActive();
+      if (!active) throw new Error("Unable to create your cart. Please try again.");
+      // Keep the successful creation for retry if later ownership/metadata writes fail.
+      setCart(active);
+      try { localStorage.setItem(CART_ID_KEY, active.id); } catch { /* The cart is still in memory. */ }
+    }
+    if (user && active.customer_id !== user.id) {
+      const owned = await updateCartOwnership(active.id) as StoreCart | null;
+      assertActive();
+      if (!owned) throw new Error("Unable to prepare your cart. Please try again.");
+      active = owned;
+      setCart(active);
+    }
+    if (user && user.metadata?.active_cart_id !== active.id) {
+      await updateCustomerMetadata({ ...user.metadata, active_cart_id: active.id });
+      assertActive();
+    }
+    return active;
+  }, [authLoading, regionLoading, region, user, setCart]);
+
+  const ensureCart = useCallback(() => {
+    const generation = sessionGeneration.current;
+    return runCartMutation(() => getOrCreateCart(generation));
+  }, [runCartMutation, getOrCreateCart]);
 
   const addItem = useCallback(
     async (
@@ -389,13 +443,12 @@ export function Providers({ children }: ProvidersProps) {
       quantity: number = 1,
       customization?: import("./portrait").PortraitCustomization,
     ) => {
-      if (!cart?.id)
-        throw new Error("Your cart is not ready. Please try again.");
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {
         try {
+          const active = await getOrCreateCart(generation);
           const updatedCart = await addToCart(
-            cart.id,
+            active.id,
             variantId,
             quantity,
             customization,
@@ -410,18 +463,18 @@ export function Providers({ children }: ProvidersProps) {
         }
       });
     },
-    [cart?.id, refreshCart, runCartMutation, commitCart],
+    [getOrCreateCart, refreshCart, runCartMutation, commitCart],
   );
 
   const updateItem = useCallback(
     async (lineItemId: string, quantity: number) => {
-      if (!cart?.id)
+      if (!cartId)
         throw new Error("Your cart is not ready. Please try again.");
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {
         try {
           const updatedCart = await updateCartItem(
-            cart.id,
+            cartId,
             lineItemId,
             quantity,
           );
@@ -434,17 +487,17 @@ export function Providers({ children }: ProvidersProps) {
         }
       });
     },
-    [cart?.id, refreshCart, runCartMutation, commitCart],
+    [cartId, refreshCart, runCartMutation, commitCart],
   );
 
   const removeItem = useCallback(
     async (lineItemId: string) => {
-      if (!cart?.id)
+      if (!cartId)
         throw new Error("Your cart is not ready. Please try again.");
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {
         try {
-          const updatedCart = await removeFromCart(cart.id, lineItemId);
+          const updatedCart = await removeFromCart(cartId, lineItemId);
           commitCart(updatedCart, generation);
         } catch (error: unknown) {
           if (isCompletedOrInvalidCartError(error)) {
@@ -454,15 +507,15 @@ export function Providers({ children }: ProvidersProps) {
         }
       });
     },
-    [cart?.id, refreshCart, runCartMutation, commitCart],
+    [cartId, refreshCart, runCartMutation, commitCart],
   );
 
   const applyPromoCodeHandler = useCallback(
     async (code: string): Promise<boolean> => {
-      if (!cart?.id) return false;
+      if (!cartId) return false;
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {
-        const updatedCart = await applyPromoCode(cart.id as string, code);
+        const updatedCart = await applyPromoCode(cartId, code);
         commitCart(updatedCart, generation);
         return (
           updatedCart?.promotions?.some(
@@ -471,20 +524,20 @@ export function Providers({ children }: ProvidersProps) {
         );
       });
     },
-    [cart?.id, runCartMutation, commitCart],
+    [cartId, runCartMutation, commitCart],
   );
 
   const removePromoCodeHandler = useCallback(
     async (code: string): Promise<boolean> => {
-      if (!cart?.id) return false;
+      if (!cartId) return false;
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {
-        const updatedCart = await removePromoCode(cart.id, code);
+        const updatedCart = await removePromoCode(cartId, code);
         commitCart(updatedCart, generation);
         return true;
       });
     },
-    [cart?.id, runCartMutation, commitCart],
+    [cartId, runCartMutation, commitCart],
   );
 
   const applyBetterCouponHandler = useCallback(
@@ -559,35 +612,40 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <RegionContext.Provider value={{ region, regionLoading }}>
-      <AuthContext.Provider
-        value={{
-          user,
-          loading: authLoading,
-          login: handleLogin,
-          register: handleRegister,
-          logout: handleLogout,
-        }}
+      <StoreStatusContext.Provider
+        value={{ ordersOpen, storeStatusLoading, newsletterEnabled }}
       >
-        <CartContext.Provider
+        <AuthContext.Provider
           value={{
-            cart,
-            cartLoading,
-            cartCount,
-            addItem,
-            updateItem,
-            removeItem,
-            refreshCart,
-            applyPromoCode: applyPromoCodeHandler,
-            removePromoCode: removePromoCodeHandler,
-            applyBetterCoupon: applyBetterCouponHandler,
-            applySavedCoupons,
-            createAndSelectStripePaymentSession:
-              createAndSelectStripePaymentSessionHandler,
+            user,
+            loading: authLoading,
+            login: handleLogin,
+            register: handleRegister,
+            logout: handleLogout,
           }}
         >
-          {children}
-        </CartContext.Provider>
-      </AuthContext.Provider>
+          <CartContext.Provider
+            value={{
+              cart,
+              cartLoading,
+              cartCount,
+              addItem,
+              updateItem,
+              removeItem,
+              refreshCart,
+              ensureCart,
+              applyPromoCode: applyPromoCodeHandler,
+              removePromoCode: removePromoCodeHandler,
+              applyBetterCoupon: applyBetterCouponHandler,
+              applySavedCoupons,
+              createAndSelectStripePaymentSession:
+                createAndSelectStripePaymentSessionHandler,
+            }}
+          >
+            {children}
+          </CartContext.Provider>
+        </AuthContext.Provider>
+      </StoreStatusContext.Provider>
     </RegionContext.Provider>
   );
 }
@@ -604,6 +662,16 @@ export function useRegion() {
   const context = useContext(RegionContext);
   if (context === undefined) {
     throw new Error("useRegion must be used within a RegionProvider");
+  }
+  return context;
+}
+
+export function useStoreStatus() {
+  const context = useContext(StoreStatusContext);
+  // Composing this hook outside the provider (e.g. isolated card renders) must
+  // fail closed: orders stay closed rather than defaulting open.
+  if (context === undefined) {
+    return { ordersOpen: false, storeStatusLoading: false, newsletterEnabled: false };
   }
   return context;
 }

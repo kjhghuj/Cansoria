@@ -25,6 +25,12 @@ export default function ExitIntentPopup() {
     const hasShownRef = useRef(false);
 
     useEffect(() => {
+        const triggerPopup = () => {
+            if (hasShownRef.current) return;
+            setIsVisible(true);
+            hasShownRef.current = true;
+            localStorage.setItem("cansoria_exit_popup_seen", "true");
+        };
         // Check local storage on mount
         const hasSeenPopup = localStorage.getItem("cansoria_exit_popup_seen");
         if (hasSeenPopup) {
@@ -51,13 +57,6 @@ export default function ExitIntentPopup() {
             document.removeEventListener("mouseleave", handleMouseLeave);
         };
     }, []);
-
-    const triggerPopup = () => {
-        if (hasShownRef.current) return;
-        setIsVisible(true);
-        hasShownRef.current = true;
-        localStorage.setItem("cansoria_exit_popup_seen", "true");
-    };
 
     const handleClose = () => {
         setIsVisible(false);

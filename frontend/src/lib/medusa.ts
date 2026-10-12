@@ -57,6 +57,12 @@ export async function getStore() {
   }
 }
 
+// Commerce readiness: orders stay closed unless the store record explicitly opens them.
+export async function getStoreOrdersOpen(): Promise<boolean> {
+  const store = await getStore();
+  return (store as { orders_open?: unknown } | null)?.orders_open === true;
+}
+
 // Region helper - get default region
 export async function getRegion(countryCode: string = "gb") {
   try {

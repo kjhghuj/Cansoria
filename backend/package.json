@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "medusa build",
-    "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed": "cross-env NODE_ENV=development medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
     "dev": "medusa develop --port 9030",
     "test:integration:http": "cross-env TEST_TYPE=integration:http DB_HOST=localhost DB_USERNAME=cansoria DB_PASSWORD=cansoria DB_PORT=5433 NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
@@ -23,11 +23,11 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.940.0",
-    "@medusajs/admin-sdk": "2.12.4",
-    "@medusajs/cli": "2.12.4",
-    "@medusajs/framework": "2.12.4",
-    "@medusajs/medusa": "2.12.4",
-    "@medusajs/utils": "^2.12.4",
+    "@medusajs/admin-sdk": "2.21.2",
+    "@medusajs/cli": "2.21.2",
+    "@medusajs/framework": "2.21.2",
+    "@medusajs/medusa": "2.21.2",
+    "@medusajs/utils": "2.21.2",
     "@react-email/components": "^1.0.4",
     "@react-email/render": "^2.0.2",
     "axios": "^1.13.2",
@@ -39,8 +39,8 @@
     "resend": "^6.7.0"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "2.12.4",
-    "@swc/core": "^1.7.28",
+    "@medusajs/test-utils": "2.21.2",
+    "@swc/core": "1.15.3",
     "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",
     "@types/node": "^20.12.11",
@@ -53,10 +53,18 @@
     "react-dom": "^18.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2",
-    "vite": "^5.4.14",
+    "vite": "^7.3.6",
     "yalc": "^1.0.0-pre.53"
   },
+  "overrides": {
+    "@graphql-tools/utils": "12.0.3",
+    "lodash": "4.18.1",
+    "ajv": "8.20.0",
+    "postcss-selector-parser": "7.1.6",
+    "uuid": "^11.1.1",
+    "@opentelemetry/instrumentation-pg": "^0.73.0"
+  },
   "engines": {
-    "node": ">=20"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

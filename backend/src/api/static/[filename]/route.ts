@@ -1,9 +1,10 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import path from "path"
 import fs from "fs"
+import { isLocalDevelopment } from "../../../lib/env-mode"
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
-  if (process.env.NODE_ENV === "production") return res.status(410).json({ message: "Local files are unavailable" })
+  if (!isLocalDevelopment()) return res.status(410).json({ message: "Local files are unavailable" })
   const { filename } = req.params
   if (!filename) return res.status(400).json({ message: "File name is required" })
   if (/[\\/\0]/.test(filename) || filename !== path.basename(filename) || filename === "." || filename === "..") return res.status(403).json({ message: "Access denied" })

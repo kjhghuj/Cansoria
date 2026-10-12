@@ -1,11 +1,12 @@
 import { createHmac, timingSafeEqual } from "crypto"
+import { isLocalDevelopment } from "./env-mode"
 
 type Purpose = "cart" | "order"
 const ID_PATTERN = /^(cart|order)_[a-zA-Z0-9_-]{1,128}$/
 
 export function signingSecret(): string {
-  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? "" : "supersecret")
-  if (process.env.NODE_ENV === "production" && (secret.length < 32 || /supersecret|replace|changeme|your[_-]|example/i.test(secret))) {
+  const secret = process.env.JWT_SECRET || (isLocalDevelopment() ? "supersecret" : "")
+  if (!isLocalDevelopment() && (secret.length < 32 || /supersecret|replace|changeme|your[_-]|example/i.test(secret))) {
     throw new Error("A strong JWT_SECRET is required")
   }
   return secret
@@ -13,9 +14,9 @@ export function signingSecret(): string {
 
 export function storefrontUrl(): string {
   const configured = process.env.STOREFRONT_URL || process.env.FRONTEND_URL
-  if (process.env.NODE_ENV === "production" && !configured) throw new Error("A production storefront URL is required")
+  if (!isLocalDevelopment() && !configured) throw new Error("A production storefront URL is required")
   const url = new URL(configured || "http://localhost:3030")
-  if (url.username || url.password || !["http:", "https:"].includes(url.protocol) || (process.env.NODE_ENV === "production" && url.protocol !== "https:")) throw new Error("A valid HTTPS storefront URL without credentials is required")
+  if (url.username || url.password || !["http:", "https:"].includes(url.protocol) || (!isLocalDevelopment() && url.protocol !== "https:")) throw new Error("A valid HTTPS storefront URL without credentials is required")
   return url.origin
 }
 

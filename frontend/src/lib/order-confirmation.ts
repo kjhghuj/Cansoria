@@ -6,8 +6,15 @@ export interface OrderConfirmation {
   lastName: string;
 }
 
-export function saveOrderConfirmation(data: OrderConfirmation): void {
-  sessionStorage.setItem(KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
+export function saveOrderConfirmation(data: OrderConfirmation): boolean {
+  try {
+    sessionStorage.setItem(KEY, JSON.stringify({ ...data, savedAt: Date.now() }));
+    return true;
+  } catch {
+    // Storage may be disabled or full. The caller keeps an order reference in
+    // the redirect so the confirmation page can still render server-authorized.
+    return false;
+  }
 }
 
 // Display-only state; access to an order still requires backend authorization.

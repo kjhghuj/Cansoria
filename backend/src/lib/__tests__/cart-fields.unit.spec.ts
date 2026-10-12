@@ -1,4 +1,6 @@
-import { prepareRetrieveQuery } from "@medusajs/framework"
+import { prepareRetrieveQuery, validateAndTransformQuery } from "@medusajs/framework"
+import { retrieveTransformQueryConfig as cartQueryConfig } from "@medusajs/medusa/api/store/carts/query-config"
+import { StoreGetCartsCart } from "@medusajs/medusa/api/store/carts/validators"
 import { applyCartFields, forceCartFields, forcePaymentFields, SAFE_CART_FIELDS, SAFE_PAYMENT_FIELDS, safeCartInput, projectOrderMetadata } from "../cart-fields"
 describe("all Store cart field boundaries", () => {
   it("keeps signed storage records out of customer order list responses", () => {
@@ -10,19 +12,34 @@ describe("all Store cart field boundaries", () => {
   it("prevents clients from overwriting server-owned photo records", () => {
     expect(safeCartInput({ metadata: { gift_message: "Hello", portrait_photos: [{ file_id: "victim" }] } }).metadata).toEqual({ gift_message: "Hello" })
   })
-  it.each(["customer.carts.shipping_address.*", "customer.addresses.*", "customer.orders.*", "payment_collection.cart.customer.orders.*"])('ignores unsafe remote expansion %s using the actual Medusa parser', fields => {
-    const req = { originalUrl: "/store/carts/cart_a/line-items", query: { fields } } as any
+  it.each(["customer.carts.shipping_address.*", "customer.addresses.*", "customer.orders.*", "payment_collection.cart.customer.orders.*"])('ignores unsafe remote expansion %s using the actual Medusa parser', async fields => {
+    const req = { originalUrl: "/store/carts/cart_a/line-items", allowed: [], query: { fields } } as any
     forceCartFields(req, {} as any, jest.fn())
-    const result = prepareRetrieveQuery(req.query, { defaults: SAFE_CART_FIELDS })
+    const result = await prepareRetrieveQuery(req.query, { ...cartQueryConfig, allowed: [...cartQueryConfig.allowed, ...req.allowed] })
     expect(result.remoteQueryConfig.fields.some(field => field.split(".").includes("customer"))).toBe(false)
     expect(result.remoteQueryConfig.fields).toContain("shipping_address.address_1")
     expect(result.remoteQueryConfig.fields.some(field => field.includes(".carts.") || field.includes(".orders.") || field.includes(".addresses."))).toBe(false)
+    expect(result.remoteQueryConfig.fields).toEqual(expect.arrayContaining(["items.variant.images.*", "items.variant.thumbnail", "region.countries.*", "payment_collection.payment_sessions.data", "items.metadata"]))
+    expect(req.allowed).toEqual(["items.variant.images", "items.variant.thumbnail"])
   })
-  it.each(["cart.customer.carts.shipping_address.*", "payment_sessions.payment_collection.cart.customer.addresses.*"])('ignores payment reverse expansion %s using the actual Medusa parser', fields => {
+  it("preserves cart media, prices and payment client data through native validation", async () => {
+    const req = { originalUrl: "/store/carts/cart_a", allowed: [], storeRelationsLimit: 3, query: { fields: "customer.orders.*" } } as any
+    forceCartFields(req, {} as any, jest.fn())
+    const middleware = validateAndTransformQuery(StoreGetCartsCart, cartQueryConfig)
+    for (let pass = 0; pass < 2; pass++) {
+      const next = jest.fn()
+      await middleware(req, {} as any, next)
+      expect(next).toHaveBeenCalledWith()
+      expect(req.queryConfig.fields).toEqual(expect.arrayContaining(["items.variant.images.*", "items.variant.thumbnail", "items.unit_price", "total", "payment_collection.payment_sessions.data", "region.countries.*"]))
+      expect(req.queryConfig.fields.some((field: string) => field.split(".").includes("customer") || field.includes(".orders."))).toBe(false)
+      expect(req.allowed).toEqual([])
+    }
+  })
+  it.each(["cart.customer.carts.shipping_address.*", "payment_sessions.payment_collection.cart.customer.addresses.*"])('ignores payment reverse expansion %s using the actual Medusa parser', async fields => {
     const req = { query: { fields } } as any
     const res = { json: jest.fn() } as any
     forcePaymentFields(req, res, jest.fn())
-    const result = prepareRetrieveQuery(req.query, { defaults: SAFE_PAYMENT_FIELDS })
+    const result = await prepareRetrieveQuery(req.query, { defaults: SAFE_PAYMENT_FIELDS })
     expect(result.remoteQueryConfig.fields.some(field => field.split(".").includes("cart") || field.split(".").includes("customer"))).toBe(false)
     expect(result.remoteQueryConfig.fields).toContain("payment_sessions.data")
   })

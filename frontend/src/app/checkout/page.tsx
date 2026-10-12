@@ -13,7 +13,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { useCart, useRegion } from "@/lib/providers";
+import { useCart, useRegion, useStoreStatus } from "@/lib/providers";
 import { formatPrice, getCart } from "@/lib/medusa";
 import {
   confirmDelivery,
@@ -21,6 +21,7 @@ import {
   hasAuthorizedStripePayment,
   paymentTotalsMatch,
   prepareDelivery,
+  stateRequiredFor,
   type DeliveryOption,
 } from "@/lib/checkout-delivery";
 import type { StoreCart } from "@/lib/types";
@@ -107,6 +108,7 @@ function splitName(name: string) {
 function CheckoutForm() {
   const { cart, cartLoading, refreshCart } = useCart();
   const { region } = useRegion();
+  const { ordersOpen, storeStatusLoading } = useStoreStatus();
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -150,6 +152,7 @@ function CheckoutForm() {
     email: cart?.email ?? "",
     address: cart?.shipping_address?.address_1 ?? "",
     city: cart?.shipping_address?.city ?? "",
+    state: cart?.shipping_address?.province ?? "",
     postalCode: cart?.shipping_address?.postal_code ?? "",
     country: cart?.shipping_address?.country_code?.toLowerCase() ?? "",
   });
@@ -157,6 +160,10 @@ function CheckoutForm() {
     ? deliveryDetailsKey(cart.id, billingData)
     : "";
   const addressReady = Boolean(addressKey && addressKey === currentAddressKey);
+  // A confirmed closed store blocks new payments. A payment already authorized
+  // before closure may still be confirmed so it is not left stranded.
+  const ordersBlocked =
+    !storeStatusLoading && !ordersOpen && !paymentConfirmed;
   const deliveryReady =
     addressReady &&
     confirmedDeliveryKey === `${currentAddressKey}:${deliveryChoice}` &&
@@ -184,11 +191,23 @@ function CheckoutForm() {
 
     try {
       if (!paymentConfirmed) {
+        if (ordersBlocked) {
+          throw new Error(
+            "Commissions are not open yet. Your cart has been saved — please contact the studio to be notified when orders open.",
+          );
+        }
         if (!addressReady || deliveryOptions.length === 0) {
           if (
             !countries.some((country) => country.iso_2 === billingData.country)
           )
             throw new Error("Please select a supported delivery country.");
+          if (
+            stateRequiredFor(billingData.country) &&
+            !billingData.state.trim()
+          )
+            throw new Error(
+              "Please add the state or province for your delivery address.",
+            );
           setConfirmedDeliveryKey("");
           setCardReady(false);
           setAddressKey("");
@@ -273,6 +292,7 @@ function CheckoutForm() {
               address: {
                 line1: billingData.address,
                 city: billingData.city,
+                state: billingData.state || undefined,
                 postal_code: billingData.postalCode,
                 country: billingData.country,
               },
@@ -283,11 +303,10 @@ function CheckoutForm() {
         if (result.error) {
           throw new Error(result.error.message || "Payment failed");
         }
-        if (
-          !["succeeded", "requires_capture"].includes(
-            result.paymentIntent?.status ?? "",
-          )
-        )
+        // The store charges automatically: success means the payment is captured.
+        // Any other status (for example a stray manual-capture intent) must not be
+        // presented to the customer as a completed order.
+        if (result.paymentIntent?.status !== "succeeded")
           throw new Error(PAYMENT_FAILED_MESSAGE);
         paidCartId.current = cart.id;
         setPaymentConfirmed(true);
@@ -324,13 +343,19 @@ function CheckoutForm() {
         const { firstName: redirectFirstName, lastName: redirectLastName } =
           splitName(billingData.name);
 
-        saveOrderConfirmation({
+        // If browser storage rejected the confirmation cache, keep an order
+        // reference on the redirect so the confirmation page still renders.
+        const saved = saveOrderConfirmation({
           orderId: orderData.id,
           email: billingData.email,
           firstName: redirectFirstName,
           lastName: redirectLastName,
         });
-        router.push("/order/confirmed");
+        router.push(
+          saved
+            ? "/order/confirmed"
+            : `/order/confirmed?ref=${encodeURIComponent(orderData.id)}`,
+        );
 
         refreshCart().catch((refreshError) =>
           console.error("Background cart refresh failed:", refreshError),
@@ -345,7 +370,7 @@ function CheckoutForm() {
     } catch (checkoutError: unknown) {
       setError(
         paidCartId.current === cart.id
-          ? "Your payment was authorized, but your order could not be confirmed. Use Confirm Order to retry confirmation, or contact the studio."
+          ? "Your payment was received, but your order could not be confirmed. Use Confirm Order to retry confirmation, or contact the studio."
           : getFriendlyCheckoutError(checkoutError),
       );
     } finally {
@@ -376,6 +401,16 @@ function CheckoutForm() {
             </p>
             <p className="mt-1 text-sm leading-6">
               {PAYMENT_NOT_CONFIGURED_MESSAGE}
+            </p>
+          </div>
+        )}
+        {ordersBlocked && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+            <p className="font-medium">Commissions are not open yet.</p>
+            <p className="mt-1 text-sm leading-6">
+              The studio is still preparing production, previews and delivery
+              arrangements. Your cart has been saved and checkout will be
+              available as soon as orders open.
             </p>
           </div>
         )}
@@ -547,6 +582,7 @@ function CheckoutForm() {
                 processing ||
                 cartLoading ||
                 !cartItems.length ||
+                ordersBlocked ||
                 (!paymentConfirmed &&
                   ((addressReady &&
                     deliveryOptions.length > 0 &&
@@ -556,13 +592,15 @@ function CheckoutForm() {
               label={
                 paymentConfirmed
                   ? "Confirm Order →"
-                  : !addressReady || !deliveryOptions.length
-                    ? "Continue to Delivery →"
-                    : !deliveryReady
-                      ? "Confirm Delivery →"
-                      : !stripeUnavailable
-                        ? "Place Order →"
-                        : "Payment Unavailable"
+                  : ordersBlocked
+                    ? "Orders Open Soon"
+                    : !addressReady || !deliveryOptions.length
+                      ? "Continue to Delivery →"
+                      : !deliveryReady
+                        ? "Confirm Delivery →"
+                        : !stripeUnavailable
+                          ? "Place Order →"
+                          : "Payment Unavailable"
               }
             />
 

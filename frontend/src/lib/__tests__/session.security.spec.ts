@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { NextRequest } from 'next/server';
+import { createHmac } from 'node:crypto';
+import { readVisitorCookie, VISITOR_COOKIE } from '../server-visitor';
 
 jest.mock('next/headers', () => ({ cookies: jest.fn() }));
 const fetchMock = jest.fn<typeof fetch>();
@@ -26,6 +28,7 @@ beforeEach(async () => {
   process.env.NEXT_PUBLIC_BASE_URL = 'https://shop.test';
   process.env.MEDUSA_BACKEND_URL = 'https://backend.test';
   process.env.MEDUSA_PUBLISHABLE_KEY = 'pk_test';
+  process.env.STORE_VISITOR_SECRET = 'session-test-visitor-key-'.repeat(4);
   delete process.env.STORE_TRUSTED_IP_HEADER;
   delete process.env.STORE_TRUSTED_PROXY_HOPS;
   cookieJar.clear();
@@ -34,12 +37,90 @@ beforeEach(async () => {
   ({ GET: storeGet, POST: storePost } = await import('../../app/api/medusa/[...path]/route'));
   paymentPost = (await import('../../app/api/checkout/[cartId]/payment-sessions/route')).POST;
   ({ backendFetch } = await import('../server-medusa'));
-  jest.mocked(cookies).mockResolvedValue({ get: (name: string) => cookieJar.has(name) ? { name, value: cookieJar.get(name)! } : undefined } as Awaited<ReturnType<typeof cookies>>);
+  jest.mocked(cookies).mockResolvedValue({
+    get: (name: string) => cookieJar.has(name) ? { name, value: cookieJar.get(name)! } : undefined,
+    set: (name: string, value: string) => { cookieJar.set(name, value); },
+  } as Awaited<ReturnType<typeof cookies>>);
   fetchMock.mockReset();
   global.fetch = fetchMock;
 });
 
 describe('server session and capability boundary', () => {
+  it('issues an HttpOnly visitor and reuses its signed identity for different API requests', async () => {
+    const { cookies } = await import('next/headers');
+    const jar = await cookies(); const set = jest.spyOn(jar, 'set');
+    fetchMock.mockImplementation(async () => json({ products: [] }));
+    await backendFetch('store/products', {}, undefined, request('/api/medusa/store/products'));
+    const cookie = cookieJar.get(VISITOR_COOKIE)!;
+    expect(set).toHaveBeenCalledWith(VISITOR_COOKIE, cookie, expect.objectContaining({ httpOnly: true, sameSite: 'lax', path: '/' }));
+    await backendFetch('store/carts', { method: 'POST' }, undefined, request('/api/medusa/store/carts', {}));
+    const identity = readVisitorCookie(cookie)!;
+    for (const [url, init] of fetchMock.mock.calls) {
+      const proof = new Headers(init?.headers).get('x-cansoria-visitor-proof')!;
+      const [version, id, time, signature] = proof.split('.');
+      const path = new URL(String(url));
+      const payload = `${version}.${id}.${time}`;
+      expect(id).toBe(identity);
+      expect(signature).toBe(createHmac('sha256', process.env.STORE_VISITOR_SECRET!).update(`cansoria:request\n${payload}\n${init?.method || 'GET'}\n${path.pathname}${path.search}`).digest('hex'));
+    }
+    expect(set).toHaveBeenCalledTimes(1);
+  });
+  it('replaces a forged visitor cookie and strips caller-supplied proof and IP', async () => {
+    cookieJar.set(VISITOR_COOKIE, 'forged');
+    fetchMock.mockResolvedValueOnce(json({ products: [] }));
+    await backendFetch('store/products', { headers: { 'x-real-ip': '203.0.113.10', 'x-cansoria-visitor-proof': 'forged' } }, undefined, request('/api/medusa/store/products'));
+    const headers = new Headers(fetchMock.mock.calls[0][1]?.headers);
+    expect(headers.get('x-real-ip')).toBeNull();
+    expect(headers.get('x-cansoria-visitor-proof')).toMatch(/^v1\.[a-f0-9]{32}\./);
+    expect(readVisitorCookie(cookieJar.get(VISITOR_COOKIE))).toBeDefined();
+  });
+  it('fails closed before forwarding if the shared visitor key is unavailable', async () => {
+    delete process.env.STORE_VISITOR_SECRET;
+    await expect(backendFetch('store/carts', { method: 'POST' }, undefined, request('/api/medusa/store/carts', {}))).rejects.toThrow('STORE_VISITOR_SECRET');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('preserves Retry-After for authentication throttling', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'Retry-After': '900' } }));
+    const response = await authPost(request('/api/auth/login', { email: 'member@example.test', password: 'password' }), authContext('login'));
+    expect(response.status).toBe(429); expect(response.headers.get('retry-after')).toBe('900');
+  });
+  it('preserves customer creation throttling during registration', async () => {
+    fetchMock.mockResolvedValueOnce(json({ token: jwt() })).mockResolvedValueOnce(new Response('{}', { status: 429, headers: { 'Retry-After': '3600' } }));
+    const response = await authPost(request('/api/auth/register', { email: 'member@example.test', password: 'password', first_name: 'A', last_name: 'B' }), authContext('register'));
+    expect(response.status).toBe(429); expect(response.headers.get('retry-after')).toBe('3600');
+  });
+  it('answers password reset requests uniformly without leaking account existence', async () => {
+    fetchMock.mockResolvedValueOnce(json({}, 201));
+    let response = await authPost(request('/api/auth/request-password-reset', { email: 'member@example.test', password: 'x' }), authContext('request-password-reset'));
+    expect(response.status).toBe(200);
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://backend.test/auth/customer/emailpass/reset-password');
+    // A failing backend must not change the answer for the visitor.
+    fetchMock.mockReset().mockResolvedValueOnce(new Response('{}', { status: 503 }));
+    response = await authPost(request('/api/auth/request-password-reset', { email: 'unknown@example.test', password: 'x' }), authContext('request-password-reset'));
+    expect(response.status).toBe(200);
+    fetchMock.mockReset();
+    response = await authPost(request('/api/auth/request-password-reset', { email: 'not-an-email', password: 'x' }), authContext('request-password-reset'));
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('forwards reset tokens once and never accepts a weak password', async () => {
+    const token = 'reset'.repeat(10);
+    fetchMock.mockResolvedValueOnce(json({ success: true }));
+    let response = await authPost(request('/api/auth/reset-password', { token, password: 'longenough1' }), authContext('reset-password'));
+    expect(response.status).toBe(200);
+    const init = fetchMock.mock.calls[0][1]!;
+    expect(String(fetchMock.mock.calls[0][0])).toBe('https://backend.test/auth/customer/emailpass/update');
+    expect(new Headers(init.headers).get('Authorization')).toBe(`Bearer ${token}`);
+    expect(JSON.parse(String(init.body))).toEqual({ password: 'longenough1' });
+    fetchMock.mockReset().mockResolvedValueOnce(json({}, 401));
+    response = await authPost(request('/api/auth/reset-password', { token, password: 'longenough1' }), authContext('reset-password'));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ message: expect.stringContaining('invalid or has expired') });
+    fetchMock.mockReset();
+    response = await authPost(request('/api/auth/reset-password', { token, password: 'short' }), authContext('reset-password'));
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('stores login credentials in an HttpOnly cookie and never returns the token', async () => {
     const token = jwt();
     fetchMock.mockResolvedValueOnce(json({ token }));
@@ -102,6 +183,19 @@ describe('server session and capability boundary', () => {
     expect(await response.json()).toEqual({ cart: { id: 'cart_123' } });
     expect(response.headers.get('set-cookie')).toContain('cansoria_cart_access=signed-capability');
     expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+  });
+
+  it('keeps the completion order capability HttpOnly and forwards it for authorized order reads', async () => {
+    fetchMock.mockResolvedValueOnce(json({ type: 'order', data: { id: 'order_123' }, order_access_token: 'order-capability' }));
+    let response = await storePost(request('/api/medusa/store/carts/cart_123/complete', {}), storeContext('store', 'carts', 'cart_123', 'complete'));
+    expect(await response.json()).toEqual({ type: 'order', data: { id: 'order_123' } });
+    expect(response.headers.get('set-cookie')).toContain('cansoria_order_access=order-capability');
+    expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+    // The browser would store that HttpOnly cookie; mirror it in the jar.
+    cookieJar.set('cansoria_order_access', 'order-capability');
+    fetchMock.mockResolvedValueOnce(json({ order: { id: 'order_123', email: 'owner@example.test' } }));
+    response = await storeGet(request('/api/medusa/store/orders/order_123'), storeContext('store', 'orders', 'order_123'));
+    expect(new Headers(fetchMock.mock.calls[1][1]?.headers).get('x-order-access-token')).toBe('order-capability');
   });
 
   it('cannot proxy an admin or auth path', async () => {

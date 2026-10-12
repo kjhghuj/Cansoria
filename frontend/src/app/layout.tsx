@@ -39,12 +39,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // The chat concierge is only offered when its API route actually has a model key.
+  const chatEnabled = Boolean(process.env.GEMINI_API_KEY);
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased" suppressHydrationWarning>
         <Providers>
           <div className="flex flex-col min-h-screen font-sans text-charcoal bg-cream">
-            <LayoutWrapper>{children}</LayoutWrapper>
+            <LayoutWrapper chatEnabled={chatEnabled}>{children}</LayoutWrapper>
             <script
               type="application/ld+json"
               nonce={nonce}

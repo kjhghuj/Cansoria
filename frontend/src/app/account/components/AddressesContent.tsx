@@ -28,7 +28,7 @@ export function AddressesContent() {
     fetchAddresses();
   }, []);
 
-  const fetchAddresses = async () => {
+  async function fetchAddresses() {
     setLoadingAddresses(true);
     try {
       const response = await fetch(`${BACKEND_URL}/store/customers/me/addresses`, {
@@ -46,7 +46,7 @@ export function AddressesContent() {
     } finally {
       setLoadingAddresses(false);
     }
-  };
+  }
 
   const handleSaveAddress = async (formData: FormData) => {
     const addressData = {

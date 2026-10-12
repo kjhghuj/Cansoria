@@ -8,6 +8,7 @@ import { STUDIO, studioProduct } from "@/lib/studio-content";
 import { portraitStylesUrl } from "@/lib/portrait";
 import { StoreProduct } from "@/lib/types";
 import { formatPrice } from "@/lib/medusa";
+import { useStoreStatus } from "@/lib/providers";
 
 const FALLBACK_IMAGES = [
   "/products/generic.svg",
@@ -114,7 +115,9 @@ export default function ProductCard({
   product: rawProduct,
   regionCurrency = "GBP",
 }: ProductCardProps) {
-  const product = studioProduct(rawProduct);
+  // Closed store: preparation copy. Open store: reviewed admin content as managed.
+  const { ordersOpen } = useStoreStatus();
+  const product = studioProduct(rawProduct, { ordersOpen });
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
 

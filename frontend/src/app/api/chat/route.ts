@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 import { GEMINI_SYSTEM_INSTRUCTION } from "@/lib/constants";
 import { admitChatRequest, chatClientKey, ChatControlError, CHAT_DEADLINE_MS, readChatBody } from "@/lib/chat-controls";
+import { isSameOriginWrite } from "@/lib/store-proxy-policy";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ function errorResponse(status: number, retryAfter = 60) {
 }
 
 export async function POST(request: Request) {
+  if (!isSameOriginWrite(request)) return errorResponse(403);
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {

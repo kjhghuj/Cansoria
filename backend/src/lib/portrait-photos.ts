@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { isLocalDevelopment } from "./env-mode";
 import { signingSecret } from "./access-tokens";
 
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
@@ -21,7 +22,7 @@ export type PortraitPhoto = {
 export function portraitPhotoSecret(): string {
   const configured = process.env.PORTRAIT_PHOTO_SECRET;
   if (
-    process.env.NODE_ENV === "production" &&
+    !isLocalDevelopment() &&
     (!configured ||
       configured.length < 32 ||
       /replace|changeme|example/i.test(configured))

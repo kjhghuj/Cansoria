@@ -67,6 +67,23 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
   const [variantImageMap, setVariantImageMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    async function fetchOrders() {
+      setLoadingOrders(true);
+      try {
+        // Request variant_id and product_id fields for variant image resolution.
+        const response = await fetch(`${BACKEND_URL}/store/orders?fields=+items.variant_id,+items.product_id,+email`, {
+          headers: { "x-publishable-api-key": API_KEY },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data.orders || []);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoadingOrders(false);
+      }
+    }
     fetchOrders();
   }, []);
 
@@ -127,27 +144,6 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
 
     resolveVariantImages();
   }, [orders, region?.id, variantImageMap]);
-
-  const fetchOrders = async () => {
-    setLoadingOrders(true);
-    try {
-      // Request variant_id and product_id fields for variant image resolution
-      const response = await fetch(`${BACKEND_URL}/store/orders?fields=+items.variant_id,+items.product_id,+email`, {
-        headers: {
-          "x-publishable-api-key": API_KEY,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data.orders || []);
-      }
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
 
   const toggleOrder = (orderId: string) => {
     setExpandedOrders(prev => {

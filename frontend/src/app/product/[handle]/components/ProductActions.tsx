@@ -20,7 +20,7 @@ import {
   type PortraitStyle,
   type UploadedPhoto,
 } from "@/lib/portrait";
-import { useCart } from "@/lib/providers";
+import { useCart, useStoreStatus } from "@/lib/providers";
 import { formatPrice } from "@/lib/medusa";
 import { StoreProduct, StoreProductVariant } from "@/lib/types";
 
@@ -61,6 +61,7 @@ export default function ProductActions({
 }: ProductActionsProps) {
   const router = useRouter();
   const { addItem, cartLoading, cart } = useCart();
+  const { ordersOpen, storeStatusLoading } = useStoreStatus();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
@@ -71,6 +72,9 @@ export default function ProductActions({
   const [actionError, setActionError] = useState("");
   const isPortrait = product.handle === "pet-portrait-oil-painting";
   const photoReady = Boolean(photo && photo.cartId === cart?.id);
+  // While the store status is still loading, ordering stays possible; the backend
+  // completion gate remains the authoritative check. Block only a confirmed closed store.
+  const ordersBlocked = !storeStatusLoading && !ordersOpen;
 
   const variants = useMemo(() => product.variants ?? [], [product.variants]);
   const options = useMemo(() => product.options ?? [], [product.options]);
@@ -86,6 +90,7 @@ export default function ProductActions({
     isAllOptionsSelected &&
     isInStock &&
     (!isPortrait || photoReady) &&
+    !ordersBlocked &&
     !isProcessing;
 
   const selectedPrice = selectedVariant?.calculated_price?.calculated_amount;
@@ -149,6 +154,7 @@ export default function ProductActions({
     if (!hasVariants) return "Unavailable";
     if (justAdded) return "Added to Cart";
     if (isAdding) return "Adding";
+    if (ordersBlocked) return "Orders Open Soon";
     if (!isAllOptionsSelected) return "Select Options";
     if (!selectedVariant) return "Combination Unavailable";
     if (!isInStock) return "Out of Stock";
@@ -244,7 +250,7 @@ export default function ProductActions({
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]">
             Your reference photo
           </h3>
-          <PhotoUpload key={cart?.id || "loading"} onChange={setPhoto} />
+          <PhotoUpload onChange={setPhoto} />
           <Link
             href="/upload-photo"
             className="mt-3 inline-block text-sm text-toffee underline"
@@ -268,6 +274,13 @@ export default function ProductActions({
       {actionError && (
         <p role="alert" className="text-sm text-red-700">
           {actionError}
+        </p>
+      )}
+      {ordersBlocked && (
+        <p role="status" className="rounded-2xl border border-border-subtle bg-cream-card p-4 text-sm leading-6 text-charcoal-light">
+          Commissions are in preparation. You can explore styles and prepare your
+          photo now — ordering opens as soon as the studio confirms production
+          and delivery arrangements.
         </p>
       )}
       <div>

@@ -6,6 +6,8 @@ export interface DeliveryDetails {
   email: string;
   address: string;
   city: string;
+  /** State/province for destinations that require it (US, CA, AU, …). */
+  state: string;
   postalCode: string;
   country: string;
 }
@@ -26,10 +28,18 @@ export function deliveryDetailsKey(cartId: string, details: DeliveryDetails) {
       details.email,
       details.address,
       details.city,
+      details.state,
       details.postalCode,
       details.country,
     ].map((value) => value.trim()),
   );
+}
+
+/** Destinations whose postal addresses require a state/province line. */
+export const STATE_REQUIRED_COUNTRIES = new Set(["us", "ca", "au", "in", "cn", "br", "mx"]);
+
+export function stateRequiredFor(country: string) {
+  return STATE_REQUIRED_COUNTRIES.has(country.trim().toLowerCase());
 }
 
 export async function prepareDelivery(
@@ -44,6 +54,7 @@ export async function prepareDelivery(
     address_1: details.address.trim(),
     city: details.city.trim(),
     country_code: details.country.toLowerCase(),
+    province: details.state.trim() || undefined,
     postal_code: details.postalCode.trim(),
   };
   const update = await fetch(
@@ -141,7 +152,8 @@ export function hasAuthorizedStripePayment(cart: StoreCart | null) {
     cart?.payment_collection?.payment_sessions?.some(
       (session) =>
         session.provider_id === "pp_stripe_stripe" &&
-        session.status === "authorized",
+        // Medusa marks a captured session "captured"; "authorized" precedes capture.
+        (session.status === "authorized" || session.status === "captured"),
     ) ?? false
   );
 }

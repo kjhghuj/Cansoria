@@ -13,8 +13,28 @@ import { ARTICLES as FALLBACK_ARTICLES } from "@/lib/constants";
 import type { Article as FallbackArticle } from "@/lib/types";
 
 // Strapi configuration
-const STRAPI_API_URL = process.env.STRAPI_API_URL || "http://localhost:1337";
+// An unset URL (or "disabled"/"static"/"off") selects the static content mode:
+// no CMS requests are made at all and the built-in editorial fallback is used.
+const RAW_STRAPI_API_URL = (process.env.STRAPI_API_URL || "").trim();
+export const CMS_DISABLED =
+    !RAW_STRAPI_API_URL || /^(disabled|static|off|false)$/i.test(RAW_STRAPI_API_URL);
+const STRAPI_API_URL = CMS_DISABLED ? "" : RAW_STRAPI_API_URL.replace(/\/+$/, "");
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN || "";
+
+// Bound every content request so an unresponsive CMS cannot hang a page render.
+const CMS_TIMEOUT_MS = Number(process.env.STRAPI_TIMEOUT_MS || 5000);
+
+export type CmsSource = "cms" | "static" | "error";
+
+function cmsFetchOptions(): RequestInit & { next?: { revalidate: number } } {
+    const options: RequestInit & { next?: { revalidate: number } } = {
+        headers: getHeaders(),
+        // A bounded request cannot participate in the incremental cache.
+        cache: "no-store",
+        signal: AbortSignal.timeout(CMS_TIMEOUT_MS),
+    };
+    return options;
+}
 
 // --- Type Definitions ---
 
@@ -332,33 +352,40 @@ export function getFallbackRelatedArticles(ids: number[]): Article[] {
 // --- API Functions ---
 
 /**
- * Fetch all articles from Strapi
+ * Fetch all articles from Strapi. Returns [] when the CMS is disabled or the
+ * request fails; use getArticlesDetailed() when the caller must distinguish a
+ * healthy-but-empty CMS from an unavailable one.
  */
 export async function getArticles(): Promise<Article[]> {
+    const result = await getArticlesDetailed();
+    return result.source === "error" ? [] : result.articles;
+}
+
+export async function getArticlesDetailed(): Promise<{
+    articles: Article[];
+    source: CmsSource;
+    detail?: string;
+}> {
+    if (CMS_DISABLED) return { articles: [], source: "static" };
     try {
         const url = getStrapiURL(
             "/api/articles?populate=*&sort=publishedAt:desc"
         );
 
-        const response = await fetch(url, {
-            headers: getHeaders(),
-            // In development, disable cache for instant content updates
-            // In production, revalidate every 60 seconds
-            cache: process.env.NODE_ENV === 'development' ? 'no-store' : undefined,
-            next: process.env.NODE_ENV === 'development' ? undefined : { revalidate: 60 },
-        });
+        const response = await fetch(url, cmsFetchOptions());
 
         if (!response.ok) {
             console.error(`[CMS] Failed to fetch articles: ${response.status}`);
-            return [];
+            return { articles: [], source: "error", detail: `HTTP ${response.status}` };
         }
 
         const json: StrapiResponse<StrapiArticle[]> = await response.json();
-
-        return json.data.map(mapArticle);
+        const articles = (json.data || []).map(mapArticle);
+        if (!articles.length) console.log("[CMS] Articles endpoint returned no entries.");
+        return { articles, source: "cms" };
     } catch (error) {
         console.error("[CMS] Error fetching articles:", error);
-        return [];
+        return { articles: [], source: "error", detail: error instanceof Error ? error.message : "unknown" };
     }
 }
 
@@ -366,16 +393,13 @@ export async function getArticles(): Promise<Article[]> {
  * Fetch the featured article for Journal Hero
  */
 export async function getFeaturedArticle(): Promise<Article | null> {
+    if (CMS_DISABLED) return null;
     try {
         const url = getStrapiURL(
             "/api/articles?filters[isFeatured][$eq]=true&populate=*&pagination[limit]=1"
         );
 
-        const response = await fetch(url, {
-            headers: getHeaders(),
-            cache: process.env.NODE_ENV === 'development' ? 'no-store' : undefined,
-            next: process.env.NODE_ENV === 'development' ? undefined : { revalidate: 60 },
-        });
+        const response = await fetch(url, cmsFetchOptions());
 
         if (!response.ok) {
             console.error(`[CMS] Failed to fetch featured article: ${response.status}`);
@@ -399,16 +423,13 @@ export async function getFeaturedArticle(): Promise<Article | null> {
  * Fetch single article by slug from Strapi
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
+    if (CMS_DISABLED) return null;
     try {
         const url = getStrapiURL(
             `/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`
         );
 
-        const response = await fetch(url, {
-            headers: getHeaders(),
-            cache: process.env.NODE_ENV === 'development' ? 'no-store' : undefined,
-            next: process.env.NODE_ENV === 'development' ? undefined : { revalidate: 60 },
-        });
+        const response = await fetch(url, cmsFetchOptions());
 
         if (!response.ok) {
             console.error(`[CMS] Failed to fetch article by slug: ${response.status}`);
@@ -432,16 +453,13 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
  * Fetch article by ID from Strapi
  */
 export async function getArticleById(id: number): Promise<Article | null> {
+    if (CMS_DISABLED) return null;
     try {
         const url = getStrapiURL(
             `/api/articles/${id}?populate=*`
         );
 
-        const response = await fetch(url, {
-            headers: getHeaders(),
-            cache: process.env.NODE_ENV === 'development' ? 'no-store' : undefined,
-            next: process.env.NODE_ENV === 'development' ? undefined : { revalidate: 60 },
-        });
+        const response = await fetch(url, cmsFetchOptions());
 
         if (!response.ok) {
             console.error(`[CMS] Failed to fetch article by id: ${response.status}`);

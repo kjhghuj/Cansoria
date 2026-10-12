@@ -1,9 +1,9 @@
 import { POST, DELETE } from "../store/carts/[id]/promotions/route"
 const nativePost = jest.fn().mockResolvedValue(undefined), nativeDelete = jest.fn().mockResolvedValue(undefined)
 jest.mock("@medusajs/medusa/api/store/carts/[id]/promotions/route", () => ({ POST: (...args) => nativePost(...args), DELETE: (...args) => nativeDelete(...args) }))
-const safe = { code: "ART15-SAFE", rules: [{ attribute: "customer.id", operator: "eq", values: [{ value: "cus_a" }] }, { attribute: "email", operator: "eq", values: [{ value: "owner@example.com" }] }], campaign: { budget: { type: "usage", limit: 1, used: 0 } } }
+const safe = { status: "active", code: "ART15-SAFE", rules: [{ attribute: "customer.id", operator: "eq", values: [{ value: "cus_a" }] }, { attribute: "email", operator: "eq", values: [{ value: "owner@example.com" }] }], campaign: { budget: { type: "usage", limit: 1, used: 0 } } }
 function setup(method = "POST") {
-  const cart = { id: "cart_a", customer_id: "cus_a", customer: { has_account: true }, email: "owner@example.com", promotions: [] }
+  const cart = { id: "cart_a", customer_id: "cus_a", customer: { id: "cus_a", email: "owner@example.com", created_at: new Date().toISOString(), has_account: true }, email: "owner@example.com", promotions: [] }
   const locking = { execute: jest.fn(async (_key, job) => await job()) }
   const req = { method, params: { id: "cart_a" }, originalUrl: "/store/carts/cart_a/promotions", headers: {}, body: { promo_codes: ["ART15-SAFE"] }, auth_context: { actor_id: "cus_a" }, scope: { resolve: key => ({ locking, query: { graph: async () => ({ data: [cart] }) }, promotion: { listPromotions: async () => [safe] } }[key]) } } as any
   const res = { setHeader: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() } as any

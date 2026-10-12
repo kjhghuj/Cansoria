@@ -1,4 +1,5 @@
-import { AbstractNotificationProviderService } from "@medusajs/utils"
+import { AbstractNotificationProviderService, MathBN } from "@medusajs/utils"
+import type { BigNumberInput } from "@medusajs/framework/types"
 import { Resend } from "resend"
 import { orderAccessUrl, storefrontUrl } from "../../lib/access-tokens"
 
@@ -18,9 +19,16 @@ function escapeHtml(value: unknown) {
         .replace(/'/g, "&#039;")
 }
 
+function moneyAmount(amount: unknown) {
+    const value = MathBN.convert((amount ?? 0) as BigNumberInput)
+    if (!value.isFinite()) throw new Error("Invalid money amount")
+    return value
+}
+
 function formatMoney(amount: unknown, currencyCode: string) {
-    const cents = typeof amount === "number" ? amount : 0
-    return `${currencyCode.toUpperCase()} ${(cents / 100).toFixed(2)}`
+    // Medusa v2 totals are already in major currency units, including BigNumber values.
+    // Keep decimal rounding so half-cent taxes match Stripe's positive charge amounts.
+    return `${escapeHtml(currencyCode.toUpperCase())} ${moneyAmount(amount).toFixed(2)}`
 }
 
 function renderWelcomeEmail(data: Record<string, any>, frontendUrl: string) {
@@ -90,17 +98,18 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
     const fullOrderId = String(data.id || data.display_id || "N/A")
     const orderId = fullOrderId.startsWith("order_") ? fullOrderId.substring(6) : fullOrderId
     const currencyCode = String(data.currency_code || "USD").toUpperCase()
-    const shippingName = escapeHtml(data.shipping_methods?.[0]?.name || "Shipping")
+    const shippingName = String(data.shipping_methods?.[0]?.name || "Shipping")
 
     let itemsHtml = ""
     if (Array.isArray(data.items)) {
         for (const item of data.items) {
             const itemName = escapeHtml(item.title || item.product_title || "Artwork")
             const itemVariant = item.variant_title ? escapeHtml(item.variant_title) : ""
-            const itemQty = Number(item.quantity || 1)
+            const itemQty = Number(item.quantity ?? 1)
             const itemImage = escapeHtml(item.thumbnail || "https://placehold.co/90x110/f7f2ec/8a8178?text=Art")
-            const itemPrice = formatMoney(item.unit_price || 0, currencyCode)
-            const itemTotal = formatMoney((item.unit_price || 0) * itemQty, currencyCode)
+            const itemPrice = formatMoney(item.unit_price ?? 0, currencyCode)
+            const itemTotal = formatMoney(item.total ?? MathBN.mult(moneyAmount(item.unit_price), itemQty), currencyCode)
+            const hasAdjustments = !moneyAmount(item.discount_total).isZero() || !moneyAmount(item.tax_total).isZero()
 
             itemsHtml += `
                 <tr>
@@ -114,6 +123,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
                                     <p style="margin: 0 0 6px; font-size: 16px; color: #332d28;">${itemName}</p>
                                     ${itemVariant ? `<p style="margin: 0 0 6px; font-size: 13px; color: #8a8178;">${itemVariant}</p>` : ""}
                                     <p style="margin: 0; font-size: 13px; color: #8a8178;">Qty: ${itemQty} x ${itemPrice}</p>
+                                    ${hasAdjustments ? `<p style="margin: 6px 0 0; font-size: 12px; color: #8a8178;">After discounts and tax</p>` : ""}
                                 </td>
                                 <td valign="top" align="right" style="white-space: nowrap; font-size: 14px; color: #332d28;">${itemTotal}</td>
                             </tr>
@@ -123,8 +133,23 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
         }
     }
 
-    const subtotal = formatMoney(data.subtotal ?? data.total ?? 0, currencyCode)
-    const shipping = formatMoney(data.shipping_total ?? 0, currencyCode)
+    // Medusa's subtotal includes shipping. Use pre-tax components together so
+    // shipping discounts and taxes are each counted once in this breakdown.
+    const summaryRows: [string, unknown][] = [
+        ["Artwork subtotal (before tax)", data.item_subtotal ?? 0],
+        [`${shippingName} (before tax)`, data.shipping_subtotal ?? 0],
+    ]
+    const discount = moneyAmount(data.discount_subtotal)
+    const tax = moneyAmount(data.tax_total)
+    const credits = moneyAmount(data.credit_line_total)
+    if (!discount.isZero()) summaryRows.push(["Discounts (before tax)", discount.negated()])
+    if (!tax.isZero()) summaryRows.push(["Tax", tax])
+    if (!credits.isZero()) summaryRows.push(["Credits", credits.negated()])
+    const summaryHtml = summaryRows.map(([label, amount]) => `
+                    <tr>
+                        <td style="padding: 8px 0; font-size: 14px; color: #8a8178;">${escapeHtml(label)}</td>
+                        <td align="right" style="padding: 8px 0; font-size: 14px; color: #332d28;">${formatMoney(amount, currencyCode)}</td>
+                    </tr>`).join("")
     const total = formatMoney(data.total ?? 0, currencyCode)
     const lookupUrl = escapeHtml(orderAccessUrl(fullOrderId))
 
@@ -153,14 +178,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
         <tr>
             <td style="padding: 18px 42px 34px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style="padding: 8px 0; font-size: 14px; color: #8a8178;">Subtotal</td>
-                        <td align="right" style="padding: 8px 0; font-size: 14px; color: #332d28;">${subtotal}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 8px 0 14px; font-size: 14px; color: #8a8178;">${shippingName}</td>
-                        <td align="right" style="padding: 8px 0 14px; font-size: 14px; color: #332d28;">${shipping}</td>
-                    </tr>
+                    ${summaryHtml}
                     <tr>
                         <td style="padding-top: 16px; border-top: 1px solid #eee6dc; font-size: 18px; color: #332d28; font-weight: 600;">Total</td>
                         <td align="right" style="padding-top: 16px; border-top: 1px solid #eee6dc; font-size: 20px; color: #8c6b54; font-weight: 700;">${total}</td>
@@ -190,6 +208,43 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
 </html>`
 }
 
+function renderPasswordResetEmail(data: Record<string, any>, frontendUrl: string) {
+    const resetUrl = String(data.reset_url || "")
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset your Cansoria password</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f7f4ef; font-family: Arial, Helvetica, sans-serif; color: #332d28;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f7f4ef; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border: 1px solid #eee6dc;">
+                    <tr>
+                        <td style="padding: 42px 44px 24px; text-align: center;">
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 500; letter-spacing: 4px; color: #2d2926; text-transform: uppercase;">Cansoria Studio</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0 44px 42px; text-align: center;">
+                            <h2 style="margin: 0 0 18px; font-size: 24px; font-weight: 500; color: #332d28;">Reset your password</h2>
+                            <p style="margin: 0 0 24px; font-size: 16px; line-height: 26px; color: #5d534b;">We received a request to reset the password for your Cansoria account. This link expires in 15 minutes and can only be used once.</p>
+                            <p style="margin: 0 0 28px;">
+                                <a href="${escapeHtml(resetUrl)}" style="display: inline-block; background-color: #2d2926; color: #ffffff; text-decoration: none; padding: 14px 34px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">Choose a New Password</a>
+                            </p>
+                            <p style="margin: 0; font-size: 13px; line-height: 22px; color: #8a8178;">If you did not request this, you can ignore this email — your password will not change.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`
+}
+
 class ResendNotificationProviderService extends AbstractNotificationProviderService {
     static identifier = "resend-notification"
     protected resend: Resend
@@ -208,7 +263,7 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
         const from = this.options.from || "hello@cansoria.com"
         const { to, template, data = {} } = notification
         const frontendUrl = storefrontUrl()
-        if (!["customer_created", "order_placed", "order_access"].includes(template)) throw new Error("Unsupported notification template")
+        if (!["customer_created", "order_placed", "order_access", "password_reset"].includes(template)) throw new Error("Unsupported notification template")
 
         if (!to) {
             throw new Error("No 'to' address provided for notification")
@@ -231,6 +286,12 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
                 const orderId = fullOrderId.startsWith("order_") ? fullOrderId.substring(6) : fullOrderId
                 htmlContent = renderOrderEmail(data, frontendUrl)
                 subject = `Cansoria Studio order confirmation #${orderId}`
+            } else if (template === "password_reset") {
+                const reset = new URL(data.reset_url, frontendUrl)
+                if (reset.origin !== new URL(frontendUrl).origin || reset.pathname !== "/account/reset-password") throw new Error("Invalid password reset link")
+                subject = "Reset your Cansoria password"
+                htmlContent = renderPasswordResetEmail(data, frontendUrl)
+                textContent = `Reset your Cansoria password: ${reset.toString()}\nThis link expires in 15 minutes and can only be used once. If you did not request this, ignore this email.`
             } else {
                 const access = new URL(data.access_url)
                 if (access.origin !== new URL(frontendUrl).origin || access.pathname !== "/order/lookup") throw new Error("Invalid order access link")

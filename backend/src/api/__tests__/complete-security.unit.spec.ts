@@ -1,244 +1,106 @@
-import { EventEmitter } from "events";
 import { POST } from "../store/carts/[id]/complete/route";
-import { signPhoto } from "../../lib/portrait-photos";
-const nativeComplete = jest.fn();
-jest.mock("@medusajs/medusa/api/store/carts/[id]/complete/route", () => ({
-  POST: (...args) => nativeComplete(...args),
+import { completionWorkflowFixture } from "../../__tests__/workflows/completion-workflow-fixture";
+import { Readable } from "stream";
+import { deferred } from "../../__tests__/workflows/cart-wrapper-fixture";
+jest.mock("@medusajs/medusa/api/store/carts/helpers", () => ({
+  refetchCart: jest.fn(async () => ({ id: "cart_a" })),
 }));
-const bound = {
-  code: "ART15-SAFE",
-  rules: [
-    { attribute: "customer.id", operator: "eq", values: [{ value: "cus_a" }] },
-    {
-      attribute: "email",
-      operator: "eq",
-      values: [{ value: "owner@example.com" }],
-    },
-  ],
-};
-describe("welcome completion workflow lifetime", () => {
-  beforeEach(() => jest.clearAllMocks());
-  function pair(legacy = false) {
-    let used = 0,
-      active = 0,
-      maxActive = 0;
-    const queues = new Map<string, Promise<void>>();
-    const locking = {
-      execute: jest.fn(async (keys, job) => {
-        const key = JSON.stringify(keys);
-        const previous = queues.get(key) || Promise.resolve();
-        let release!: () => void;
-        queues.set(
-          key,
-          new Promise<void>((resolve) => {
-            release = resolve;
-          }),
-        );
-        await previous;
-        try {
-          return await job();
-        } finally {
-          release();
-        }
-      }),
-    };
-    const tasks = ["cart_a", "cart_b"].map((id) => {
-      const cart = {
-        id,
-        email: "owner@example.com",
-        customer_id: "cus_a",
-        customer: { has_account: true },
-        promotions: [{ code: legacy ? "ART15-LEGACY" : "ART15-SAFE" }],
-      };
-      const req = {
-        params: { id },
-        auth_context: { actor_id: "cus_a" },
-        headers: {},
-        scope: {
-          resolve: (key) =>
-            ({
-              query: { graph: async () => ({ data: [cart] }) },
-              locking,
-              promotion: {
-                listPromotions: async () =>
-                  legacy
-                    ? []
-                    : [
-                        {
-                          ...bound,
-                          campaign: {
-                            budget: { type: "usage", limit: 1, used },
-                          },
-                        },
-                      ],
-              },
-            })[key],
-        },
-      } as any;
-      const res = Object.assign(new EventEmitter(), {
-        setHeader: jest.fn(),
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn(),
-      }) as any;
-      return { req, res };
+
+function welcome(h: ReturnType<typeof completionWorkflowFixture>) {
+  h.cart.customer.created_at = new Date().toISOString();
+  h.cart.promotions = [{ id: "promo_a" }];
+  h.cart.items[0].adjustments = [
+    { promotion_id: "promo_a", code: "ART15-SAFE", amount: 15 },
+  ];
+}
+
+describe("welcome completion through the real shared native hook", () => {
+  beforeEach(() => {
+    process.env.JWT_SECRET = "test-secret-with-more-than-thirty-two-characters";
+  });
+  // Different carts sharing one budget are covered by the actual installed Promotion service
+  // transaction tests in welcome-usage-contract; HTTP does not hold a global welcome lock.
+  it("keeps same-cart identity serialization after client close until native workflow resolution", async () => {
+    const h = completionWorkflowFixture();
+    welcome(h);
+    const entered = deferred(),
+      finish = deferred();
+    h.files.getDownloadStream.mockImplementationOnce(async () => {
+      entered.resolve();
+      await finish.promise;
+      return Readable.from([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1])]);
     });
-    nativeComplete.mockImplementation(async (_req, res) => {
-      active++;
-      maxActive = Math.max(maxActive, active);
-      res.emit("close"); // The client leaves before the native workflow commits coupon usage.
-      await new Promise((resolve) => setTimeout(resolve, 20));
-      used++;
-      active--;
-      res.status(200).json({ type: "order" });
-    });
-    return { tasks, locking, maxActive: () => maxActive };
-  }
-  it("keeps coupon serialization after client close until native workflow resolution", async () => {
-    const { tasks, maxActive } = pair();
-    await Promise.all(tasks.map(({ req, res }) => POST(req, res)));
-    expect(maxActive()).toBe(1);
-    expect(nativeComplete).toHaveBeenCalledTimes(1);
-    expect(tasks[1].res.status).toHaveBeenCalledWith(403);
+    const first = POST(h.req, h.res);
+    await entered.promise;
+    h.res.destroyed = true;
+    const retryRes = {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    } as any;
+    const retry = POST(h.req, retryRes);
+    await Promise.resolve();
+    expect(h.run).toHaveBeenCalledTimes(1);
+    expect(h.order.createOrders).not.toHaveBeenCalled();
+    finish.resolve();
+    await first;
+    await retry;
+    expect(h.order.createOrders).toHaveBeenCalledTimes(1);
+    expect(h.promotion.registerUsage).toHaveBeenCalledTimes(1);
+    expect(retryRes.status).toHaveBeenCalledWith(200);
+    expect(h.locking.execute.mock.calls.map(([key]) => key)).toEqual([
+      "cart-identity:cart_a",
+      "cart-identity:cart_a",
+    ]);
   });
-  it("rejects legacy unbound codes without calling the native completion flow", async () => {
-    const { tasks } = pair(true);
-    await POST(tasks[0].req, tasks[0].res);
-    expect(tasks[0].res.status).toHaveBeenCalledWith(403);
-    expect(nativeComplete).not.toHaveBeenCalled();
+  it("rejects legacy unbound codes in the registered native hook before order or usage", async () => {
+    const h = completionWorkflowFixture();
+    welcome(h);
+    h.cart.items[0].adjustments[0].code = "ART15-LEGACY";
+    h.promotion.listPromotions.mockResolvedValue([]);
+    await POST(h.req, h.res);
+    expect(h.res.status).toHaveBeenCalledWith(403);
+    expect(h.order.createOrders).not.toHaveBeenCalled();
+    expect(h.promotion.registerUsage).not.toHaveBeenCalled();
   });
-  it("preserves authorized retry of an already completed cart after coupon usage", async () => {
-    const { tasks } = pair();
-    const originalResolve = tasks[0].req.scope.resolve;
-    tasks[0].req.scope.resolve = (key) =>
-      key === "query"
-        ? {
-            graph: async () => ({
-              data: [
-                {
-                  id: "cart_a",
-                  customer_id: "cus_a",
-                  customer: { has_account: true },
-                  completed_at: new Date(),
-                  promotions: [{ code: "ART15-SAFE" }],
-                  email: "owner@example.com",
-                },
-              ],
-            }),
-          }
-        : key === "promotion"
-          ? {
-              listPromotions: async () => [
-                {
-                  ...bound,
-                  campaign: { budget: { type: "usage", limit: 1, used: 1 } },
-                },
-              ],
-            }
-          : originalResolve(key);
-    await POST(tasks[0].req, tasks[0].res);
-    expect(nativeComplete).toHaveBeenCalledTimes(1);
-    expect(tasks[0].res.status).toHaveBeenCalledWith(200);
+  it("preserves authorized retry after the native order link and coupon usage", async () => {
+    const h = completionWorkflowFixture();
+    welcome(h);
+    await POST(h.req, h.res);
+    const canonical = await h.promotion.listPromotions();
+    canonical[0].campaign.budget.used = 1;
+    h.promotion.listPromotions.mockResolvedValue(canonical);
+    h.cart.metadata = {};
+    await POST(h.req, h.res);
+    expect(h.order.createOrders).toHaveBeenCalledTimes(1);
+    expect(h.promotion.registerUsage).toHaveBeenCalledTimes(1);
+    expect(h.res.status).toHaveBeenCalledWith(200);
   });
-  it("rejects pre-existing system-provider sessions before native completion", async () => {
-    const { tasks } = pair();
-    const originalResolve = tasks[0].req.scope.resolve;
-    tasks[0].req.scope.resolve = (key) =>
-      key === "query"
-        ? {
-            graph: async () => ({
-              data: [
-                {
-                  id: "cart_a",
-                  customer_id: "cus_a",
-                  customer: { has_account: true },
-                  payment_collection: {
-                    payment_sessions: [{ provider_id: "pp_system_default" }],
-                  },
-                },
-              ],
-            }),
-          }
-        : originalResolve(key);
-    await POST(tasks[0].req, tasks[0].res);
-    expect(nativeComplete).not.toHaveBeenCalled();
-    expect(tasks[0].res.status).toHaveBeenCalledWith(403);
+  it("rejects system-provider sessions in the shared native hook", async () => {
+    const h = completionWorkflowFixture();
+    h.cart.payment_collection.payment_sessions[0].provider_id =
+      "pp_system_default";
+    await POST(h.req, h.res);
+    expect(h.res.status).toHaveBeenCalledWith(403);
+    expect(h.order.createOrders).not.toHaveBeenCalled();
   });
   it.each([false, true])(
-    "rejects incomplete or forged pet portrait references at checkout (%s)",
-    (forged) => {
-      return (async () => {
-        const { tasks } = pair();
-        const photo = signPhoto({
-          id: "2c0e1371-36f3-40a7-b8c7-861f3c185559",
-          cart_id: "cart_a",
-          file_id: "private-ref.png",
-          name: "pet.png",
-          mime: "image/png",
-          size: 9,
-        });
-        const portrait = {
-          style: "dark-classic",
-          photo_id: photo.id,
-          source_cart_id: "cart_a",
-        };
-        if (forged) photo.file_id = "victim.png";
-        const cart = {
-          id: "cart_a",
-          customer_id: "cus_a",
-          customer: { has_account: true },
-          items: [
-            {
-              variant: { product: { handle: "pet-portrait-oil-painting" } },
-              metadata: forged ? { portrait } : {},
-            },
-          ],
-          metadata: { portrait_photos: [photo] },
-        };
-        const originalResolve = tasks[0].req.scope.resolve;
-        tasks[0].req.scope.resolve = (key) =>
-          key === "query"
-            ? { graph: async () => ({ data: [cart] }) }
-            : originalResolve(key);
-        await POST(tasks[0].req, tasks[0].res);
-        expect(nativeComplete).not.toHaveBeenCalled();
-        expect(tasks[0].res.status).toHaveBeenCalledWith(400);
-      })();
+    "rejects incomplete or forged portrait references through the native hook (%s)",
+    async (forged) => {
+      const h = completionWorkflowFixture();
+      if (forged) h.cart.metadata.portrait_photos[0].file_id = "victim.png";
+      else h.cart.items[0].metadata = {};
+      await POST(h.req, h.res);
+      expect(h.res.status).toHaveBeenCalledWith(400);
+      expect(h.order.createOrders).not.toHaveBeenCalled();
+      expect(h.files.getDownloadStream).not.toHaveBeenCalled();
     },
   );
-  it("passes a valid styled reference to the native completion workflow", async () => {
-    const { tasks } = pair();
-    const photo = signPhoto({
-      id: "2c0e1371-36f3-40a7-b8c7-861f3c185559",
-      cart_id: "cart_a",
-      file_id: "private-ref.png",
-      name: "pet.png",
-      mime: "image/png",
-      size: 9,
-    });
-    const cart = {
-      id: "cart_a",
-      customer_id: "cus_a",
-      customer: { has_account: true },
-      items: [
-        {
-          variant: { product: { handle: "pet-portrait-oil-painting" } },
-          metadata: {
-            portrait: {
-              style: "dark-classic",
-              photo_id: photo.id,
-              source_cart_id: "cart_a",
-            },
-          },
-        },
-      ],
-      metadata: { portrait_photos: [photo] },
-    };
-    const originalResolve = tasks[0].req.scope.resolve;
-    tasks[0].req.scope.resolve = (key) =>
-      key === "query"
-        ? { graph: async () => ({ data: [cart] }) }
-        : originalResolve(key);
-    await POST(tasks[0].req, tasks[0].res);
-    expect(nativeComplete).toHaveBeenCalledTimes(1);
+  it("accepts a valid styled reference after actually reading its signed file", async () => {
+    const h = completionWorkflowFixture();
+    await POST(h.req, h.res);
+    expect(h.order.createOrders).toHaveBeenCalledTimes(1);
+    expect(h.files.getDownloadStream).toHaveBeenCalledWith("file_a");
+    expect(h.res.status).toHaveBeenCalledWith(200);
   });
 });

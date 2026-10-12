@@ -4,6 +4,7 @@ import {
   hasAuthorizedStripePayment,
   paymentTotalsMatch,
   prepareDelivery,
+  stateRequiredFor,
   type DeliveryDetails,
 } from "../checkout-delivery";
 import type { StoreCart } from "../types";
@@ -14,6 +15,7 @@ const details: DeliveryDetails = {
   phone: "0000000000",
   address: "Test street",
   city: "London",
+  state: "",
   postalCode: "SW1A 1AA",
   country: "gb",
 };
@@ -51,6 +53,17 @@ describe("delivery before payment", () => {
     expect(fetchMock.mock.calls[1][0]).toContain(
       "shipping-options?cart_id=cart_test",
     );
+  });
+  it("writes the state/province line only when the destination needs it", async () => {
+    fetchMock
+      .mockResolvedValueOnce({ ok: true })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ shipping_options: options }) });
+    await prepareDelivery("cart_test", { ...details, country: "us", state: "CA" });
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.shipping_address.province).toBe("CA");
+    expect(stateRequiredFor("us")).toBe(true);
+    expect(stateRequiredFor("gb")).toBe(false);
+    expect(stateRequiredFor("CA")).toBe(true);
   });
   it("stops when address persistence or delivery lookup fails", async () => {
     fetchMock.mockResolvedValueOnce({ ok: false });
@@ -92,6 +105,7 @@ describe("delivery before payment", () => {
       { country: "us" },
       { address: "Another street" },
       { email: "other@example.test" },
+      { state: "CA" },
     ])
       expect(
         deliveryDetailsKey("cart_test", { ...details, ...update }),
@@ -129,7 +143,7 @@ describe("reviewed payment total", () => {
         paymentTotalsMatch(cart, { ...cart, ...update } as StoreCart),
       ).toBe(false);
   });
-  it("resumes confirmation for an authorized Stripe session without initializing another payment", () => {
+  it("resumes confirmation for an authorized or captured Stripe session without initializing another payment", () => {
     const withSession = (provider_id: string, status: string) =>
       ({
         ...cart,
@@ -137,6 +151,10 @@ describe("reviewed payment total", () => {
       }) as unknown as StoreCart;
     expect(
       hasAuthorizedStripePayment(withSession("pp_stripe_stripe", "authorized")),
+    ).toBe(true);
+    // Automatic capture may already be reflected by the webhook.
+    expect(
+      hasAuthorizedStripePayment(withSession("pp_stripe_stripe", "captured")),
     ).toBe(true);
     expect(
       hasAuthorizedStripePayment(withSession("pp_stripe_stripe", "pending")),

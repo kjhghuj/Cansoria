@@ -14,9 +14,23 @@ import { useCart, useRegion } from "@/lib/providers";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
+  /** Chat concierge is rendered only when the API route has a model key. */
+  chatEnabled?: boolean;
 }
 
-export default function LayoutWrapper({ children }: LayoutWrapperProps) {
+// Transactional flows stay free of marketing interruptions and chat overlays.
+const TRANSACTIONAL_PREFIXES = ["/checkout", "/account", "/order", "/register"];
+
+function isTransactionalPath(pathname: string) {
+  return TRANSACTIONAL_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
+  );
+}
+
+export default function LayoutWrapper({
+  children,
+  chatEnabled = false,
+}: LayoutWrapperProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [navOffset, setNavOffset] = useState(0);
   const { cartCount } = useCart();
@@ -36,6 +50,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       "/contact",
     ].includes(pathname) ||
     pathname.startsWith("/product/");
+  const isTransactional = isTransactionalPath(pathname);
   const offset = isEditorial ? 0 : navOffset;
 
   return (
@@ -61,8 +76,8 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       >
         {children}
       </main>
-      {!isEditorial && <ChatWidget />}
-      {!isEditorial && <ExitIntentPopup />}
+      {!isEditorial && !isTransactional && chatEnabled && <ChatWidget />}
+      {!isEditorial && !isTransactional && <ExitIntentPopup />}
       <Footer />
     </>
   );

@@ -11,7 +11,7 @@ export default function PhotoUpload({
 }: {
   onChange?: (photo: UploadedPhoto | null) => void;
 }) {
-  const { cart, cartLoading } = useCart();
+  const { cart, cartLoading, ensureCart } = useCart();
   const input = useRef<HTMLInputElement>(null);
   const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
   const [busy, setBusy] = useState(false);
@@ -19,14 +19,23 @@ export default function PhotoUpload({
   const callback = useRef(onChange);
   const generation = useRef(0);
   const uploadController = useRef<AbortController | null>(null);
+  const creatingCart = useRef(false);
+  const uploadCartId = useRef<string | undefined>(undefined);
+  const previousCart = useRef<string | undefined>(cart?.id);
   useEffect(() => {
     callback.current = onChange;
   }, [onChange]);
   useEffect(() => {
+    const previous = previousCart.current;
+    previousCart.current = cart?.id;
+    // The selected photo is what created this cart. Keep that upload alive.
+    if (!previous && cart?.id && (creatingCart.current || uploadCartId.current === cart.id)) return;
+    uploadCartId.current = undefined;
     const controller = new AbortController();
     const version = ++generation.current;
     async function restore() {
       uploadController.current?.abort();
+      uploadController.current = null;
       setBusy(false);
       setError("");
       setPhoto(null);
@@ -56,11 +65,12 @@ export default function PhotoUpload({
       }
     }
     void restore();
-    return () => { controller.abort(); uploadController.current?.abort(); generation.current += 1; };
+    return () => { controller.abort(); };
   }, [cart?.id]);
+  useEffect(() => () => { uploadController.current?.abort(); generation.current += 1; }, []);
 
   async function upload(file: File) {
-    if (!cart?.id || busy) return;
+    if (busy || cartLoading || uploadController.current) return;
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       !file.size ||
@@ -79,14 +89,19 @@ export default function PhotoUpload({
     uploadController.current = controller;
     callback.current?.(null);
     try {
+      creatingCart.current = !cart?.id;
+      const activeCart = await ensureCart();
+      if (controller.signal.aborted || generation.current !== version) return;
+      uploadCartId.current = activeCart.id;
       const content = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result).split(",")[1]);
         reader.onerror = () => reject(new Error("Unable to read this photo."));
         reader.readAsDataURL(file);
       });
+      if (controller.signal.aborted || generation.current !== version) return;
       const response = await fetch(
-        `/api/medusa/store/carts/${cart.id}/photos`,
+        `/api/medusa/store/carts/${activeCart.id}/photos`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,14 +112,13 @@ export default function PhotoUpload({
       const data = await response.json();
       if (!response.ok || !data.photo)
         throw new Error(data.message || "Upload failed. Please try again.");
-      const saved = { ...data.photo, cartId: cart.id } as UploadedPhoto;
-      if (generation.current === version) {
-        setPhoto(saved);
-        callback.current?.(saved);
-      }
+      const saved = { ...data.photo, cartId: activeCart.id } as UploadedPhoto;
+      if (controller.signal.aborted || generation.current !== version) return;
+      setPhoto(saved);
+      callback.current?.(saved);
       try {
         sessionStorage.setItem(
-          `portrait-photo:${cart.id}`,
+          `portrait-photo:${activeCart.id}`,
           JSON.stringify(saved),
         );
       } catch {
@@ -116,7 +130,9 @@ export default function PhotoUpload({
         callback.current?.(photo);
       }
     } finally {
+      if (uploadController.current === controller) uploadController.current = null;
       if (generation.current === version) {
+        creatingCart.current = false;
         setBusy(false);
         if (input.current) input.current.value = "";
       }
@@ -140,7 +156,7 @@ export default function PhotoUpload({
       )}
       <button
         type="button"
-        disabled={busy || cartLoading || !cart}
+        disabled={busy || cartLoading}
         onClick={() => input.current?.click()}
         className="flex min-h-32 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-toffee bg-cream-card/50 px-5 py-6 text-center disabled:opacity-60"
       >
@@ -170,7 +186,7 @@ export default function PhotoUpload({
         accept="image/jpeg,image/png,image/webp"
         className="sr-only"
         aria-label="Choose pet reference photo"
-        disabled={busy || cartLoading || !cart}
+        disabled={busy || cartLoading}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) void upload(file);
@@ -181,11 +197,6 @@ export default function PhotoUpload({
         {error && (
           <p role="alert" className="text-red-700">
             {error}
-          </p>
-        )}
-        {!cartLoading && !cart && (
-          <p role="alert">
-            The studio service is unavailable. Please refresh to try again.
           </p>
         )}
       </div>

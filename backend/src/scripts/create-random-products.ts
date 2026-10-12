@@ -7,6 +7,7 @@ import {
     createProductsWorkflow,
     createInventoryLevelsWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { artworkPrices, sampleUsdPrice } from "../lib/studio-prices";
 
 const productData = [
     {
@@ -64,10 +65,6 @@ const productData = [
 const sizes = ["8x10", "12x16", "16x20", "24x36"];
 const framing = ["Canvas Only", "Framed"];
 
-function getRandomPrice(): number {
-    return Math.floor(Math.random() * 18001) + 12900;
-}
-
 export default async function createRandomProducts({ container }: ExecArgs) {
     const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
     const query = container.resolve(ContainerRegistrationKeys.QUERY);
@@ -115,9 +112,7 @@ export default async function createRandomProducts({ container }: ExecArgs) {
     const productsToCreate = productData.map((product, index) => {
         const selectedSize = sizes[index % sizes.length];
         const selectedFraming = framing[index % framing.length];
-        const priceUsd = getRandomPrice();
-        const priceGbp = Math.floor(priceUsd * 0.78);
-        const priceEur = Math.floor(priceUsd * 0.92);
+        const priceUsd = sampleUsdPrice();
 
         return {
             title: product.title,
@@ -148,11 +143,7 @@ export default async function createRandomProducts({ container }: ExecArgs) {
                         Framing: selectedFraming,
                     },
                     manage_inventory: true,
-                    prices: [
-                        { amount: priceUsd, currency_code: "usd" },
-                        { amount: priceGbp, currency_code: "gbp" },
-                        { amount: priceEur, currency_code: "eur" },
-                    ],
+                    prices: artworkPrices(priceUsd),
                 },
             ],
             sales_channels: [{ id: defaultSalesChannel.id }],
@@ -194,7 +185,9 @@ export default async function createRandomProducts({ container }: ExecArgs) {
         for (const product of createdProducts as any[]) {
             const variant = product.variants?.[0];
             const usdPrice = variant?.prices?.find((price: any) => price.currency_code === "usd");
-            logger.info(`  - ${product.title}: $${(usdPrice?.amount || 0) / 100}`);
+            logger.info(`  - ${product.title}: ${new Intl.NumberFormat("en-US", {
+                style: "currency", currency: "USD",
+            }).format(Number(usdPrice?.amount || 0))}`);
         }
     } catch (error) {
         logger.error("Error creating Cansoria sample products:", error);

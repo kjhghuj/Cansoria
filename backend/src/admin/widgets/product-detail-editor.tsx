@@ -19,32 +19,65 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
     const [sections, setSections] = useState<StorySectionData[]>([])
     const [isSaving, setIsSaving] = useState(false)
     const [isDirty, setIsDirty] = useState(false)
-    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
-    const fileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({})
+    const [uploadingSectionId, setUploadingSectionId] = useState<string | null>(null)
+    const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+    const savedSectionsRef = useRef<StorySectionData[]>([])
+    const loadedProductIdRef = useRef<string | null>(null)
+    const productIdRef = useRef(data.id)
+    const dirtyRef = useRef(false)
+    const mountedRef = useRef(true)
+    const activeUploadRef = useRef<{ productId: string; sectionId: string } | null>(null)
+    const activeSaveRef = useRef<{ productId: string } | null>(null)
+    productIdRef.current = data.id
 
     // --------------------------------------------------------------------------
     // 1. 初始化数据
     // --------------------------------------------------------------------------
     useEffect(() => {
-        // 从 metadata 中读取 story_sections，如果是旧数据(字符串)则忽略或需手动迁移
-        if (data?.metadata?.story_sections) {
-            try {
-                // 确保它是数组
-                const loadedSections = Array.isArray(data.metadata.story_sections)
-                    ? data.metadata.story_sections
-                    : JSON.parse(data.metadata.story_sections as string);
-                setSections(loadedSections)
-            } catch (e) {
-                console.error("Failed to parse story sections", e)
-                setSections([])
-            }
+        mountedRef.current = true
+        return () => {
+            mountedRef.current = false
+            activeUploadRef.current = null
+            activeSaveRef.current = null
         }
+    }, [])
+
+    useEffect(() => {
+        // A background refresh for this product must not overwrite its draft.
+        if (loadedProductIdRef.current === data.id &&
+            (dirtyRef.current || activeUploadRef.current || activeSaveRef.current)) return
+
+        let loadedSections: StorySectionData[] = []
+        try {
+            const stored = data.metadata?.story_sections
+            const parsed = typeof stored === "string" ? JSON.parse(stored) : stored
+            if (Array.isArray(parsed)) {
+                loadedSections = parsed.map(section => ({ ...section, id: section.id || crypto.randomUUID() }))
+            }
+        } catch (error) {
+            console.error("Failed to parse story sections", error)
+        }
+        loadedProductIdRef.current = data.id
+        savedSectionsRef.current = loadedSections
+        activeUploadRef.current = null
+        activeSaveRef.current = null
+        dirtyRef.current = false
+        setSections(loadedSections)
+        setIsDirty(false)
+        setUploadingSectionId(null)
+        setIsSaving(false)
     }, [data])
+
+    const markDirty = () => {
+        dirtyRef.current = true
+        setIsDirty(true)
+    }
 
     // --------------------------------------------------------------------------
     // 2. 操作逻辑 (增删改查)
     // --------------------------------------------------------------------------
     const handleAddSection = () => {
+        if (activeSaveRef.current) return
         const newSection: StorySectionData = {
             id: crypto.randomUUID(),
             title: "",
@@ -52,60 +85,51 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
             imageUrl: "",
             imageAlt: ""
         }
-        setSections([...sections, newSection])
-        setIsDirty(true)
+        setSections(previous => [...previous, newSection])
+        markDirty()
     }
 
-    const handleRemoveSection = (index: number) => {
-        const newSections = [...sections]
-        newSections.splice(index, 1)
-        setSections(newSections)
-        setIsDirty(true)
+    const handleRemoveSection = (sectionId: string) => {
+        if (activeSaveRef.current) return
+        setSections(previous => previous.filter(section => section.id !== sectionId))
+        markDirty()
     }
 
-    const handleMove = (index: number, direction: 'up' | 'down') => {
-        if (direction === 'up' && index === 0) return
-        if (direction === 'down' && index === sections.length - 1) return
-
-        const newSections = [...sections]
-        const targetIndex = direction === 'up' ? index - 1 : index + 1
-        const temp = newSections[targetIndex]
-        newSections[targetIndex] = newSections[index]
-        newSections[index] = temp
-        setSections(newSections)
-        setIsDirty(true)
+    const handleMove = (sectionId: string, direction: 'up' | 'down') => {
+        if (activeSaveRef.current) return
+        setSections(previous => {
+            const index = previous.findIndex(section => section.id === sectionId)
+            const targetIndex = direction === 'up' ? index - 1 : index + 1
+            if (index < 0 || targetIndex < 0 || targetIndex >= previous.length) return previous
+            const newSections = [...previous]
+            const moved = newSections[index]
+            newSections[index] = newSections[targetIndex]
+            newSections[targetIndex] = moved
+            return newSections
+        })
+        markDirty()
     }
 
-    const updateSection = (index: number, field: keyof StorySectionData, value: string) => {
-        const newSections = [...sections]
-        newSections[index] = { ...newSections[index], [field]: value }
-        setSections(newSections)
-        setIsDirty(true)
+    const updateSection = (sectionId: string, field: keyof StorySectionData, value: string) => {
+        if (activeSaveRef.current) return
+        setSections(previous => previous.map(section =>
+            section.id === sectionId ? { ...section, [field]: value } : section
+        ))
+        markDirty()
     }
 
     // --------------------------------------------------------------------------
     // 3. 图片上传逻辑
     // --------------------------------------------------------------------------
-    const extractFileKey = (url: string) => {
-        try {
-            const urlObj = new URL(url);
-            // pathname usually starts with /, so slice(1) removes it
-            // Adjust based on your R2 public URL structure
-            // Example: https://pub-xxx.r2.dev/products/image.jpg -> products/image.jpg
-            return urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
-        } catch (e) {
-            console.error("Failed to parse URL for key extraction:", e);
-            return null;
-        }
-    };
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, sectionId: string) => {
+        const input = e.currentTarget
+        const files = input.files
+        if (!files || files.length === 0 || activeUploadRef.current || activeSaveRef.current) return
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        const files = e.target.files
-        if (!files || files.length === 0) return
-
-        setUploadingIndex(index)
+        const upload = { productId: data.id, sectionId }
+        activeUploadRef.current = upload
+        setUploadingSectionId(sectionId)
         const file = files[0] // 每次只传一张作为封面
-        const oldImageUrl = sections[index].imageUrl; // Capture old URL before update
 
         try {
             const formData = new FormData()
@@ -123,42 +147,23 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
             const result = await response.json()
             const uploadedFile = result.files?.[0]
 
-            if (uploadedFile?.url) {
-                updateSection(index, 'imageUrl', uploadedFile.url)
-                toast.success("图片上传成功")
+            if (!uploadedFile?.url) throw new Error('Upload returned no image URL')
+            if (!mountedRef.current || activeUploadRef.current !== upload || productIdRef.current !== upload.productId) return
 
-                // If there was an old image, try to delete it
-                if (oldImageUrl) {
-                    const fileKey = extractFileKey(oldImageUrl);
-                    if (fileKey) {
-                        try {
-                            const deleteRes = await fetch('/admin/delete-file', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ fileKey }),
-                                credentials: 'include'
-                            });
-                            if (!deleteRes.ok) {
-                                console.warn(`Failed to delete old image: ${fileKey}`);
-                            } else {
-                                console.log(`Deleted old image: ${fileKey}`);
-                            }
-                        } catch (delErr) {
-                            console.error("Error deleting old image:", delErr);
-                        }
-                    }
-                }
-            }
+            // Only update the draft. Keep old and new files, including on cancel
+            // or failed save. ID + functional update preserves concurrent text edits.
+            updateSection(sectionId, 'imageUrl', uploadedFile.url)
+            toast.success("图片上传完成，保存后生效")
         } catch (error) {
-            console.error('Upload error:', error)
-            toast.error("上传失败")
+            if (mountedRef.current && activeUploadRef.current === upload) {
+                console.error('Upload error:', error)
+                toast.error("上传失败")
+            }
         } finally {
-            setUploadingIndex(null)
-            // 清空 input 允许重复上传同一文件
-            if (fileInputRefs.current[index]) {
-                fileInputRefs.current[index]!.value = ''
+            input.value = ''
+            if (mountedRef.current && activeUploadRef.current === upload) {
+                activeUploadRef.current = null
+                setUploadingSectionId(null)
             }
         }
     }
@@ -167,6 +172,9 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
     // 4. 保存逻辑
     // --------------------------------------------------------------------------
     const handleSave = async () => {
+        if (!dirtyRef.current || activeUploadRef.current || activeSaveRef.current) return
+        const save = { productId: data.id }
+        activeSaveRef.current = save
         setIsSaving(true)
         try {
             // 保存为 JSON 对象数组
@@ -185,14 +193,32 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
             })
 
             if (!response.ok) throw new Error('Save failed')
+            if (!mountedRef.current || activeSaveRef.current !== save || productIdRef.current !== save.productId) return
             toast.success("保存成功")
+            savedSectionsRef.current = sections
+            dirtyRef.current = false
             setIsDirty(false)
         } catch (error) {
-            console.error('Save error:', error)
-            toast.error("保存失败")
+            if (mountedRef.current && activeSaveRef.current === save) {
+                console.error('Save error:', error)
+                toast.error("保存失败，更改已保留，可重试")
+            }
         } finally {
-            setIsSaving(false)
+            if (mountedRef.current && activeSaveRef.current === save) {
+                activeSaveRef.current = null
+                setIsSaving(false)
+            }
         }
+    }
+
+    const handleCancel = () => {
+        if (activeSaveRef.current) return
+        // Invalidate late upload completion without deleting either stored asset.
+        activeUploadRef.current = null
+        setUploadingSectionId(null)
+        setSections(savedSectionsRef.current)
+        dirtyRef.current = false
+        setIsDirty(false)
     }
 
     // --------------------------------------------------------------------------
@@ -215,14 +241,23 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                         variant="secondary"
                         size="small"
                         onClick={handleAddSection}
+                        disabled={isSaving}
                     >
                         <Plus /> 添加章节
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        size="small"
+                        onClick={handleCancel}
+                        disabled={isSaving || (!isDirty && uploadingSectionId === null)}
+                    >
+                        放弃更改
                     </Button>
                     <Button
                         variant="primary"
                         size="small"
                         onClick={handleSave}
-                        disabled={!isDirty || isSaving}
+                        disabled={!isDirty || isSaving || uploadingSectionId !== null}
                     >
                         {isSaving ? "保存中..." : "保存更改"}
                     </Button>
@@ -243,7 +278,9 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                 <div className="w-[240px] flex-shrink-0 flex flex-col gap-2">
                                     <div
                                         className="relative aspect-[4/3] bg-ui-bg-base border border-ui-border-base rounded-md overflow-hidden flex items-center justify-center cursor-pointer group"
-                                        onClick={() => fileInputRefs.current[index]?.click()}
+                                        onClick={() => {
+                                            if (!isSaving && uploadingSectionId === null) fileInputRefs.current[section.id]?.click()
+                                        }}
                                     >
                                         {section.imageUrl ? (
                                             <>
@@ -258,18 +295,19 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                                 <Text size="small" className="mt-2">点击上传图片</Text>
                                             </div>
                                         )}
-                                        {uploadingIndex === index && (
+                                        {uploadingSectionId === section.id && (
                                             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
                                                 <Text size="small">上传中...</Text>
                                             </div>
                                         )}
                                     </div>
                                     <input
-                                        ref={el => fileInputRefs.current[index] = el}
+                                        ref={el => { fileInputRefs.current[section.id] = el }}
                                         type="file"
                                         accept="image/*"
                                         className="hidden"
-                                        onChange={(e) => handleFileSelect(e, index)}
+                                        onChange={(e) => handleFileSelect(e, section.id)}
+                                        disabled={isSaving || uploadingSectionId !== null}
                                     />
                                     <div className="grid gap-1">
                                         <Label size="xsmall" className="text-ui-fg-muted">图片描述 (Alt)</Label>
@@ -277,7 +315,8 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                             size="small"
                                             placeholder="描述图片内容..."
                                             value={section.imageAlt}
-                                            onChange={(e) => updateSection(index, 'imageAlt', e.target.value)}
+                                            onChange={(e) => updateSection(section.id, 'imageAlt', e.target.value)}
+                                            disabled={isSaving}
                                         />
                                     </div>
                                 </div>
@@ -289,7 +328,8 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                         <Input
                                             placeholder="例如：精心打磨的工艺..."
                                             value={section.title}
-                                            onChange={(e) => updateSection(index, 'title', e.target.value)}
+                                            onChange={(e) => updateSection(section.id, 'title', e.target.value)}
+                                            disabled={isSaving}
                                         />
                                     </div>
                                     <div className="grid gap-2 flex-1">
@@ -298,7 +338,8 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                             placeholder="输入详细的故事文案..."
                                             rows={5}
                                             value={section.content}
-                                            onChange={(e) => updateSection(index, 'content', e.target.value)}
+                                            onChange={(e) => updateSection(section.id, 'content', e.target.value)}
+                                            disabled={isSaving}
                                             className="resize-none"
                                         />
                                     </div>
@@ -308,16 +349,16 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                 <div className="flex flex-col gap-2 border-l border-ui-border-base pl-4 justify-center">
                                     <IconButton
                                         variant="transparent"
-                                        onClick={() => handleMove(index, 'up')}
-                                        disabled={index === 0}
+                                        onClick={() => handleMove(section.id, 'up')}
+                                        disabled={isSaving || index === 0}
                                         aria-label="上移此章节"
                                     >
                                         <ArrowUpMini className="text-ui-fg-subtle" />
                                     </IconButton>
                                     <IconButton
                                         variant="transparent"
-                                        onClick={() => handleMove(index, 'down')}
-                                        disabled={index === sections.length - 1}
+                                        onClick={() => handleMove(section.id, 'down')}
+                                        disabled={isSaving || index === sections.length - 1}
                                         aria-label="下移此章节"
                                     >
                                         <ArrowDownMini className="text-ui-fg-subtle" />
@@ -326,7 +367,9 @@ const ProductDetailStoryWidget = ({ data }: DetailWidgetProps<AdminProduct>) => 
                                     <IconButton
                                         variant="transparent"
                                         className="text-ui-fg-error hover:bg-ui-bg-error-hover"
-                                        onClick={() => handleRemoveSection(index)}
+                                        onClick={() => handleRemoveSection(section.id)}
+                                        disabled={isSaving}
+                                        aria-label="移除此章节"
                                     >
                                         <Trash />
                                     </IconButton>

@@ -2,19 +2,17 @@ import { POST as create } from "../store/carts/route"
 import { POST as update } from "../store/carts/[id]/route"
 import { POST as claim } from "../store/carts/[id]/customer/route"
 import { issueAccessToken } from "../../lib/access-tokens"
+import { cartWrapperFixture } from "../../__tests__/workflows/cart-wrapper-fixture"
 
 const createRun = jest.fn().mockResolvedValue({ result: { id: "cart_a" } })
-jest.mock("@medusajs/medusa/core-flows", () => ({ createCartWorkflow: jest.fn(() => ({ run: (...args) => createRun(...args) })), updateCartWorkflowId: "update-cart", transferCartCustomerWorkflowId: "transfer-cart-customer" }))
+jest.mock("@medusajs/medusa/core-flows", () => ({ ...jest.requireActual("@medusajs/medusa/core-flows"), createCartWorkflow: jest.fn(() => ({ run: (...args) => createRun(...args) })) }))
 jest.mock("@medusajs/medusa/api/store/carts/helpers", () => ({ refetchCart: jest.fn().mockResolvedValue({ id: "cart_a" }) }))
 function setup(cart: any = { id: "cart_a", customer_id: null }) {
-  const customers = { listCustomers: jest.fn().mockResolvedValue([{ id: "cus_guest", has_account: false, email: "registered@example.com" }]), createCustomers: jest.fn().mockResolvedValue({ id: "cus_new_guest", has_account: false }) }
-  const carts = { updateCarts: jest.fn(async (_id, data) => Object.assign(cart, data)) }
-  const engine = { run: jest.fn().mockResolvedValue({}) }
-  const locking = { execute: jest.fn(async (_key, fn) => fn()) }
-  const graph = jest.fn().mockImplementation(async () => ({ data: [cart] }))
-  const req = { params: { id: "cart_a" }, headers: { "x-cart-access-token": issueAccessToken("cart", "cart_a") }, validatedBody: { email: "registered@example.com" }, queryConfig: { fields: ["id"] }, body: {}, scope: { resolve: key => ({ customer: customers, cart: carts, workflows: engine, locking, query: { graph } }[key]) } } as any
+  const fixture = cartWrapperFixture(cart)
+  const { customers, carts, engine, locking } = fixture
+  const req = { params: { id: "cart_a" }, headers: { "x-cart-access-token": issueAccessToken("cart", "cart_a") }, validatedBody: { email: "registered@example.com" }, queryConfig: { fields: ["id"] }, body: {}, scope: fixture.container } as any
   const res = { setHeader: jest.fn(), status: jest.fn().mockReturnThis(), json: jest.fn() } as any
-  return { req, res, customers, carts, engine, locking, cart }
+  return { req, res, customers, carts, engine, locking, cart: fixture.cart }
 }
 describe("guest checkout using an existing registered email", () => {
   beforeEach(() => { process.env.JWT_SECRET = "test-secret-with-more-than-thirty-two-characters"; jest.clearAllMocks() })
@@ -30,7 +28,7 @@ describe("guest checkout using an existing registered email", () => {
     const { req, res, customers, carts, engine, locking, cart } = setup()
     await update(req, res)
     expect(customers.listCustomers).toHaveBeenCalledWith({ email: "registered@example.com", has_account: false })
-    expect(carts.updateCarts).toHaveBeenCalledWith("cart_a", { customer_id: "cus_guest" })
+    expect(carts.updateCarts).toHaveBeenCalledWith([{ id: "cart_a", customer_id: "cus_guest" }])
     expect(engine.run).toHaveBeenCalled()
     expect(locking.execute).toHaveBeenCalledWith("cart-identity:cart_a", expect.any(Function), expect.any(Object))
     expect(cart.customer_id).toBe("cus_guest")

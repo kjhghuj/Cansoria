@@ -48,10 +48,17 @@ function setup() {
             ]
           : [cart],
   }));
+  const storedFiles = new Set(["private-ref.png"]);
   const files = {
-    createFiles: jest.fn().mockResolvedValue({ id: "private-new.png" }),
-    deleteFiles: jest.fn(),
-    getAsBuffer: jest.fn().mockResolvedValue(Buffer.from("image")),
+    createFiles: jest.fn(async () => {
+      storedFiles.add("private-new.png");
+      return { id: "private-new.png" };
+    }),
+    deleteFiles: jest.fn(async (id: string) => { storedFiles.delete(id); }),
+    getAsBuffer: jest.fn(async (id: string) => {
+      if (!storedFiles.has(id)) throw new Error("Stored file not found");
+      return Buffer.from("image");
+    }),
   };
   const carts = {
     updateCarts: jest.fn(async (_id, value) => {
@@ -78,7 +85,7 @@ function setup() {
     json: jest.fn(),
     send: jest.fn(),
   } as any;
-  return { req, res, cart, order, files, carts, photo, graph };
+  return { req, res, cart, order, files, carts, photo, graph, storedFiles };
 }
 describe("portrait upload and order association", () => {
   it("rejects incomplete portrait metadata before initializing a payment", async () => {
@@ -120,13 +127,41 @@ describe("portrait upload and order association", () => {
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json.mock.calls[0][0].photo).not.toHaveProperty("file_id");
   });
-  it("rolls back the stored file when cart persistence fails", async () => {
-    const { req, res, files, carts } = setup();
+  it("retains the uploaded asset and existing photo when persistence fails before committing", async () => {
+    const { req, res, files, carts, cart, storedFiles } = setup();
+    const originalMetadata = cart.metadata;
     req.body = imageBody();
     carts.updateCarts.mockRejectedValue(new Error("database failure") as never);
     await upload(req, res);
-    expect(files.deleteFiles).toHaveBeenCalledWith("private-new.png");
+    expect(files.createFiles).toHaveBeenCalledTimes(1);
+    expect(files.deleteFiles).not.toHaveBeenCalled();
+    expect(cart.metadata).toBe(originalMetadata);
+    expect(storedFiles.has("private-new.png")).toBe(true);
+    expect(storedFiles.has("private-ref.png")).toBe(true);
     expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ message: "Photo upload unavailable. Please try again." });
+    await read(req, res);
+    expect(files.getAsBuffer).toHaveBeenCalledWith("private-ref.png");
+  });
+  it("keeps an already committed photo readable when its database acknowledgement fails", async () => {
+    const { req, res, files, carts, cart, storedFiles } = setup();
+    req.body = imageBody();
+    carts.updateCarts.mockImplementationOnce(async (_id, value) => {
+      cart.metadata = value.metadata;
+      throw new Error("Commit succeeded but acknowledgement was lost");
+    });
+    await upload(req, res);
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ message: "Photo upload unavailable. Please try again." });
+    expect(files.deleteFiles).not.toHaveBeenCalled();
+    expect(storedFiles.has("private-new.png")).toBe(true);
+    expect(cart.metadata.portrait_photos).toHaveLength(2);
+    const committedPhoto = cart.metadata.portrait_photos[1];
+    expect(committedPhoto.file_id).toBe("private-new.png");
+    req.params.photoId = committedPhoto.id;
+    await read(req, res);
+    expect(files.getAsBuffer).toHaveBeenCalledWith("private-new.png");
+    expect(res.send).toHaveBeenCalledWith(Buffer.from("image"));
   });
   it("rejects upload to a completed cart", async () => {
     const { req, res, cart, files } = setup();

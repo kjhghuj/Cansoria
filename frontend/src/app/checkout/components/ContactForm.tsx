@@ -1,7 +1,7 @@
 import { CardElement } from "@stripe/react-stripe-js";
 import { CountrySelect } from "./CountrySelect";
 import type { StoreRegion } from "@/lib/types";
-import type { DeliveryDetails } from "@/lib/checkout-delivery";
+import { stateRequiredFor, type DeliveryDetails } from "@/lib/checkout-delivery";
 
 export type BillingData = DeliveryDetails;
 
@@ -201,6 +201,27 @@ export function ContactForm({
               countries={countries}
             />
           </div>
+
+          {stateRequiredFor(billingData.country) && (
+            <div>
+              <label htmlFor="checkout-state" className={labelClass}>
+                State / Province
+              </label>
+              <input
+                id="checkout-state"
+                autoComplete="shipping address-level1"
+                type="text"
+                value={billingData.state}
+                onChange={(e) =>
+                  setBillingData({ ...billingData, state: e.target.value })
+                }
+                className={inputClass}
+                placeholder="State or province"
+                required
+                maxLength={64}
+              />
+            </div>
+          )}
         </div>
       </NumberedCard>
 

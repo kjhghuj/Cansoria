@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 const BACKEND_URL = "/api/medusa";
@@ -12,17 +12,12 @@ interface AccountUser {
 }
 
 export function ProfileContent({ user }: { user: AccountUser | null }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstNameDraft, setFirstName] = useState<string | null>(null);
+  const [lastNameDraft, setLastName] = useState<string | null>(null);
+  const firstName = firstNameDraft ?? user?.first_name ?? "";
+  const lastName = lastNameDraft ?? user?.last_name ?? "";
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
-
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.first_name || "");
-      setLastName(user.last_name || "");
-    }
-  }, [user]);
 
   const handleSaveProfile = async () => {
     setSavingProfile(true);

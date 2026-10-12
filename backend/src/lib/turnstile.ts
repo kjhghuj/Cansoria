@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isLocalDevelopment } from "./env-mode";
 
 export const verifyTurnstileToken = async (token: string, expectedAction?: string): Promise<boolean> => {
     const secretKey = process.env.TURNSTILE_SECRET_KEY;
@@ -33,7 +34,7 @@ export const verifyTurnstileToken = async (token: string, expectedAction?: strin
         }
         const allowedHostnames = (process.env.TURNSTILE_HOSTNAMES || "").split(",").map(host => host.trim().toLowerCase()).filter(Boolean);
         const action = expectedAction || process.env.TURNSTILE_ACTION || "newsletter";
-        if (process.env.NODE_ENV === "production" && !allowedHostnames.length) return false;
+        if (!isLocalDevelopment() && !allowedHostnames.length) return false;
         if (allowedHostnames.length && (typeof data.hostname !== "string" || !allowedHostnames.includes(data.hostname.toLowerCase()))) return false;
         if (data.action !== action) return false;
 

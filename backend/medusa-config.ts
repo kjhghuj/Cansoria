@@ -1,9 +1,11 @@
 import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 import path from "path"
 import fs from "fs"
+import { isLocalDevelopment } from "./src/lib/env-mode"
 import { signingSecret, storefrontUrl } from "./src/lib/access-tokens"
 import { STORE_RESTRICTED_FIELDS } from "./src/lib/catalog-fields"
 import { portraitPhotoSecret } from "./src/lib/portrait-photos"
+import { visitorSigningSecret } from "./src/lib/visitor-identity"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
@@ -15,11 +17,12 @@ const hasS3FileConfig = Boolean(
   process.env.S3_BUCKET
 )
 
-if (process.env.NODE_ENV === "production" && !hasS3FileConfig) {
+if (!isLocalDevelopment() && !hasS3FileConfig) {
   throw new Error("SECURITY ERROR: S3 file storage must be configured in production.")
 }
-if (process.env.NODE_ENV === "production") {
+if (!isLocalDevelopment()) {
   signingSecret()
+  visitorSigningSecret()
   portraitPhotoSecret()
   storefrontUrl()
   const cookieSecret = process.env.COOKIE_SECRET || ""
@@ -76,6 +79,24 @@ module.exports = defineConfig({
       resolve: "@medusajs/medusa/locking",
       options: process.env.REDIS_URL ? { providers: [{ resolve: "@medusajs/medusa/locking-redis", id: "redis", is_default: true, options: { redisUrl: process.env.REDIS_URL } }] } : {},
     },
+    // Without Redis (local dev) the in-memory local event bus and workflow engine remain.
+    // With Redis, events and workflow state survive restarts and are shared across instances.
+    ...(process.env.REDIS_URL
+      ? [
+          {
+            resolve: "@medusajs/medusa/event-bus-redis",
+            options: {
+              redisUrl: process.env.REDIS_URL,
+              // Failed notification jobs retry with backoff instead of vanishing.
+              jobOptions: { attempts: 5, backoff: { type: "exponential" as const, delay: 5_000 } },
+            },
+          },
+          {
+            resolve: "@medusajs/medusa/workflow-engine-redis",
+            options: { redis: { redisUrl: process.env.REDIS_URL } },
+          },
+        ]
+      : []),
     {
       resolve: "@medusajs/medusa/file",
       options: {
@@ -108,6 +129,9 @@ module.exports = defineConfig({
             options: {
               apiKey: process.env.STRIPE_API_KEY,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+              // Charge automatically on authorization so order success means the
+              // payment is captured, not merely authorized.
+              capture: true,
             },
           },
         ],
@@ -124,7 +148,7 @@ const cookieSecret = process.env.COOKIE_SECRET || "supersecret"
 const resendApiKey = process.env.RESEND_API_KEY
 const stripeApiKey = process.env.STRIPE_API_KEY
 
-if (process.env.NODE_ENV === "production") {
+if (!isLocalDevelopment()) {
   if (jwtSecret === "supersecret" || cookieSecret === "supersecret") {
     throw new Error("SECURITY ERROR: JWT_SECRET and COOKIE_SECRET must be set to secure values in production and cannot be 'supersecret'.")
   }

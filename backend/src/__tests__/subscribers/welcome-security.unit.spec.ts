@@ -17,16 +17,17 @@ describe("welcome coupon eligibility and idempotency", () => {
     expect(notification.createNotifications).not.toHaveBeenCalled()
   })
   it("binds a registered customer's welcome promotion to customer and email with a single-use campaign budget", async () => {
-    const { args, promotions, locking } = setup({ id: "cus_a", email: "owner@example.com", has_account: true })
+    const { args, promotions, locking } = setup({ id: "cus_a", email: "owner@example.com", created_at: new Date().toISOString(), has_account: true })
     await handler(args)
     expect(locking.execute).toHaveBeenCalled()
     expect(promotions.createCampaigns).toHaveBeenCalledWith(expect.objectContaining({ budget: { type: "usage", limit: 1 } }))
+    expect(promotions.createCampaigns.mock.calls[0][0]).not.toHaveProperty("ends_at")
     expect(promotions.createPromotions).toHaveBeenCalledWith(expect.objectContaining({ rules: expect.arrayContaining([
       { attribute: "customer.id", operator: "eq", values: ["cus_a"] }, { attribute: "email", operator: "eq", values: ["owner@example.com"] },
     ]) }))
   })
   it("does not create or send another welcome promotion when metadata records completion", async () => {
-    const { args, promotions, notification } = setup({ id: "cus_a", email: "owner@example.com", has_account: true, metadata: { welcome_discount_code: "ART15-SAFE", welcome_email_sent: true } })
+    const { args, promotions, notification } = setup({ id: "cus_a", email: "owner@example.com", created_at: new Date().toISOString(), has_account: true, metadata: { welcome_discount_code: "ART15-SAFE", welcome_email_sent: true } })
     await handler(args)
     expect(promotions.createPromotions).not.toHaveBeenCalled()
     expect(notification.createNotifications).not.toHaveBeenCalled()

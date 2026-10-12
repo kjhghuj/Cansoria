@@ -43,4 +43,14 @@ describe("local static boundary", () => {
     expect(res.status).toHaveBeenCalledWith(410)
     process.env.NODE_ENV = env
   })
+  it("does not serve local files when NODE_ENV is missing or unrecognized", async () => {
+    const env = process.env.NODE_ENV
+    for (const value of [undefined, "staging"]) {
+      if (value === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = value
+      const res = response(); await GET({ params: { filename: "painting.jpg" } } as any, res)
+      expect(res.status).toHaveBeenCalledWith(410)
+    }
+    process.env.NODE_ENV = env
+  })
 })

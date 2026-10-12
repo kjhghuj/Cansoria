@@ -1,6 +1,7 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/medusa"
 import { Modules } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
+import { welcomeCustomerExpiry } from "../lib/welcome-promotions"
 
 export default async function customerCreatedHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
   const customers = container.resolve(Modules.CUSTOMER)
@@ -12,11 +13,11 @@ export default async function customerCreatedHandler({ event: { data }, containe
     await locking.execute(`welcome-coupon:${data.id}`, async () => {
       const customer = await customers.retrieveCustomer(data.id)
       // Checkout creates guest customer records too; these do not qualify for registration coupons.
-      if (!customer || !customer.has_account || !customer.email || customer.metadata?.welcome_email_sent === true) return
+      if (!customer || customer.has_account !== true || !customer.email || customer.metadata?.welcome_email_sent === true) return
+      const expiry = welcomeCustomerExpiry(customer)
+      if (!expiry) return
       const code = `ART15-${createHash("sha256").update(`cansoria-welcome:${customer.id}`).digest("hex").slice(0, 16).toUpperCase()}`
       const existing = await promotions.listPromotions({ code })
-      const createdAt = customer.created_at ? new Date(customer.created_at).getTime() : Date.now()
-      const expiry = new Date(createdAt + 30 * 24 * 60 * 60 * 1000)
       if (!existing.length) {
         // The deterministic identifiers permit safe retry after a partial event-handler failure.
         const identifier = `cansoria-account-${customer.id}`
@@ -24,7 +25,9 @@ export default async function customerCreatedHandler({ event: { data }, containe
         const campaign = campaigns[0] || await promotions.createCampaigns({
           campaign_identifier: identifier,
           name: "Cansoria Account Welcome",
-          starts_at: new Date(), ends_at: expiry,
+          // Account age enforces the 30-day eligibility window at application/completion.
+          // No campaign expiry: native registerUsage must not silently skip a code mid-completion.
+          starts_at: new Date(),
           budget: { type: "usage", limit: 1 },
         })
         await promotions.createPromotions({
