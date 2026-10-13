@@ -177,8 +177,10 @@ export default function ProductCard({
     ["custom", "portrait", "photo", "pet", "wedding"].some((keyword) =>
       productText.includes(keyword),
     );
+  // Service promises require an explicit opt-in from reviewed admin metadata;
+  // a missing key never implies the promise.
   const hasFreePreview =
-    metadata.free_preview !== false && metadata.freePreview !== false;
+    metadata.free_preview === true || metadata.freePreview === true;
   const badges = [
     "Style illustration",
     isCustomizable ? "Customizable" : null,

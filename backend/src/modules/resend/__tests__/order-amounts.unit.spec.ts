@@ -9,7 +9,7 @@ jest.mock("resend", () => ({ Resend: jest.fn().mockImplementation(() => ({ email
 
 async function orderHtml(data: Record<string, unknown>) {
   await new Provider({ logger: {} }, { apiKey: "mock", from: "hello@example.com" }).send({
-    to: "owner@example.com", template: "order_placed", data: { id: "order_amounts", ...data },
+    to: "owner@example.com", template: "order_placed", data: { id: "order_amounts", access_url: "https://cansoria.test/order/lookup?order=order_amounts&token=pinned", ...data },
   })
   return send.mock.calls[0][0].html as string
 }

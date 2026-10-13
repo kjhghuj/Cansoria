@@ -101,6 +101,7 @@ export default async function ProductPage({
             thumbnail={thumbnail}
             category={category}
             currencyCode={currencyCode}
+            ordersOpen={ordersOpen}
           />
         </div>
       </div>

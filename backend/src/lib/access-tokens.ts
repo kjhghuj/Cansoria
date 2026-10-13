@@ -1,7 +1,15 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { isLocalDevelopment } from "./env-mode"
 
-type Purpose = "cart" | "order"
+/**
+ * Capabilities are split by what they may do:
+ * - "cart": guest cart access cookie issued at cart creation.
+ * - "order-read": completion cookie; reads one order for a short window only.
+ * - "order-claim": emailed after order/email verification; the only
+ *   capability that may move a guest order to an account.
+ */
+export type Purpose = "cart" | "order-read" | "order-claim"
+const PURPOSE_PREFIX: Record<Purpose, string> = { cart: "cart_", "order-read": "order_", "order-claim": "order_" }
 const ID_PATTERN = /^(cart|order)_[a-zA-Z0-9_-]{1,128}$/
 
 export function signingSecret(): string {
@@ -21,8 +29,8 @@ export function storefrontUrl(): string {
 }
 
 /** Purpose-bound capabilities are only delivered through trusted cookies or email. */
-export function issueAccessToken(purpose: Purpose, id: string, ttlSeconds = purpose === "cart" ? 604800 : 900, now = Math.floor(Date.now() / 1000)): string {
-  if (!ID_PATTERN.test(id) || !id.startsWith(`${purpose}_`) || !Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800) {
+export function issueAccessToken(purpose: Purpose, id: string, ttlSeconds = purpose === "cart" ? 604800 : purpose === "order-read" ? 1800 : 900, now = Math.floor(Date.now() / 1000)): string {
+  if (!ID_PATTERN.test(id) || !id.startsWith(PURPOSE_PREFIX[purpose]) || !Number.isInteger(ttlSeconds) || ttlSeconds < 1 || ttlSeconds > 604800) {
     throw new Error("Invalid capability subject or lifetime")
   }
   const payload = Buffer.from(JSON.stringify({ v: 1, purpose, id, exp: now + ttlSeconds })).toString("base64url")
@@ -48,6 +56,13 @@ export function verifyAccessToken(token: unknown, purpose: Purpose, id: string, 
 export function orderAccessUrl(orderId: string): string {
   const url = new URL("/order/lookup", storefrontUrl())
   url.searchParams.set("order", orderId)
-  url.searchParams.set("token", issueAccessToken("order", orderId))
+  // The emailed link is the email-verified claim proof: it may read the order
+  // and transfer it to a signed-in account, nothing else.
+  url.searchParams.set("token", issueAccessToken("order-claim", orderId))
   return url.toString()
+}
+
+/** Order reads accept either the short completion capability or the emailed claim link. */
+export function verifyOrderReadToken(token: unknown, id: string, now = Math.floor(Date.now() / 1000)): boolean {
+  return verifyAccessToken(token, "order-read", id, now) || verifyAccessToken(token, "order-claim", id, now)
 }

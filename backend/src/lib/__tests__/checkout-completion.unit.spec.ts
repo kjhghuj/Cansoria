@@ -1,11 +1,13 @@
 import { Readable } from "stream";
+import sharp from "sharp";
 import { signPhoto, MAX_PHOTO_BYTES } from "../portrait-photos";
 import {
   validateCheckoutCompletion,
   CheckoutCompletionError,
 } from "../checkout-completion";
 
-const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]);
+// Completion now decodes every pixel, so fixtures must be real images.
+let png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]);
 function fixture() {
   const photo = signPhoto({
     id: "2c0e1371-36f3-40a7-b8c7-861f3c185559",
@@ -121,8 +123,9 @@ function welcome(f: ReturnType<typeof fixture>) {
   ];
 }
 describe("native checkout snapshot policy", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.JWT_SECRET = "test-secret-with-more-than-thirty-two-characters";
+    if (png.length < 32) png = await sharp({ create: { width: 2, height: 2, channels: 3, background: "#7f7f7f" } }).png().toBuffer();
   });
   afterEach(() => jest.useRealTimers());
   it("validates an immutable native shape without a replacement cart read", async () => {
@@ -174,8 +177,9 @@ describe("native checkout snapshot policy", () => {
   it.each([
     ["image/jpeg", "pet.jpg", Buffer.from([255, 216, 255, 1])],
     ["image/webp", "pet.webp", Buffer.from("RIFFxxxxWEBPbody")],
+    ["image/png", "pet.png", Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1])],
   ])(
-    "accepts readable signed %s headers without claiming full decoding",
+    "rejects a signed %s that is only a header with no decodable pixels",
     async (mime, name, bytes) => {
       const f = fixture();
       f.cart.metadata.portrait_photos = [
@@ -185,6 +189,23 @@ describe("native checkout snapshot policy", () => {
           name: name as string,
           size: (bytes as Buffer).length,
         }),
+      ];
+      f.files.getDownloadStream.mockResolvedValue(Readable.from([bytes]));
+      await expect(f.run()).rejects.toBeInstanceOf(CheckoutCompletionError);
+    },
+  );
+  it.each(["jpeg", "webp"])(
+    "accepts a fully decodable signed %s photo",
+    async (format) => {
+      const f = fixture();
+      const bytes = await sharp({
+        create: { width: 2, height: 2, channels: 3, background: "#7f7f7f" },
+      })
+        [format]()
+        .toBuffer();
+      const mime = format === "jpeg" ? "image/jpeg" : "image/webp";
+      f.cart.metadata.portrait_photos = [
+        signPhoto({ ...f.photo, mime, name: `pet.${format === "jpeg" ? "jpg" : "webp"}`, size: bytes.length }),
       ];
       f.files.getDownloadStream.mockResolvedValue(Readable.from([bytes]));
       await f.run();
@@ -217,52 +238,9 @@ describe("native checkout snapshot policy", () => {
     await expect(f.run()).rejects.toBeInstanceOf(CheckoutCompletionError);
     expect(f.files.getDownloadStream).not.toHaveBeenCalled();
   });
-  it("bounds all sequential photos to 25 seconds and destroys a late final stream", async () => {
-    jest.useFakeTimers();
-    const f = fixture();
-    f.cart.items = [];
-    f.cart.metadata.portrait_photos = [];
-    const streams: Readable[] = [];
-    for (let i = 0; i < 6; i++) {
-      const photo = signPhoto({
-        ...f.photo,
-        id: `${String(i).padStart(8, "0")}-36f3-40a7-b8c7-861f3c185559`,
-        file_id: `file_${i}`,
-      });
-      f.cart.metadata.portrait_photos.push(photo);
-      f.cart.items.push({
-        product_id: "prod_a",
-        variant: { product: { id: "prod_a" } },
-        metadata: {
-          portrait: {
-            style: "classic-oil",
-            source_cart_id: "cart_a",
-            photo_id: photo.id,
-          },
-        },
-        adjustments: [],
-      });
-    }
-    f.files.getDownloadStream.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => {
-            const stream = Readable.from([png]);
-            streams.push(stream);
-            resolve(stream);
-          }, 4500);
-        }),
-    );
-    const check = expect(f.run()).rejects.toMatchObject({
-      message: "Photo validation timed out",
-    });
-    await jest.advanceTimersByTimeAsync(25001);
-    await check;
-    expect(f.files.getDownloadStream).toHaveBeenCalledTimes(6);
-    await jest.advanceTimersByTimeAsync(3000);
-    expect(streams.every((s) => s.destroyed)).toBe(true);
-    expect(jest.getTimerCount()).toBe(0);
-  });
+  // The 25-second sequential photo budget with late-stream destruction lives in
+  // checkout-completion-timing.unit.spec.ts, where sharp is mocked: native
+  // decodes need real event-loop turns that a fake clock does not provide.
   it.each([
     Buffer.alloc(0),
     Buffer.from("not an image"),

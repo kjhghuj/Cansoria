@@ -1,15 +1,12 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/medusa"
-import { decorateCartTotals, MathBN, Modules } from "@medusajs/framework/utils"
-// import { INotificationModuleService } from "@medusajs/types" // Types might not be directly available if not installed, we can infer or use any if needed to avoid build error, but let's try.
+import { decorateCartTotals, MathBN } from "@medusajs/framework/utils"
+import { orderAccessUrl } from "../lib/access-tokens"
+import { sendNotification } from "../lib/send-notification"
 
 export default async function orderPlacedHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {
-    const notificationModuleService = container.resolve(
-        Modules.NOTIFICATION
-    )
-
     const query = container.resolve("query")
 
     const { data: orders } = await query.graph({
@@ -53,8 +50,10 @@ export default async function orderPlacedHandler({
 
     console.log("[OrderPlacedSubscriber] Processing order notification")
 
-    try {
-        await notificationModuleService.createNotifications({
+    // Failures propagate so the event worker requeues this handler (Redis
+    // backoff retries are configured); sendNotification keeps the
+    // idempotency key deliverable across those retries.
+    await sendNotification(container, {
             to: order.email,
             channel: "email",
             template: "order_placed",
@@ -64,6 +63,9 @@ export default async function orderPlacedHandler({
             data: {
                 id: order.id,
                 display_id: order.display_id,
+                // Signed once and persisted with the notification: retries reuse
+                // this exact link and content under the same idempotency key.
+                access_url: orderAccessUrl(order.id),
                 email: order.email,
                 first_name: firstName,
                 total: order.total,
@@ -87,11 +89,6 @@ export default async function orderPlacedHandler({
             },
         })
         console.log(`[OrderPlacedSubscriber] Notification triggered successfully.`)
-    } catch (error) {
-        // Surface the failure with the order id so operations can resend from the
-        // notification record instead of the customer discovering a missing email.
-        console.error(`[OrderPlacedSubscriber] Order ${data.id} confirmation email FAILED and must be resent:`, error)
-    }
 }
 
 export const config: SubscriberConfig = {

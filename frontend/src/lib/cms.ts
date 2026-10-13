@@ -357,8 +357,22 @@ export function getFallbackRelatedArticles(ids: number[]): Article[] {
  * healthy-but-empty CMS from an unavailable one.
  */
 export async function getArticles(): Promise<Article[]> {
-    const result = await getArticlesDetailed();
-    return result.source === "error" ? [] : result.articles;
+  const result = await getArticlesDetailed();
+  return result.source === "error" ? [] : result.articles;
+}
+
+/**
+ * The final journal content set every outlet (list, detail, search, sitemap)
+ * must use: a healthy CMS is authoritative (even when empty); a disabled or
+ * unavailable CMS falls back to the built-in editorial content.
+ */
+export async function resolveJournalArticles(): Promise<{
+  articles: Article[];
+  source: CmsSource;
+}> {
+  const result = await getArticlesDetailed();
+  if (result.source === "cms") return { articles: result.articles, source: "cms" };
+  return { articles: getFallbackArticles(), source: result.source };
 }
 
 export async function getArticlesDetailed(): Promise<{
@@ -420,33 +434,48 @@ export async function getFeaturedArticle(): Promise<Article | null> {
 }
 
 /**
+ * Fetch single article by slug, distinguishing a healthy-CMS miss (404) from
+ * static mode and from an unavailable CMS (fallback applies).
+ */
+export async function getArticleBySlugDetailed(
+  slug: string,
+): Promise<{ article: Article | null; source: CmsSource }> {
+  if (CMS_DISABLED) {
+    return { article: getFallbackArticleBySlug(slug), source: "static" };
+  }
+  try {
+    const url = getStrapiURL(
+      `/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`
+    );
+
+    const response = await fetch(url, cmsFetchOptions());
+
+    if (!response.ok) {
+      console.error(`[CMS] Failed to fetch article by slug: ${response.status}`);
+      return { article: getFallbackArticleBySlug(slug), source: "error" };
+    }
+
+    const json: StrapiResponse<StrapiArticle[]> = await response.json();
+
+    if (!json.data || json.data.length === 0) {
+      // A healthy CMS that does not have this slug is authoritative: no
+      // silent fallback to static content.
+      return { article: null, source: "cms" };
+    }
+
+    return { article: mapArticle(json.data[0]), source: "cms" };
+  } catch (error) {
+    console.error("[CMS] Error fetching article by slug:", error);
+    return { article: getFallbackArticleBySlug(slug), source: "error" };
+  }
+}
+
+/**
  * Fetch single article by slug from Strapi
  */
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-    if (CMS_DISABLED) return null;
-    try {
-        const url = getStrapiURL(
-            `/api/articles?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`
-        );
-
-        const response = await fetch(url, cmsFetchOptions());
-
-        if (!response.ok) {
-            console.error(`[CMS] Failed to fetch article by slug: ${response.status}`);
-            return null;
-        }
-
-        const json: StrapiResponse<StrapiArticle[]> = await response.json();
-
-        if (!json.data || json.data.length === 0) {
-            return null;
-        }
-
-        return mapArticle(json.data[0]);
-    } catch (error) {
-        console.error("[CMS] Error fetching article by slug:", error);
-        return null;
-    }
+  const result = await getArticleBySlugDetailed(slug);
+  return result.article;
 }
 
 /**
@@ -480,16 +509,36 @@ export async function getArticleById(id: number): Promise<Article | null> {
 }
 
 /**
- * Fetch related articles by IDs
+ * Fetch related articles by IDs under the same content policy as the article
+ * itself: a healthy CMS is authoritative — a related id it no longer holds
+ * stays missing instead of being refilled from the static list — while static
+ * mode and an unavailable CMS fall back to the built-in content.
  */
 export async function getRelatedArticles(ids: number[]): Promise<Article[]> {
     if (!ids || ids.length === 0) return [];
+    if (CMS_DISABLED) return getFallbackRelatedArticles(ids);
 
-    try {
-        const results = await Promise.all(ids.map((id) => getArticleById(id)));
-        return results.filter((a): a is Article => a !== null);
-    } catch (error) {
-        console.error("[CMS] Error fetching related articles:", error);
-        return [];
-    }
+    const results = await Promise.all(ids.map(async (id) => {
+        try {
+            const url = getStrapiURL(`/api/articles/${id}?populate=*`);
+            const response = await fetch(url, cmsFetchOptions());
+            if (response.status === 404) {
+                // A CMS that answers "not found" is healthy and authoritative:
+                // the related piece was withdrawn, and it must not reappear
+                // from the static list.
+                return null;
+            }
+            if (!response.ok) {
+                console.error(`[CMS] Failed to fetch related article ${id}: ${response.status}`);
+                return getFallbackRelatedArticles([id])[0] ?? null;
+            }
+            const json: StrapiResponse<StrapiArticle> = await response.json();
+            // A healthy CMS without this id is authoritative: no static refill.
+            return json.data ? mapArticle(json.data) : null;
+        } catch (error) {
+            console.error(`[CMS] Error fetching related article ${id}:`, error);
+            return getFallbackRelatedArticles([id])[0] ?? null;
+        }
+    }));
+    return results.filter((article): article is Article => article !== null);
 }

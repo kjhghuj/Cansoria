@@ -33,7 +33,7 @@ function getErrorMessage(error: unknown) {
 // Store helper - get store info including metadata
 export async function getStore() {
   try {
-    // Use custom endpoint for store info
+    // Use custom endpoint for store info; a hung backend must not stall renders.
     const response = await fetch(`${MEDUSA_BACKEND_URL}/store/store-info`, {
       method: "GET",
       headers: {
@@ -41,6 +41,7 @@ export async function getStore() {
         "x-publishable-api-key": PUBLISHABLE_API_KEY,
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {

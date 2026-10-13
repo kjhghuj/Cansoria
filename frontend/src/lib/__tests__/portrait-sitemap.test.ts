@@ -1,20 +1,20 @@
 import sitemap from "@/app/sitemap";
 import nextConfig from "../../../next.config";
 import { getProducts, getRegion, getCategories } from "../medusa";
-import { getArticles } from "../cms";
+import { resolveJournalArticles } from "../cms";
 
 jest.mock("../medusa", () => ({
   getRegion: jest.fn(),
   getProducts: jest.fn(),
   getCategories: jest.fn(),
 }));
-jest.mock("../cms", () => ({ getArticles: jest.fn() }));
+jest.mock("../cms", () => ({ resolveJournalArticles: jest.fn() }));
 
 describe("portrait page consolidation routes", () => {
   it("retains content and product sitemap routes without listing the old shop or anchors", async () => {
     jest.mocked(getRegion).mockResolvedValue({ id: "reg_test" } as never);
     jest.mocked(getProducts).mockResolvedValue({ products: [{ handle: "pet-portrait-oil-painting", updated_at: "2026-01-01" }] } as never);
-    jest.mocked(getArticles).mockResolvedValue([{ slug: "photo-guide", date: "2026-01-01" }] as never);
+    jest.mocked(resolveJournalArticles).mockResolvedValue({ articles: [{ slug: "photo-guide", date: "2026-01-01" }], source: "static" } as never);
     const routes = await sitemap();
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
     const urls = routes.map((route) => route.url);

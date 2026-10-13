@@ -46,7 +46,9 @@ export default async function JournalPage() {
   const articles = cmsHealthy ? articlesResult.articles : fallbackArticles;
   const featuredArticle =
     cmsFeaturedArticle ||
-    (cmsHealthy ? null : fallbackArticles[0] || null);
+    // Static mode uses the built-in story; a healthy CMS without a featured
+    // article shows the empty hero instead of an old static story.
+    (!cmsHealthy ? fallbackArticles[0] || null : null);
 
   // Filter out the featured article from the grid (if it exists)
   const gridArticles = featuredArticle
@@ -55,8 +57,8 @@ export default async function JournalPage() {
 
   return (
     <div className="bg-cream min-h-screen pt-[72px] lg:pt-[88px]">
-      {/* 1. HERO SECTION - Uses Strapi featured content, then fallback content */}
-      <JournalHero featuredArticle={featuredArticle} />
+      {/* 1. HERO SECTION - Uses Strapi featured content, then static-mode fallback content */}
+      <JournalHero featuredArticle={featuredArticle} allowStaticFallback={!cmsHealthy && !featuredArticle} />
 
       {/* 2. FILTER BAR + ARTICLE GRID */}
       <JournalContent

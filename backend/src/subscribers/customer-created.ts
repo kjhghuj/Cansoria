@@ -2,15 +2,17 @@ import { SubscriberArgs, type SubscriberConfig } from "@medusajs/medusa"
 import { Modules } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
 import { welcomeCustomerExpiry } from "../lib/welcome-promotions"
+import { sendNotification } from "../lib/send-notification"
 
 export default async function customerCreatedHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
   const customers = container.resolve(Modules.CUSTOMER)
   const promotions = container.resolve(Modules.PROMOTION)
-  const notifications = container.resolve(Modules.NOTIFICATION)
   const locking = container.resolve(Modules.LOCKING)
   const logger = container.resolve("logger")
-  try {
-    await locking.execute(`welcome-coupon:${data.id}`, async () => {
+  // Failures propagate so the worker requeues the event; the deterministic
+  // coupon/campaign identifiers above make replays safe, and
+  // welcome_email_sent flips only after the email actually went out.
+  await locking.execute(`welcome-coupon:${data.id}`, async () => {
       const customer = await customers.retrieveCustomer(data.id)
       // Checkout creates guest customer records too; these do not qualify for registration coupons.
       if (!customer || customer.has_account !== true || !customer.email || customer.metadata?.welcome_email_sent === true) return
@@ -46,15 +48,18 @@ export default async function customerCreatedHandler({ event: { data }, containe
         welcome_discount_valid_until: expiry.toISOString(),
       }
       await customers.updateCustomers(customer.id, { metadata })
-      await notifications.createNotifications({
+      await sendNotification(container, {
         to: customer.email, channel: "email", template: "customer_created", idempotency_key: `welcome:${customer.id}`,
         data: { first_name: customer.first_name, discountCode: code, validUntil: expiry.toLocaleDateString("en-GB") },
       })
       await customers.updateCustomers(customer.id, { metadata: { ...metadata, welcome_email_sent: true } })
-    }, { timeout: 30 })
-  } catch {
-    logger.warn("[CustomerCreatedSubscriber] Welcome notification unavailable")
-  }
+  }, { timeout: 30 })
+  .catch((error: unknown) => {
+    // Keep the lock-scoped work durable in the logs, but never swallow the
+    // failure: rethrow so the event worker retries the whole handler.
+    logger.error(`[CustomerCreatedSubscriber] Welcome flow for ${data.id} failed and will be retried: ${error instanceof Error ? error.message : String(error)}`)
+    throw error
+  })
 }
 
 export const config: SubscriberConfig = { event: "customer.created" }

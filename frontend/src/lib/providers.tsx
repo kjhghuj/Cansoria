@@ -32,6 +32,30 @@ import { applyBestCoupon } from "./best-coupon";
 const CART_ID_KEY = "cansoria_cart_id";
 const AUTH_TOKEN_KEY = "medusa_auth_token";
 
+// Browser storage can be disabled, full, or throw on access. Cart/auth state
+// commits independently of it: reads fall back to empty, writes are best-effort.
+function readStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function writeStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // The cart or session still lives in memory and on the server.
+  }
+}
+function removeStorage(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Removal is cosmetic; state below must still commit.
+  }
+}
+
 interface ProvidersProps {
   children: ReactNode;
 }
@@ -186,8 +210,8 @@ export function Providers({ children }: ProvidersProps) {
     async function initAuth() {
       // Remove credentials persisted by older storefront releases. Storage can be
       // disabled or full; cleanup must never block session initialization.
+      removeStorage(AUTH_TOKEN_KEY);
       try {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
         sessionStorage.removeItem(AUTH_TOKEN_KEY);
       } catch {
         // Best-effort cleanup only.
@@ -219,7 +243,7 @@ export function Providers({ children }: ProvidersProps) {
 
       try {
         setCartLoading(true);
-        const cartIdToFetch = localStorage.getItem(CART_ID_KEY);
+        const cartIdToFetch = readStorage(CART_ID_KEY);
         let currentCart: StoreCart | null = null;
 
         // Strategy:
@@ -239,7 +263,7 @@ export function Providers({ children }: ProvidersProps) {
 
             if (savedCart && !savedCart.completed_at) {
               currentCart = savedCart;
-              localStorage.setItem(CART_ID_KEY, savedCart.id);
+              writeStorage(CART_ID_KEY, savedCart.id);
             }
           }
 
@@ -277,7 +301,7 @@ export function Providers({ children }: ProvidersProps) {
               });
             }
           } else {
-            localStorage.removeItem(CART_ID_KEY);
+            removeStorage(CART_ID_KEY);
           }
         }
 
@@ -336,8 +360,9 @@ export function Providers({ children }: ProvidersProps) {
   const handleLogout = async () => {
     await logout();
     sessionGeneration.current += 1;
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(CART_ID_KEY); // Clear local cart reference on logout to avoid mixing
+    // Best-effort cache cleanup; the signed-out state below must always commit.
+    removeStorage(AUTH_TOKEN_KEY);
+    removeStorage(CART_ID_KEY);
     setUser(null);
     setCart(null);
     // The effect restores only; the next shopping action may create a guest cart.
@@ -359,7 +384,7 @@ export function Providers({ children }: ProvidersProps) {
 
       // If cart is completed OR if getCart returned null (invalid/not found), reset.
       if (!updatedCart || updatedCart.completed_at) {
-        localStorage.removeItem(CART_ID_KEY);
+        removeStorage(CART_ID_KEY);
         setCart(null);
 
       } else {
@@ -416,7 +441,7 @@ export function Providers({ children }: ProvidersProps) {
       if (!active) throw new Error("Unable to create your cart. Please try again.");
       // Keep the successful creation for retry if later ownership/metadata writes fail.
       setCart(active);
-      try { localStorage.setItem(CART_ID_KEY, active.id); } catch { /* The cart is still in memory. */ }
+      writeStorage(CART_ID_KEY, active.id);
     }
     if (user && active.customer_id !== user.id) {
       const owned = await updateCartOwnership(active.id) as StoreCart | null;

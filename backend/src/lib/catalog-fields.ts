@@ -68,7 +68,7 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
 // Admin-written catalog metadata is not public by default. Only these keys are
 // consumed by the storefront; anything else (internal notes, costs, source
 // links) must stay behind the admin API.
-export const PUBLIC_PRODUCT_METADATA_KEYS = ["story_sections", "rating", "average_rating", "review_rating", "reviews", "rating_count", "review_count", "reviews_verified"]
+export const PUBLIC_PRODUCT_METADATA_KEYS = ["story_sections", "rating", "average_rating", "review_rating", "reviews", "rating_count", "review_count", "reviews_verified", "free_preview", "freePreview"]
 export const PUBLIC_VARIANT_METADATA_KEYS = ["images"]
 export const PUBLIC_STORE_METADATA_KEYS = ["announcement_bar", "orders_open"]
 

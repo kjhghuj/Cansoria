@@ -13,9 +13,9 @@ import {
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   sensitiveResponse(res);
-  let input: ReturnType<typeof validatePhoto>;
+  let input: Awaited<ReturnType<typeof validatePhoto>>;
   try {
-    input = validatePhoto(req.body);
+    input = await validatePhoto(req.body);
   } catch {
     return res
       .status(400)

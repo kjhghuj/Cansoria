@@ -198,6 +198,21 @@ describe('server session and capability boundary', () => {
     expect(new Headers(fetchMock.mock.calls[1][1]?.headers).get('x-order-access-token')).toBe('order-capability');
   });
 
+  it('never forwards the completion order cookie to order claims or non-order paths', async () => {
+    cookieJar.set('cansoria_order_access', 'order-capability');
+    fetchMock.mockImplementation(async () => json({ success: true }));
+    // Claiming an order is a write: the emailed verification link must be
+    // presented explicitly, never the ambient completion cookie.
+    await storePost(request('/api/medusa/store/orders/transfer', { order_id: 'order_123' }), storeContext('store', 'orders', 'transfer'));
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('x-order-access-token')).toBeNull();
+    // Reads outside the order namespace must not carry the capability either.
+    await storeGet(request('/api/medusa/store/carts/cart_123'), storeContext('store', 'carts', 'cart_123'));
+    expect(new Headers(fetchMock.mock.calls[1][1]?.headers).get('x-order-access-token')).toBeNull();
+    // The emailed claim link is caller-supplied and passes through unchanged.
+    await storePost(request('/api/medusa/store/orders/transfer', { order_id: 'order_123' }, { 'x-order-access-token': 'emailed-claim-proof' }), storeContext('store', 'orders', 'transfer'));
+    expect(new Headers(fetchMock.mock.calls[2][1]?.headers).get('x-order-access-token')).toBe('emailed-claim-proof');
+  });
+
   it('cannot proxy an admin or auth path', async () => {
     const response = await storeGet(request('/api/medusa/admin/users'), storeContext('admin', 'users'));
     expect(response.status).toBe(404);
@@ -224,11 +239,13 @@ describe('server session and capability boundary', () => {
     expect(new Headers(fetchMock.mock.calls[2][1]?.headers).has('x-real-ip')).toBe(false);
   });
 
-  it('removes both session and cart credentials on logout', async () => {
+  it('removes session, cart and order read credentials on logout', async () => {
     const response = await authPost(request('/api/auth/logout', {}), authContext('logout'));
     const header = response.headers.get('set-cookie')!;
     expect(header).toContain('cansoria_session=');
     expect(header).toContain('cansoria_cart_access=');
+    // The short-lived order read capability must not outlive the session.
+    expect(header).toContain('cansoria_order_access=');
     expect(header).toContain('Max-Age=0');
   });
 

@@ -13,8 +13,8 @@ describe("order notification amount payload", () => {
       items: [{ quantity: 2, unit_price: 129, total: 278.64 }],
     }
     const graph = jest.fn().mockResolvedValue({ data: [order] })
-    const createNotifications = jest.fn().mockResolvedValue([])
-    const container = { resolve: jest.fn(key => key === "query" ? { graph } : { createNotifications }) }
+    const createNotifications = jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" })
+    const container = { resolve: jest.fn(key => key === "query" ? { graph } : key === "locking" ? { execute: async (_key: string, fn: () => Promise<unknown>) => fn() } : { createNotifications, listNotifications: jest.fn().mockResolvedValue([]) }) }
     await orderPlacedHandler({ event: { data: { id: order.id } }, container } as any)
     expect(graph).toHaveBeenCalledWith(expect.objectContaining({
       entity: "order", filters: { id: order.id },
@@ -41,9 +41,9 @@ describe("order notification amount payload", () => {
     }, { entity: Order, includeTotals: true })))
     expect(order.total).toBe(129)
     expect(order.credit_line_total).toBe(0)
-    const createNotifications = jest.fn().mockResolvedValue([])
+    const createNotifications = jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" })
     const graph = jest.fn().mockResolvedValue({ data: [order] })
-    const container = { resolve: jest.fn(key => key === "query" ? { graph } : { createNotifications }) }
+    const container = { resolve: jest.fn(key => key === "query" ? { graph } : key === "locking" ? { execute: async (_key: string, fn: () => Promise<unknown>) => fn() } : { createNotifications, listNotifications: jest.fn().mockResolvedValue([]) }) }
     await orderPlacedHandler({ event: { data: { id: order.id } }, container } as any)
     const payload = createNotifications.mock.calls[0][0].data
     expect(Number(payload.credit_line_total)).toBe(order.credit_line_total)

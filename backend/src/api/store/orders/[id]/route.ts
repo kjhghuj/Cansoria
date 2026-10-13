@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import { verifyAccessToken } from "../../../../lib/access-tokens"
+import { verifyOrderReadToken } from "../../../../lib/access-tokens"
 import { sensitiveResponse, customerActor } from "../../../../lib/resource-access"
 import { publicPortraitMetadata } from "../../../../lib/portrait-photos"
 
@@ -9,7 +9,7 @@ const publicFields = ["id", "display_id", "email", "status", "created_at", "tota
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   sensitiveResponse(res)
   const id = req.params.id
-  const tokenValid = verifyAccessToken(req.headers["x-order-access-token"], "order", id)
+  const tokenValid = verifyOrderReadToken(req.headers["x-order-access-token"], id)
   const actor = customerActor(req)
   if (!tokenValid && !actor) return res.status(403).json({ type: "forbidden", message: "Order access denied" })
   try {

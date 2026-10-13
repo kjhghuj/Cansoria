@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { getProducts, getRegion } from "@/lib/medusa";
-import { getArticles } from "@/lib/cms";
+import { resolveJournalArticles } from "@/lib/cms";
 
 export const revalidate = 3600; // Revalidate sitemap every hour
 
@@ -39,8 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
-  // 3. Journal Articles (Strapi)
-  const articles = await getArticles();
+  // 3. Journal Articles — the same final content set the journal pages show,
+  // so static-mode articles are listed and healthy-CMS withdrawals disappear.
+  const { articles } = await resolveJournalArticles();
   const articleRoutes = articles.map((article) => ({
     url: `${baseUrl}/journal/${article.slug}`,
     lastModified: new Date(article.date || new Date()),

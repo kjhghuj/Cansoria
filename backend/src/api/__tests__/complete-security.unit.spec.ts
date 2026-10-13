@@ -28,7 +28,7 @@ describe("welcome completion through the real shared native hook", () => {
     h.files.getDownloadStream.mockImplementationOnce(async () => {
       entered.resolve();
       await finish.promise;
-      return Readable.from([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1])]);
+      return Readable.from([Buffer.from([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,2,0,0,0,144,119,83,222,0,0,0,9,112,72,89,115,0,0,3,232,0,0,3,232,1,181,123,82,107,0,0,0,12,73,68,65,84,8,153,99,104,104,104,0,0,3,4,1,129,30,206,255,166,0,0,0,0,73,69,78,68,174,66,96,130])]);
     });
     const first = POST(h.req, h.res);
     await entered.promise;

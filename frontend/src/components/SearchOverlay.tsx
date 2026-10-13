@@ -17,10 +17,20 @@ interface SearchOverlayProps {
   regionId?: string;
 }
 
+/** Matches the journal index API's stale-while-revalidate window. */
+const JOURNAL_INDEX_TTL_MS = 5 * 60_000;
+
+type JournalIndex = { articles: Article[]; fetchedAt: number };
+
 export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
   const [productResults, setProductResults] = useState<StoreProduct[]>([]);
   const [articleResults, setArticleResults] = useState<Article[]>([]);
+  // null while the final journal set is still being resolved — the built-in
+  // list must not surface as a guess during that wait; it is only the fallback
+  // when the API itself fails (the API applies the same healthy-CMS-authoritative
+  // policy as the journal pages, including an authoritative empty list).
+  const [journalIndex, setJournalIndex] = useState<JournalIndex | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchGeneration = useRef(0);
@@ -35,6 +45,31 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
     const timer = setTimeout(() => inputRef.current?.focus(), 100);
     return () => { clearTimeout(timer); document.body.style.overflow = previousOverflow; };
   }, [isOpen]);
+
+  // Load the same final journal content set the journal pages use; refresh on
+  // reopen once the cached entry ages out so content changes appear in-session.
+  useEffect(() => {
+    if (!isOpen) return;
+    if (journalIndex && Date.now() - journalIndex.fetchedAt < JOURNAL_INDEX_TTL_MS) return;
+    let cancelled = false;
+    fetch("/api/journal/articles")
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("journal index unavailable"))))
+      .then((data) => {
+        if (cancelled) return;
+        // A healthy CMS may be authoritative-but-empty: [] is a final answer,
+        // not a reason to keep showing the built-in list.
+        if (Array.isArray(data?.articles)) setJournalIndex({ articles: data.articles as Article[], fetchedAt: Date.now() });
+        else throw new Error("malformed journal index");
+      })
+      .catch(() => {
+        // Only an unavailable API falls back to the built-in editorial list,
+        // the same content the server-side fallback serves.
+        if (!cancelled) setJournalIndex({ articles: ARTICLES, fetchedAt: Date.now() });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, journalIndex]);
 
   // Debounced search
   const performSearch = useCallback(async (searchQuery: string, generation: number) => {
@@ -53,20 +88,25 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
       if (generation !== searchGeneration.current) return;
       setProductResults(products.slice(0, 3));
 
-      // Search articles locally
-      const lowerQuery = searchQuery.toLowerCase();
-      const filteredArticles = ARTICLES.filter(
-        (a) =>
-          a.title.toLowerCase().includes(lowerQuery) ||
-          a.category.toLowerCase().includes(lowerQuery)
-      ).slice(0, 2);
-      setArticleResults(filteredArticles);
+      // Search the journal's final content set. While that set is still being
+      // resolved, no article guesses are shown.
+      if (journalIndex === null) {
+        setArticleResults([]);
+      } else {
+        const lowerQuery = searchQuery.toLowerCase();
+        const filteredArticles = journalIndex.articles.filter(
+          (a) =>
+            a.title.toLowerCase().includes(lowerQuery) ||
+            a.category.toLowerCase().includes(lowerQuery)
+        ).slice(0, 2);
+        setArticleResults(filteredArticles);
+      }
     } catch (error) {
       console.error("Search error:", error);
     } finally {
       if (generation === searchGeneration.current) setIsSearching(false);
     }
-  }, [regionId]);
+  }, [regionId, journalIndex]);
 
   useEffect(() => {
     const generation = ++searchGeneration.current;
@@ -260,7 +300,9 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                 <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-charcoal-light mb-6 border-b border-gray-100 pb-2">
                   <FileText size={14} /> Journal
                 </h4>
-                {articleResults.length > 0 ? (
+                {isSearching || journalIndex === null ? (
+                  <p className="text-sm text-gray-400">{journalIndex === null ? "Checking stories..." : "Searching..."}</p>
+                ) : articleResults.length > 0 ? (
                   <div className="space-y-6">
                     {articleResults.map((a) => (
                       <div

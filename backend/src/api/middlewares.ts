@@ -3,6 +3,7 @@ import cors from "cors"
 import { variantThumbnailProcessor } from "./middlewares/variant-thumbnail-processor"
 import { authenticate } from "@medusajs/framework/http"
 import { cartAccessGuard, paymentAccessGuard, disableOrderTransfer } from "../lib/resource-access"
+import { enforcePasswordPolicy, serializePasswordReset } from "../lib/auth-guards"
 import { createRateLimiter } from "../lib/rate-limit"
 import { welcomePromotionGuard } from "../lib/welcome-promotions"
 import { forceCartFields, forcePaymentFields } from "../lib/cart-fields"
@@ -67,6 +68,18 @@ export default defineMiddlewares({
             matcher: "/auth/*", method: "POST",
             middlewares: [createRateLimiter({ name: "authentication", limit: 20, windowSeconds: 900 })],
         },
+        // Static matchers on these auth routes register before the framework's
+        // dynamic middlewares, so weak passwords are rejected before a reset
+        // token is consumed and concurrent consumption is serialized.
+        ...["/auth/customer/emailpass/register", "/auth/user/emailpass/register", "/auth/customer/emailpass/update", "/auth/user/emailpass/update"].map(matcher => ({
+            matcher, method: "POST" as const, middlewares: [enforcePasswordPolicy],
+        })),
+        ...["/auth/customer/emailpass/update", "/auth/user/emailpass/update"].map(matcher => ({
+            matcher, method: "POST" as const, middlewares: [serializePasswordReset("token")],
+        })),
+        ...["/auth/customer/emailpass/reset-password", "/auth/user/emailpass/reset-password"].map(matcher => ({
+            matcher, method: "POST" as const, middlewares: [serializePasswordReset("identifier")],
+        })),
         {
             matcher: "/auth/customer/emailpass/reset-password", method: "POST",
             middlewares: [createRateLimiter({ name: "password-reset", limit: 5, windowSeconds: 3600 })],

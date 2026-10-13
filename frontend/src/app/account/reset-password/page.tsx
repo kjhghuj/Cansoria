@@ -1,33 +1,43 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-const subscribeToLocation = () => () => {};
-// Capture the token once: after the address bar is cleaned the snapshot must
-// keep returning it instead of flipping the page back to the missing-token view.
-let cachedResetToken: string | null | undefined;
-function getResetTokenSnapshot() {
-  cachedResetToken ??= new URLSearchParams(window.location.search).get("token");
-  return cachedResetToken;
-}
-const getServerResetToken = () => null;
-
-export default function ResetPasswordPage() {
-  const tokenRaw = useSyncExternalStore(
-    subscribeToLocation,
-    getResetTokenSnapshot,
-    getServerResetToken,
-  );
+export function ResetPasswordContent() {
+  // The token is bound to this page instance: it survives the address-bar
+  // cleanup, and a second reset link opened in the same SPA replaces it
+  // instead of silently reusing the first token.
+  const searchParams = useSearchParams();
+  const urlToken = searchParams.get("token");
+  const [capturedToken, setCapturedToken] = useState<string | null>(urlToken);
+  const [seenToken, setSeenToken] = useState<string | null>(urlToken);
+  if (urlToken !== seenToken) {
+    setSeenToken(urlToken);
+    if (urlToken) setCapturedToken(urlToken);
+  }
   const token =
-    tokenRaw && tokenRaw.length >= 20 && tokenRaw.length <= 4096
-      ? tokenRaw
+    capturedToken && capturedToken.length >= 20 && capturedToken.length <= 4096
+      ? capturedToken
       : null;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Results are bound to this link's token: opening a second reset link in the
+  // same page instance must not show the first link's outcome, and responses
+  // still in flight for the old token are dropped.
+  const activeToken = useRef<string | null>(token);
+  useEffect(() => {
+    if (activeToken.current === token) return;
+    activeToken.current = token;
+    setDone(false);
+    setError(null);
+    setSubmitting(false);
+    setPassword("");
+    setConfirmPassword("");
+  }, [token]);
 
   useEffect(() => {
     // The token must not stay in the address bar, history, or referrers.
@@ -41,27 +51,30 @@ export default function ResetPasswordPage() {
       setError("The passwords do not match.");
       return;
     }
+    const requestToken = token;
     setSubmitting(true);
     setError(null);
     try {
       const response = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token: requestToken, password }),
       });
       const data = await response.json().catch(() => ({}));
+      if (requestToken !== activeToken.current) return;
       if (!response.ok) {
         throw new Error(data?.message || "This reset link is invalid or has expired.");
       }
       setDone(true);
     } catch (err) {
+      if (requestToken !== activeToken.current) return;
       setError(
         err instanceof Error
           ? err.message
           : "This reset link is invalid or has expired.",
       );
     } finally {
-      setSubmitting(false);
+      if (requestToken === activeToken.current) setSubmitting(false);
     }
   };
 
@@ -149,5 +162,17 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="pt-24 pb-16 flex justify-center">
+        <div className="w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

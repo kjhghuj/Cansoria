@@ -8,7 +8,9 @@ export async function POST(req: MedusaRequest<{ order_id?: unknown }>, res: Medu
   const actor = customerActor(req)
   if (!actor) return res.status(401).json({ type: "unauthorized", message: "Sign in to claim an order" })
   const id = req.body?.order_id
-  if (typeof id !== "string" || !verifyAccessToken(req.headers["x-order-access-token"], "order", id)) return res.status(403).json({ type: "forbidden", message: "Order claim denied" })
+  // Only the emailed, email-verified claim capability may move an order to an
+  // account. The completion read cookie must never satisfy this check.
+  if (typeof id !== "string" || !verifyAccessToken(req.headers["x-order-access-token"], "order-claim", id)) return res.status(403).json({ type: "forbidden", message: "Order claim denied" })
   try {
     const locking = req.scope.resolve(Modules.LOCKING)
     const result = await locking.execute(`order-claim:${id}`, async () => {

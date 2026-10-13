@@ -29,10 +29,19 @@ export default function ExitIntentPopup() {
             if (hasShownRef.current) return;
             setIsVisible(true);
             hasShownRef.current = true;
-            localStorage.setItem("cansoria_exit_popup_seen", "true");
+            try {
+                localStorage.setItem("cansoria_exit_popup_seen", "true");
+            } catch {
+                // Storage may be disabled or full; the in-memory flag still applies.
+            }
         };
         // Check local storage on mount
-        const hasSeenPopup = localStorage.getItem("cansoria_exit_popup_seen");
+        let hasSeenPopup: string | null = null;
+        try {
+            hasSeenPopup = localStorage.getItem("cansoria_exit_popup_seen");
+        } catch {
+            hasSeenPopup = null;
+        }
         if (hasSeenPopup) {
             hasShownRef.current = true;
             return;

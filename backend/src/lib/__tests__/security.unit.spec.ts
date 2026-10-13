@@ -1,4 +1,4 @@
-import { issueAccessToken, verifyAccessToken, storefrontUrl } from "../access-tokens"
+import { issueAccessToken, verifyAccessToken, verifyOrderReadToken, storefrontUrl } from "../access-tokens"
 import { authorizeCart, cartAccessGuard, paymentAccessGuard, disableOrderTransfer } from "../resource-access"
 import { createRateLimiter, clientAddress } from "../rate-limit"
 
@@ -13,18 +13,28 @@ describe("resource capability tokens", () => {
   it("binds a capability to purpose, object and expiration", () => {
     const token = issueAccessToken("cart", "cart_a", 60, 100)
     expect(verifyAccessToken(token, "cart", "cart_a", 101)).toBe(true)
-    expect(verifyAccessToken(token, "order", "cart_a", 101)).toBe(false)
+    expect(verifyAccessToken(token, "order-read", "cart_a", 101)).toBe(false)
     expect(verifyAccessToken(token, "cart", "cart_b", 101)).toBe(false)
     expect(verifyAccessToken(token, "cart", "cart_a", 160)).toBe(false)
+  })
+  it("separates order read capabilities from claim capabilities", () => {
+    const read = issueAccessToken("order-read", "order_a", 60, 100)
+    const claim = issueAccessToken("order-claim", "order_a", 60, 100)
+    expect(verifyOrderReadToken(read, "order_a", 101)).toBe(true)
+    expect(verifyOrderReadToken(claim, "order_a", 101)).toBe(true)
+    // The completion read capability must never satisfy the claim check.
+    expect(verifyAccessToken(read, "order-claim", "order_a", 101)).toBe(false)
+    expect(verifyAccessToken(claim, "order-read", "order_a", 101)).toBe(false)
+    expect(verifyOrderReadToken(read, "order_b", 101)).toBe(false)
   })
   it.each(["", "bad", "a.b.c", null, undefined, ["a.b"]])("rejects malformed capability %p", (token) => {
     expect(verifyAccessToken(token as any, "cart", "cart_a")).toBe(false)
   })
   it("rejects a changed signature and changed secret", () => {
-    const token = issueAccessToken("order", "order_a")
-    expect(verifyAccessToken(`${token.slice(0, -3)}xxx`, "order", "order_a")).toBe(false)
+    const token = issueAccessToken("order-claim", "order_a")
+    expect(verifyAccessToken(`${token.slice(0, -3)}xxx`, "order-claim", "order_a")).toBe(false)
     process.env.JWT_SECRET = "changed-secret-with-more-than-thirty-two-characters"
-    expect(verifyAccessToken(token, "order", "order_a")).toBe(false)
+    expect(verifyAccessToken(token, "order-claim", "order_a")).toBe(false)
   })
   it("rejects default and short production secrets", () => {
     const env = process.env.NODE_ENV
@@ -44,7 +54,7 @@ describe("resource capability tokens", () => {
     process.env.NODE_ENV = env
     if (secret === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = secret
   })
-  it.each([["cart", "bad", 60], ["cart", "order_a", 60], ["cart", "cart_a", 0], ["order", "order_a", 604801]])("rejects invalid issued token arguments %p/%p/%p", (purpose, id, ttl) => {
+  it.each([["cart", "bad", 60], ["cart", "order_a", 60], ["cart", "cart_a", 0], ["order-read", "order_a", 604801], ["order-claim", "cart_a", 60]])("rejects invalid issued token arguments %p/%p/%p", (purpose, id, ttl) => {
     expect(() => issueAccessToken(purpose as any, id as string, ttl as number)).toThrow()
   })
   it("does not accept a capability issued far beyond the supported maximum window", () => {

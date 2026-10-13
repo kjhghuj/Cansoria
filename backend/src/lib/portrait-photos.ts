@@ -1,8 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import sharp from "sharp";
 import { isLocalDevelopment } from "./env-mode";
 import { signingSecret } from "./access-tokens";
 
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+/** Decode work is bounded: larger images are rejected before pixels are read. */
+export const MAX_PHOTO_PIXELS = 40_000_000;
 export const PORTRAIT_STYLES = [
   "classic-oil",
   "soft-impression",
@@ -31,7 +34,26 @@ export function portraitPhotoSecret(): string {
   return configured || signingSecret();
 }
 
-export function validatePhoto(input: unknown) {
+/**
+ * Fully decodes the image: header magic bytes alone accept header-only files
+ * with no image frames or pixels (e.g. a bare FF D8 FF). Decoding every pixel
+ * under bounded limits verifies the file really is the claimed image and can
+ * be produced from.
+ */
+export async function assertDecodableImage(bytes: Buffer, mime: string): Promise<void> {
+  const expectedFormat = mime === "image/jpeg" ? "jpeg" : mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : null;
+  if (!expectedFormat) throw new Error("Invalid photo");
+  try {
+    const { data, info } = await sharp(bytes, { limitInputPixels: MAX_PHOTO_PIXELS, failOn: "error" }).toBuffer({ resolveWithObject: true });
+    if (!data.length || !info.width || !info.height) throw new Error("Invalid photo");
+    if (info.format !== expectedFormat) throw new Error("Invalid photo");
+    if (info.width * info.height > MAX_PHOTO_PIXELS) throw new Error("Invalid photo");
+  } catch {
+    throw new Error("Invalid photo");
+  }
+}
+
+export async function validatePhoto(input: unknown) {
   const value = input as Record<string, unknown> | null;
   if (
     !value ||
@@ -80,6 +102,7 @@ export function validatePhoto(input: unknown) {
     .pop()!
     .replace(/[\u0000-\u001f\u007f]/g, "")
     .slice(0, 160);
+  await assertDecodableImage(bytes, mime);
   return { content: value.content, mime, extension, name, size: bytes.length };
 }
 

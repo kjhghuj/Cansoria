@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { backendFetch, CART_COOKIE, cookieOptions, privateJson, safeBackendFailure, SESSION_COOKIE } from '@/lib/server-medusa';
+import { backendFetch, CART_COOKIE, cookieOptions, ORDER_COOKIE, privateJson, safeBackendFailure, SESSION_COOKIE } from '@/lib/server-medusa';
+import { REMEMBERED_ORDER_COOKIE } from '@/lib/order-confirmation';
 import { isSameOriginWrite, readBoundedJson } from '@/lib/store-proxy-policy';
 
 export const runtime = 'nodejs';
@@ -20,6 +21,10 @@ export async function POST(request: NextRequest, context: Context) {
     const response = privateJson({ success: true });
     response.cookies.set(SESSION_COOKIE, '', { ...cookieOptions, maxAge: 0 });
     response.cookies.set(CART_COOKIE, '', { ...cookieOptions, maxAge: 0 });
+    // The order read capability must not outlive the signed-in session either,
+    // nor its reload-safe display reference.
+    response.cookies.set(ORDER_COOKIE, '', { ...cookieOptions, maxAge: 0 });
+    response.cookies.set(REMEMBERED_ORDER_COOKIE, '', { path: '/order', maxAge: 0, sameSite: 'lax' });
     return response;
   }
   let body: Record<string, unknown>;
@@ -33,13 +38,22 @@ export async function POST(request: NextRequest, context: Context) {
     if (typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return privateJson({ message: 'Enter a valid email address.' }, 400);
     }
+    const supplied = email.trim();
+    const normalized = supplied.toLowerCase();
     try {
-      const reset = await backendFetch('auth/customer/emailpass/reset-password', {
+      const requestReset = (identifier: string) => backendFetch('auth/customer/emailpass/reset-password', {
         method: 'POST',
-        body: JSON.stringify({ identifier: email.trim() }),
+        body: JSON.stringify({ identifier }),
         headers: { Authorization: '' },
       }, undefined, request);
-      if (reset.status === 429) return safeBackendFailure(reset);
+      const responses = [await requestReset(supplied)];
+      // Medusa identities are case-sensitive and the reset answer is uniform,
+      // so a mixed-case input cannot branch on the response. Also notify a
+      // normalized-variant identity when the input differs, mirroring the
+      // login fallback for accounts this storefront normalized at signup.
+      if (supplied !== normalized) responses.push(await requestReset(normalized));
+      const limited = responses.find((response) => response.status === 429);
+      if (limited) return safeBackendFailure(limited);
     } catch { /* Response stays uniform for unknown emails. */ }
     return privateJson({ success: true });
   }

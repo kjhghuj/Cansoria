@@ -144,8 +144,14 @@ export default function StripeWalletButton({ cart, amount, currency }: StripeWal
         if (orderData) {
           // Redirect
           if (!orderData.id) throw new Error("Unable to confirm order.");
-          saveOrderConfirmation({ orderId: orderData.id, email: ev.payerEmail || "", firstName, lastName });
-          router.push("/order/confirmed");
+          // Without the stored receipt the reference must travel in the
+          // redirect, or the confirmation page cannot verify the order.
+          const saved = saveOrderConfirmation({ orderId: orderData.id, email: ev.payerEmail || "", firstName, lastName });
+          router.push(
+            saved
+              ? "/order/confirmed"
+              : `/order/confirmed?ref=${encodeURIComponent(orderData.id)}`,
+          );
           refreshCart(); // Cleanup
         } else {
 

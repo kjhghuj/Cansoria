@@ -9,9 +9,10 @@ describe("fixed email templates", () => {
     expect(send).not.toHaveBeenCalled()
   })
   it("order confirmation has a signed access link without email in the URL", async () => {
-    await provider().send({ to: "owner@example.com", template: "order_placed", data: { id: "order_a", email: "owner@example.com" } })
+    await provider().send({ to: "owner@example.com", template: "order_placed", data: { id: "order_a", email: "owner@example.com", access_url: "https://cansoria.test/order/lookup?order=order_a&token=pinned-first-attempt" } })
     const email = send.mock.calls[0][0]
     expect(email.html).toContain("/order/lookup?order=order_a&amp;token=")
+    expect(email.html).toContain("token=pinned-first-attempt")
     expect(email.html).not.toContain("email=")
     expect(email.html).not.toContain("owner%40example.com")
   })
@@ -33,7 +34,7 @@ describe("fixed email templates", () => {
     expect(send.mock.calls[0][0].html).not.toContain("Your Studio Welcome Gift")
   })
   it("renders order items safely with and without optional display fields", async () => {
-    await provider().send({ to: "owner@example.com", template: "order_placed", data: { id: "order_a", firstName: "<img>", currency_code: "eur", shipping_methods: [{ name: "<express>" }], items: [{ title: "<script>bad</script>", variant_title: "Large", quantity: 2, unit_price: 100, thumbnail: "https://cansoria.test/a.jpg" }, { product_title: "Painting" }, {}] } })
+    await provider().send({ to: "owner@example.com", template: "order_placed", data: { id: "order_a", access_url: "https://cansoria.test/order/lookup?order=order_a&token=pinned", firstName: "<img>", currency_code: "eur", shipping_methods: [{ name: "<express>" }], items: [{ title: "<script>bad</script>", variant_title: "Large", quantity: 2, unit_price: 100, thumbnail: "https://cansoria.test/a.jpg" }, { product_title: "Painting" }, {}] } })
     const html = send.mock.calls[0][0].html
     expect(html).not.toContain("<script>")
     expect(html).toContain("EUR")
@@ -48,6 +49,10 @@ describe("fixed email templates", () => {
   })
   it.each(["not a url", "https://evil.test/order/lookup?token=x", "https://cansoria.test/admin"])('rejects untrusted access links %s', async (access_url) => {
     await expect(provider().send({ to: "owner@example.com", template: "order_access", data: { access_url } })).rejects.toThrow()
+    expect(send).not.toHaveBeenCalled()
+  })
+  it.each(["not a url", "https://evil.test/order/lookup?order=order_a&token=x", "https://cansoria.test/admin", ""])('order confirmations reject untrusted or missing access links %s', async (access_url) => {
+    await expect(provider().send({ to: "owner@example.com", template: "order_placed", data: { id: "order_a", access_url } })).rejects.toThrow()
     expect(send).not.toHaveBeenCalled()
   })
   it("does not send a confirmation without a valid order subject", async () => {

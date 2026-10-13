@@ -26,12 +26,12 @@ function projectPaymentResponses(res: MedusaResponse) {
   const original = res.json
   res.json = function (body: any) {
     projectOrderMetadata(body)
-    // Completion attaches a short-lived order access capability so the
+    // Completion attaches a short-lived order read capability so the
     // storefront confirmation page can re-read the order when browser
-    // storage is unavailable. The id alone grants nothing without it.
+    // storage is unavailable. It can never claim the order for an account.
     const orderId = body?.order?.id || (body?.type === "order" ? body?.data?.id : null)
     if (typeof orderId === "string" && /^order_[a-zA-Z0-9_-]{1,128}$/.test(orderId)) {
-      try { body.order_access_token = issueAccessToken("order", orderId, 1800) } catch { /* signing config unavailable */ }
+      try { body.order_access_token = issueAccessToken("order-read", orderId, 1800) } catch { /* signing config unavailable */ }
     }
     const collection = body?.payment_collection || body?.cart?.payment_collection || body?.parent?.payment_collection
     if (Array.isArray(collection?.payment_sessions)) {

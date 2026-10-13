@@ -10,7 +10,7 @@ import { useStoreStatus } from "@/lib/providers";
 export default function Footer() {
   // The subscription entry is shown only when the entire opt-in chain
   // (Turnstile site key + backend verification + Klaviyo list) is configured.
-  const { newsletterEnabled } = useStoreStatus();
+  const { newsletterEnabled, ordersOpen } = useStoreStatus();
   const columns = [
     { title: "Pet Portraits", links: FOOTER_LINKS.shop },
     { title: "Our Studio", links: FOOTER_LINKS.company },
@@ -27,7 +27,8 @@ export default function Footer() {
               <BrandLogo />
             </Link>
             <p>A home for pet portrait inspiration, celebrating the companions you love.</p>
-            <p>Commissions are in preparation.</p>
+            {/* The default stays conservative while store status loads. */}
+            <p>{ordersOpen ? "Commissions are open — place your order today." : "Commissions are in preparation."}</p>
             <a href={`mailto:${COMPANY_INFO.supportEmail}`} className="cansoria-footer-contact">
               {COMPANY_INFO.supportEmail}
             </a>

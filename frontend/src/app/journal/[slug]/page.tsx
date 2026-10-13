@@ -14,9 +14,7 @@ import {
   getProductImage,
 } from "@/lib/medusa";
 import {
-  getArticleBySlug,
-  getFallbackArticleBySlug,
-  getFallbackRelatedArticles,
+  getArticleBySlugDetailed,
   getRelatedArticles,
   ArticleBlock,
 } from "@/lib/cms";
@@ -38,8 +36,9 @@ export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article =
-    (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
+  // A healthy CMS that does not hold this slug is authoritative (not found);
+  // static mode and an unavailable CMS use the built-in editorial content.
+  const { article } = await getArticleBySlugDetailed(slug);
 
   if (!article) {
     return {
@@ -274,21 +273,19 @@ function uniqueArticlesBySlug<T extends { slug: string }>(articles: T[]): T[] {
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
 
-  // Fetch article from Strapi CMS
-  const article =
-    (await getArticleBySlug(slug)) || getFallbackArticleBySlug(slug);
+  // Fetch article from Strapi CMS. A healthy CMS without this slug 404s —
+  // silent fallback to static content would resurrect withdrawn articles.
+  const { article } = await getArticleBySlugDetailed(slug);
 
   if (!article) {
     notFound();
   }
 
-  // Fetch related articles if available
+  // Related articles follow the same content policy as the article itself:
+  // a healthy CMS is authoritative (withdrawn related pieces stay gone), the
+  // built-in content only covers static mode and an unavailable CMS.
   const relatedArticles = article.relatedArticleIds
-    ? uniqueArticlesBySlug(
-        (await getRelatedArticles(article.relatedArticleIds)).concat(
-          getFallbackRelatedArticles(article.relatedArticleIds),
-        ),
-      )
+    ? uniqueArticlesBySlug(await getRelatedArticles(article.relatedArticleIds))
     : [];
 
   // Get default region for context

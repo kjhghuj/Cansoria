@@ -39,8 +39,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
-  // The chat concierge is only offered when its API route actually has a model key.
-  const chatEnabled = Boolean(process.env.GEMINI_API_KEY);
+  // The chat API needs a model key, and in production its rate-limit/budget
+  // admission additionally requires Redis — share the same condition the UI
+  // displays and the API enforces.
+  const chatEnabled =
+    Boolean(process.env.GEMINI_API_KEY) &&
+    (process.env.NODE_ENV !== "production" || Boolean(process.env.CHAT_REDIS_URL));
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="antialiased" suppressHydrationWarning>

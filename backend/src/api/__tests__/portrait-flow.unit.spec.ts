@@ -103,7 +103,7 @@ describe("portrait upload and order association", () => {
     return {
       name: "pet.png",
       mime: "image/png",
-      content: Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]).toString(
+      content: Buffer.from([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,2,0,0,0,144,119,83,222,0,0,0,9,112,72,89,115,0,0,3,232,0,0,3,232,1,181,123,82,107,0,0,0,12,73,68,65,84,8,153,99,104,104,104,0,0,3,4,1,129,30,206,255,166,0,0,0,0,73,69,78,68,174,66,96,130]).toString(
         "base64",
       ),
     };
@@ -224,7 +224,7 @@ describe("portrait upload and order association", () => {
     req.params.id = order.id;
     await serveOrderPhoto(req, res);
     expect(res.status).toHaveBeenCalledWith(403);
-    req.headers["x-order-access-token"] = issueAccessToken("order", order.id);
+    req.headers["x-order-access-token"] = issueAccessToken("order-claim", order.id);
     await serveOrderPhoto(req, res);
     expect(files.getAsBuffer).toHaveBeenCalledWith("private-ref.png");
     files.getAsBuffer.mockClear();

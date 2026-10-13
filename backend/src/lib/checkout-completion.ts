@@ -10,6 +10,7 @@ import {
 } from "@medusajs/framework/utils";
 import { Readable } from "stream";
 import {
+  assertDecodableImage,
   findPhoto,
   MAX_PHOTO_BYTES,
   PORTRAIT_STYLES,
@@ -129,24 +130,25 @@ async function readPhoto(
     stream = await bounded(acquisition, controller.signal);
     if (!(stream instanceof Readable)) deny("Photo cannot be read");
     const consume = async () => {
-      let size = 0,
-        head = Buffer.alloc(0);
+      let size = 0;
+      const chunks: Buffer[] = [];
       for await (const chunk of stream!) {
         aborted(controller.signal);
         if (!Buffer.isBuffer(chunk) && !(chunk instanceof Uint8Array))
           deny("Invalid photo stream");
-        size += chunk.length;
-        total.bytes += chunk.length;
+        const buffer = Buffer.from(chunk as Uint8Array);
+        size += buffer.length;
+        total.bytes += buffer.length;
         if (size > MAX_PHOTO_BYTES || total.bytes > 200 * 1024 * 1024)
           deny("Photo size limit exceeded");
-        if (head.length < 12)
-          head = Buffer.concat([
-            head,
-            Buffer.from(chunk.subarray(0, 12 - head.length)),
-          ]);
+        chunks.push(buffer);
       }
-      if (!size || size !== photo.size || imageMime(head) !== photo.mime)
+      const bytes = Buffer.concat(chunks, size);
+      // The file must still be the signed, fully decodable image that was
+      // validated at upload: same size, same type, real pixels end to end.
+      if (!size || size !== photo.size || imageMime(bytes) !== photo.mime)
         deny("Photo size or file type has changed");
+      await assertDecodableImage(bytes, photo.mime);
     };
     await bounded(consume(), controller.signal);
   } catch (error) {

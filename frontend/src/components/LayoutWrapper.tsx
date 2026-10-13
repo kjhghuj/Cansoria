@@ -10,7 +10,7 @@ import {
   ChatWidget,
   AnnouncementBar,
 } from "@/components";
-import { useCart, useRegion } from "@/lib/providers";
+import { useCart, useRegion, useStoreStatus } from "@/lib/providers";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
@@ -35,6 +35,9 @@ export default function LayoutWrapper({
   const [navOffset, setNavOffset] = useState(0);
   const { cartCount } = useCart();
   const { region } = useRegion();
+  // The popup completes a newsletter subscription; it must not appear when the
+  // delivery chain (backend capability + captcha) is not fully configured.
+  const { newsletterEnabled } = useStoreStatus();
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isEditorial =
@@ -77,7 +80,7 @@ export default function LayoutWrapper({
         {children}
       </main>
       {!isEditorial && !isTransactional && chatEnabled && <ChatWidget />}
-      {!isEditorial && !isTransactional && <ExitIntentPopup />}
+      {!isEditorial && !isTransactional && newsletterEnabled && <ExitIntentPopup />}
       <Footer />
     </>
   );

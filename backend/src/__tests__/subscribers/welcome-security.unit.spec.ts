@@ -3,7 +3,7 @@ const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
 function setup(customer: any) {
   const customers = { retrieveCustomer: jest.fn().mockResolvedValue(customer), updateCustomers: jest.fn().mockResolvedValue({}) }
   const promotions = { listPromotions: jest.fn().mockResolvedValue([]), listCampaigns: jest.fn().mockResolvedValue([]), createCampaigns: jest.fn().mockResolvedValue({ id: "camp_a" }), createPromotions: jest.fn().mockResolvedValue({ id: "promo_a" }) }
-  const notification = { createNotifications: jest.fn().mockResolvedValue({}) }
+  const notification = { createNotifications: jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" }), listNotifications: jest.fn().mockResolvedValue([]) }
   const locking = { execute: jest.fn(async (_key, fn) => fn()) }
   const args = { event: { data: { id: "cus_a" } }, container: { resolve: jest.fn(key => ({ logger, customer: customers, promotion: promotions, notification, locking }[key])) } } as any
   return { customers, promotions, notification, locking, args }

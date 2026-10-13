@@ -31,6 +31,8 @@ interface ProductClientProps {
   thumbnail?: string | null;
   category?: StoreProductCategory | null;
   currencyCode: string;
+  /** Commerce readiness from the store record; keeps the client copy in sync with the server render. */
+  ordersOpen?: boolean;
 }
 
 type SelectedOptions = Record<string, string>;
@@ -143,8 +145,14 @@ export default function ProductClient({
   thumbnail,
   category,
   currencyCode,
+  ordersOpen,
 }: ProductClientProps) {
-  const product = useMemo(() => studioProduct(rawProduct), [rawProduct]);
+  // Apply the same presentation rule as the server render. Without this the
+  // client pass used to re-open the preparation copy over reviewed content.
+  const product = useMemo(
+    () => studioProduct(rawProduct, { ordersOpen }),
+    [rawProduct, ordersOpen],
+  );
   const isPortrait = product.handle === "pet-portrait-oil-painting";
   const [previewStyle, setPreviewStyle] = useState(initialStyle);
   const previewStyleName =
@@ -312,14 +320,15 @@ export default function ProductClient({
       <section className="mt-16 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-            Before Commissions Open
+            {ordersOpen ? "Commissions Open" : "Before Commissions Open"}
           </p>
           <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
             A Few Helpful Questions
           </h2>
           <p className="mt-4 text-sm leading-7 text-charcoal-light">
-            Our service is in preparation. Here is what is known and what will
-            be confirmed before commissions open.
+            {ordersOpen
+              ? "Our studio is taking orders. Here is what to know before you place yours."
+              : "Our service is in preparation. Here is what is known and what will be confirmed before commissions open."}
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -382,7 +391,9 @@ export default function ProductClient({
         <span>Need help choosing a size or style?</span>
         <span className="flex items-center gap-2 text-charcoal">
           <Truck className="h-4 w-4 text-terracotta" aria-hidden="true" />
-          Delivery arrangements will be confirmed before commissions open.
+          {ordersOpen
+            ? "Delivery options and costs are shown at checkout before you pay."
+            : "Delivery arrangements will be confirmed before commissions open."}
         </span>
       </div>
       <div className="h-24 lg:hidden" aria-hidden="true" />

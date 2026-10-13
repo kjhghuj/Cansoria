@@ -12,6 +12,7 @@ interface Address {
   address_1: string;
   address_2?: string;
   city: string;
+  province?: string;
   postal_code: string;
   country_code: string;
   phone?: string;
@@ -23,6 +24,9 @@ export function AddressesContent() {
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  // Follows the select so the province field can be required per country.
+  const [formCountry, setFormCountry] = useState("gb");
+  const provinceRequired = formCountry === "us";
 
   useEffect(() => {
     fetchAddresses();
@@ -49,12 +53,15 @@ export function AddressesContent() {
   }
 
   const handleSaveAddress = async (formData: FormData) => {
+    const province = (formData.get("province") as string | null)?.trim();
     const addressData = {
       first_name: formData.get("firstName") as string,
       last_name: formData.get("lastName") as string,
       address_1: formData.get("address1") as string,
       address_2: formData.get("address2") as string,
       city: formData.get("city") as string,
+      // State/county is part of the same address model checkout uses.
+      province: province ? province.slice(0, 100) : undefined,
       postal_code: formData.get("postalCode") as string,
       country_code: (formData.get("country") as string).toLowerCase().slice(0, 2),
       phone: formData.get("phone") as string,
@@ -109,6 +116,7 @@ export function AddressesContent() {
         <button
           onClick={() => {
             setEditingAddress(null);
+            setFormCountry("gb");
             setShowAddressModal(true);
           }}
           className="flex items-center gap-2 text-sm text-terracotta hover:underline"
@@ -126,7 +134,11 @@ export function AddressesContent() {
           <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="text-charcoal-light mb-4">No saved addresses</p>
           <button
-            onClick={() => setShowAddressModal(true)}
+            onClick={() => {
+              setEditingAddress(null);
+              setFormCountry("gb");
+              setShowAddressModal(true);
+            }}
             className="inline-block bg-terracotta text-white px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-terracotta-dark transition-colors"
           >
             Add Address
@@ -144,7 +156,10 @@ export function AddressesContent() {
               <p className="font-medium text-charcoal">{address.first_name} {address.last_name}</p>
               <p className="text-sm text-charcoal-light mt-2">{address.address_1}</p>
               {address.address_2 && <p className="text-sm text-charcoal-light">{address.address_2}</p>}
-              <p className="text-sm text-charcoal-light">{address.city}, {address.postal_code}</p>
+              <p className="text-sm text-charcoal-light">
+                {address.city}
+                {address.province ? `, ${address.province}` : ""}, {address.postal_code}
+              </p>
               <p className="text-sm text-charcoal-light">{address.country_code?.toUpperCase()}</p>
               {address.phone && <p className="text-sm text-charcoal-light mt-2">{address.phone}</p>}
 
@@ -152,6 +167,7 @@ export function AddressesContent() {
                 <button
                   onClick={() => {
                     setEditingAddress(address);
+                    setFormCountry(address.country_code || "gb");
                     setShowAddressModal(true);
                   }}
                   className="text-sm text-charcoal hover:text-terracotta flex items-center gap-1"
@@ -244,10 +260,23 @@ export function AddressesContent() {
                 </div>
               </div>
               <div>
+                <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">
+                  County / State{provinceRequired ? "" : " (Optional)"}
+                </label>
+                <input
+                  name="province"
+                  defaultValue={editingAddress?.province}
+                  maxLength={100}
+                  className="w-full border border-gray-200 px-4 py-3 focus:outline-none focus:border-charcoal"
+                  required={provinceRequired}
+                />
+              </div>
+              <div>
                 <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">Country</label>
                 <select
                   name="country"
-                  defaultValue={editingAddress?.country_code || "gb"}
+                  value={formCountry}
+                  onChange={(event) => setFormCountry(event.target.value)}
                   className="w-full border border-gray-200 px-4 py-3 focus:outline-none focus:border-charcoal"
                   required
                 >

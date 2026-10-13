@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
-import { verifyAccessToken } from "./access-tokens";
+import { verifyOrderReadToken } from "./access-tokens";
 import { customerActor, sensitiveResponse } from "./resource-access";
 import { findPhoto } from "./portrait-photos";
 
@@ -10,9 +10,8 @@ export async function serveOrderPhoto(
   admin = false,
 ) {
   sensitiveResponse(res);
-  const tokenValid = verifyAccessToken(
+  const tokenValid = verifyOrderReadToken(
     req.headers["x-order-access-token"],
-    "order",
     req.params.id,
   );
   const actor = customerActor(req);

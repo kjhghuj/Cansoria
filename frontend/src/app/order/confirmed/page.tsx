@@ -1,24 +1,15 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { portraitStylesUrl } from "@/lib/portrait";
 import { useAuth } from "@/lib/providers";
-import { readOrderConfirmation, type OrderConfirmation } from "@/lib/order-confirmation";
+import { readOrderConfirmation, readRememberedOrderRef, rememberOrderRef, type OrderConfirmation } from "@/lib/order-confirmation";
 
 const subscribeToConfirmation = () => () => {};
 const getConfirmationSnapshot = () => JSON.stringify(readOrderConfirmation());
 const getServerConfirmationSnapshot = () => null;
-
-// Capture the redirect reference once; after the address bar is cleaned the
-// snapshot must keep returning it. Server snapshot stays null so hydration
-// begins from the same render the server produced.
-let cachedOrderRef: string | null | undefined;
-function getOrderRefSnapshot() {
-  cachedOrderRef ??= new URLSearchParams(window.location.search).get("ref");
-  return cachedOrderRef;
-}
-const getServerOrderRefSnapshot = () => null;
 
 
 function CheckIcon() {
@@ -52,59 +43,139 @@ function getErrorMessage(error: unknown) {
 }
 
 export default function OrderConfirmedPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-cream flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-terracotta border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-charcoal font-medium">Processing Confirmation...</p>
+      </div>
+    }>
+      <OrderConfirmedContent />
+    </Suspense>
+  );
+}
+
+export function OrderConfirmedContent() {
   const { user, register } = useAuth();
   const confirmationSnapshot = useSyncExternalStore(subscribeToConfirmation, getConfirmationSnapshot, getServerConfirmationSnapshot);
   const confirmation: OrderConfirmation | null = confirmationSnapshot ? JSON.parse(confirmationSnapshot) : null;
-  // Checkout appends ?ref=<orderId> only when browser storage rejected the
-  // confirmation cache; the id alone grants no access to the order itself.
-  const urlRef = useSyncExternalStore(subscribeToConfirmation, getOrderRefSnapshot, getServerOrderRefSnapshot);
+  // The order reference is bound to this page instance: it survives the
+  // address-bar cleanup, and a second order navigated to in the same SPA
+  // replaces it instead of reusing the first link's value.
+  const searchParams = useSearchParams();
+  const urlRefParam = searchParams.get("ref");
+  const [capturedRef, setCapturedRef] = useState<string | null>(urlRefParam);
+  const [seenRefParam, setSeenRefParam] = useState<string | null>(urlRefParam);
+  if (urlRefParam !== seenRefParam) {
+    setSeenRefParam(urlRefParam);
+    if (urlRefParam) setCapturedRef(urlRefParam);
+  }
   const urlOrderId =
-    urlRef && /^order_[A-Za-z0-9_-]{1,128}$/.test(urlRef) ? urlRef : null;
-  const orderId = confirmation?.orderId ?? urlOrderId;
-  const email = confirmation?.email ?? null;
-  const firstName = confirmation?.firstName ?? "Customer";
-  const lastName = confirmation?.lastName ?? "";
+    capturedRef && /^order_[A-Za-z0-9_-]{1,128}$/.test(capturedRef) ? capturedRef : null;
+  // Reload-safe reference for browsers that rejected storage and cleaned the
+  // address bar: not a capability, the authorized read below still gates it.
+  // External-store reads keep SSR and hydration consistent (server: none).
+  const rememberedRef = useSyncExternalStore(subscribeToConfirmation, readRememberedOrderRef, getServerConfirmationSnapshot);
+  const clientReady = useSyncExternalStore(subscribeToConfirmation, () => true, () => false);
+  const rememberedOrderId =
+    rememberedRef && /^order_[A-Za-z0-9_-]{1,128}$/.test(rememberedRef) ? rememberedRef : null;
+  // The identity is chosen once and every derived value must agree with it:
+  // an explicit URL reference wins; without one, this browser's fresh
+  // confirmation cache outranks the cross-tab reference cookie, which may
+  // still name an older order restored in another tab.
+  const orderId = urlOrderId ?? confirmation?.orderId ?? rememberedOrderId ?? null;
+  const activeConfirmation =
+    confirmation && confirmation.orderId === orderId ? confirmation : null;
+  const email = activeConfirmation?.email ?? null;
+  const firstName = activeConfirmation?.firstName ?? "Customer";
+  const lastName = activeConfirmation?.lastName ?? "";
   const [password, setPassword] = useState("");
-  const loading = confirmationSnapshot === null;
+  // Includes the remembered-reference check: the not-found screen must not
+  // flash before the browser-side cookie state is known.
+  const loading = confirmationSnapshot === null || (!urlRefParam && !clientReady);
+  // With only a URL reference (browser storage rejected the confirmation
+  // cache), success is claimed only after the server-authorized read below.
+  const [recovered, setRecovered] = useState<{ email?: string } | null>(null);
+  const [recoveryOutcome, setRecoveryOutcome] = useState<"verified" | "failed" | null>(null);
+  const [recoveredFor, setRecoveredFor] = useState<string | null>(null);
+  const recovery: "verifying" | "verified" | "failed" | "idle" =
+    recoveryOutcome && recoveredFor === orderId
+      ? recoveryOutcome
+      : !activeConfirmation && orderId
+        ? "verifying"
+        : "idle";
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [registerSuccess, setRegisterSuccess] = useState(false);
-  const [recovered, setRecovered] = useState<{ email?: string } | null>(null);
+  // Results are bound to the order identity: navigating to a second order in
+  // the same page instance must not show the first order's outcomes.
+  const activeOrderId = useRef<string | null>(orderId);
+  useEffect(() => {
+    if (activeOrderId.current === orderId) return;
+    activeOrderId.current = orderId;
+    setRecovered(null);
+    setRecoveryOutcome(null);
+    setRegisterSuccess(false);
+    setRegisterError(null);
+    setPassword("");
+  }, [orderId]);
 
   useEffect(() => {
     if (window.location.search) window.history.replaceState(null, "", window.location.pathname);
   }, []);
 
+  // Keep the cross-tab reference in step with this browser's most recent
+  // confirmed order, so a later reload cannot resurrect an older reference
+  // and mix it with newer state.
+  const confirmedOrderId = activeConfirmation?.orderId;
+  useEffect(() => {
+    if (confirmedOrderId) rememberOrderRef(confirmedOrderId);
+  }, [confirmedOrderId]);
+
   // Storage-less recovery: with only an order reference, re-read the order
   // server-authorized (completion issued a short-lived order capability cookie).
   useEffect(() => {
-    if (confirmation || !urlOrderId) return;
+    if (activeConfirmation || !orderId || recoveredFor === orderId) return;
     let cancelled = false;
-    fetch(`/api/medusa/store/orders/${encodeURIComponent(urlOrderId)}`)
+    fetch(`/api/medusa/store/orders/${encodeURIComponent(orderId)}`)
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
-        if (!cancelled && data?.order?.email) setRecovered({ email: data.order.email });
+        if (cancelled) return;
+        setRecoveredFor(orderId);
+        if (data?.order?.email) {
+          setRecovered({ email: data.order.email });
+          setRecoveryOutcome("verified");
+          rememberOrderRef(orderId);
+        } else {
+          setRecoveryOutcome("failed");
+        }
       })
       .catch(() => {
-        // Unauthorized or unavailable: the page keeps its generic copy and the
-        // secure lookup link; no order data is exposed without authorization.
+        // Unauthorized or unavailable: never claim an unverified reference.
+        if (!cancelled) {
+          setRecoveredFor(orderId);
+          setRecoveryOutcome("failed");
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [confirmation, urlOrderId]);
+  }, [activeConfirmation, orderId, recoveredFor]);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
 
+    const identityAtSubmit = activeOrderId.current;
     setRegistering(true);
     setRegisterError(null);
 
     try {
       await register(email, password, firstName, lastName);
-      setRegisterSuccess(true);
+      // Drop stale results: the order identity changed while registering.
+      if (identityAtSubmit === activeOrderId.current) setRegisterSuccess(true);
     } catch (err: unknown) {
+      if (identityAtSubmit !== activeOrderId.current) return;
       const message = getErrorMessage(err);
       if (message && (message.includes("exists") || message.includes("duplicate"))) {
         setRegisterError("An account with this email already exists.");
@@ -112,7 +183,7 @@ export default function OrderConfirmedPage() {
         setRegisterError(message || "Registration failed. Please try again.");
       }
     } finally {
-      setRegistering(false);
+      if (identityAtSubmit === activeOrderId.current) setRegistering(false);
     }
   };
 
@@ -142,6 +213,49 @@ export default function OrderConfirmedPage() {
           <div className="flex flex-col gap-3">
             <Link href="/order/lookup" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
               Find Your Order
+            </Link>
+            <a href={portraitStylesUrl} className="text-terracotta font-medium hover:underline">
+              Explore Pet Portraits
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // A bare reference has not been confirmed in this browser yet. Keep the
+  // claim out of the page until the authorized read succeeds.
+  if (!activeConfirmation && orderId && recovery === "verifying") {
+    return (
+      <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-6">
+        <div className="w-12 h-12 border-4 border-terracotta border-t-transparent rounded-full animate-spin" />
+        <p className="mt-4 text-charcoal font-medium">Verifying your order reference...</p>
+        <p className="mt-2 text-sm text-charcoal-light">This browser could not store your confirmation, so the order is being verified securely.</p>
+      </div>
+    );
+  }
+
+  if (!activeConfirmation && orderId && recovery === "failed") {
+    return (
+      <div className="min-h-screen bg-cream pt-24 pb-16 px-6">
+        <div className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <h1 className="font-serif text-2xl text-charcoal mb-4">Order Not Verified in This Browser</h1>
+          <p className="text-charcoal-light mb-3">
+            This link carries an order reference, but it could not be verified
+            here. If you just placed an order, it is safe — this only means the
+            browser&apos;s short-lived access window is missing or has expired.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-4 mb-6 inline-block w-full">
+            <p className="text-sm text-charcoal-light uppercase tracking-wider mb-1">Order reference</p>
+            <p className="font-mono text-base text-charcoal font-bold break-all tracking-normal">{orderId.replace(/^order_/, '')}</p>
+          </div>
+          <p className="text-sm text-charcoal-light mb-8">
+            Your confirmation email is the source of truth. Never resubmit
+            payment to recover an order — use secure verification below.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link href="/order/lookup" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
+              Verify &amp; View This Order
             </Link>
             <a href={portraitStylesUrl} className="text-terracotta font-medium hover:underline">
               Explore Pet Portraits
@@ -240,9 +354,9 @@ export default function OrderConfirmedPage() {
             </div>
             <h2 className="font-serif text-xl text-charcoal mb-2">Account Created!</h2>
             <p className="text-charcoal-light mb-4">
-              Check your inbox to verify your email address. To add this order
-              to your account history, use the secure claim below — orders move
-              only after you verify ownership, never automatically.
+              Your account is ready. To add this order to your account history,
+              use the secure claim below — orders move only after ownership is
+              verified through the order&apos;s email address, never automatically.
             </p>
             <Link href="/order/lookup" className="inline-block mt-2 bg-terracotta text-white px-6 py-3 rounded-full hover:bg-terracotta-dark transition-colors font-medium">
               Verify &amp; Claim This Order

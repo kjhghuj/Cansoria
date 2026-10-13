@@ -20,8 +20,15 @@ export default function ForgotPasswordPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      if (response.status === 429) {
+        // Rate limited: tell the visitor instead of pretending a link was sent.
+        setError(
+          "Too many reset requests. Please wait a little while before trying again.",
+        );
+        return;
+      }
       // The answer is uniform whether or not the account exists.
-      if (!response.ok && response.status !== 429) throw new Error("request failed");
+      if (!response.ok) throw new Error("request failed");
       setRequested(true);
     } catch {
       setError(

@@ -1,19 +1,21 @@
 import passwordResetHandler from "../password-reset"
 
 function container(customer: unknown, customersList = true) {
-  const createNotifications = jest.fn().mockResolvedValue([])
+  const createNotifications = jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" })
   const logger = { error: jest.fn(), warn: jest.fn() }
   const customers = {
     listCustomers: jest.fn(async () =>
       customersList ? ([customer] as unknown[]) : [],
     ),
   }
-  const notifications = { createNotifications }
+  const notifications = { createNotifications, listNotifications: jest.fn().mockResolvedValue([]) }
+  const locking = { execute: jest.fn(async (_key: string, fn: () => Promise<unknown>) => fn()) }
   const scope = {
     resolve: (key: string) => {
       if (key === "logger") return logger
       if (key === "customer") return customers
       if (key === "notification") return notifications
+      if (key === "locking") return locking
       throw new Error(`unexpected module ${key}`)
     },
   }
@@ -82,13 +84,15 @@ describe("password reset notification", () => {
     expect(createNotifications).not.toHaveBeenCalled()
   })
 
-  it("surfaces a failed send instead of swallowing it", async () => {
-    const { scope, logger, createNotifications } = container({ email: "owner@example.com", has_account: true })
+  it("propagates a failed send so the event worker retries it", async () => {
+    const { scope, createNotifications } = container({ email: "owner@example.com", has_account: true })
     createNotifications.mockRejectedValue(new Error("resend down"))
-    await passwordResetHandler({ ...event(), container: scope } as any)
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining("owner@example.com"),
-      expect.any(Error),
-    )
+    await expect(passwordResetHandler({ ...event(), container: scope } as any)).rejects.toThrow("resend down")
+  })
+  it("retries later while a fresh send is still pending", async () => {
+    const { scope, notifications, createNotifications } = container({ email: "owner@example.com", has_account: true })
+    notifications.listNotifications.mockResolvedValue([{ id: "noti_fresh", status: "pending", created_at: new Date().toISOString() }])
+    await expect(passwordResetHandler({ ...event(), container: scope } as any)).rejects.toThrow(/pending/)
+    expect(createNotifications).not.toHaveBeenCalled()
   })
 })

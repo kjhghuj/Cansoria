@@ -1,3 +1,4 @@
+import sharp from "sharp";
 import {
   validatePhoto,
   signPhoto,
@@ -5,47 +6,96 @@ import {
   MAX_PHOTO_BYTES,
   publicPortraitMetadata,
 } from "../portrait-photos";
-const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]);
+
+// Real decodable fixtures: validation now decodes every pixel, so header-only
+// bytes are no longer a valid image.
+const realPng = sharp({
+  create: { width: 2, height: 2, channels: 3, background: "#7f7f7f" },
+})
+  .png()
+  .toBuffer();
+const headerOnlyPng = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]);
 const input = {
   name: "pet.png",
   mime: "image/png",
-  content: png.toString("base64"),
+  content: "",
 };
+
 describe("private portrait photo boundaries", () => {
+  let png: Buffer;
+  beforeAll(async () => {
+    png = await realPng;
+    input.content = png.toString("base64");
+  });
   beforeEach(() => {
     process.env.JWT_SECRET = "test-secret-with-more-than-thirty-two-characters";
   });
-  it("checks the bytes rather than trusting the claimed MIME", () => {
-    expect(validatePhoto(input)).toMatchObject({
+  it("checks the bytes rather than trusting the claimed MIME", async () => {
+    await expect(validatePhoto(input)).resolves.toMatchObject({
       mime: "image/png",
       size: png.length,
     });
-    expect(() => validatePhoto({ ...input, mime: "image/jpeg" })).toThrow();
-    expect(() =>
+    await expect(validatePhoto({ ...input, mime: "image/jpeg" })).rejects.toThrow();
+    await expect(
       validatePhoto({
         ...input,
         content: Buffer.from("<svg onload='alert(1)'>").toString("base64"),
       }),
-    ).toThrow();
+    ).rejects.toThrow();
   });
   it.each(["pet.svg", "pet.png.exe", "pet.heic"])(
     "rejects unsupported filename %s",
-    (name) => {
-      expect(() => validatePhoto({ ...input, name })).toThrow();
+    async (name) => {
+      await expect(validatePhoto({ ...input, name })).rejects.toThrow();
     },
   );
-  it("rejects empty, noncanonical and oversized uploads", () => {
+  it("rejects files that are only a header with no image frames or pixels", async () => {
+    await expect(
+      validatePhoto({
+        name: "pet.png",
+        mime: "image/png",
+        content: headerOnlyPng.toString("base64"),
+      }),
+    ).rejects.toThrow();
+    const jpeg = await sharp({
+      create: { width: 2, height: 2, channels: 3, background: "#7f7f7f" },
+    })
+      .jpeg()
+      .toBuffer();
+    // Truncated JPEG: a real header with missing image data.
+    await expect(
+      validatePhoto({
+        name: "pet.jpg",
+        mime: "image/jpeg",
+        content: jpeg.subarray(0, 25).toString("base64"),
+      }),
+    ).rejects.toThrow();
+    // A fake three-byte JPEG header must not pass as a decodable photo.
+    await expect(
+      validatePhoto({
+        name: "pet.jpg",
+        mime: "image/jpeg",
+        content: Buffer.from([0xff, 0xd8, 0xff]).toString("base64"),
+      }),
+    ).rejects.toThrow();
+    // A padded header is not a real image either.
+    const padded = Buffer.alloc(Math.min(MAX_PHOTO_BYTES, 64 * 1024));
+    headerOnlyPng.copy(padded);
+    await expect(
+      validatePhoto({
+        name: "pet.png",
+        mime: "image/png",
+        content: padded.toString("base64"),
+      }),
+    ).rejects.toThrow();
+  });
+  it("rejects empty, noncanonical and oversized uploads", async () => {
     for (const content of [
       "",
       input.content + "!",
       Buffer.alloc(MAX_PHOTO_BYTES + 1).toString("base64"),
     ])
-      expect(() => validatePhoto({ ...input, content })).toThrow();
-    const bytes = Buffer.alloc(MAX_PHOTO_BYTES);
-    png.copy(bytes);
-    expect(
-      validatePhoto({ ...input, content: bytes.toString("base64") }).size,
-    ).toBe(MAX_PHOTO_BYTES);
+      await expect(validatePhoto({ ...input, content })).rejects.toThrow();
   });
   it("binds the storage key to the cart and rejects metadata tampering", () => {
     const photo = signPhoto({

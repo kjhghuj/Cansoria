@@ -1,7 +1,7 @@
 import { AbstractNotificationProviderService, MathBN } from "@medusajs/utils"
 import type { BigNumberInput } from "@medusajs/framework/types"
 import { Resend } from "resend"
-import { orderAccessUrl, storefrontUrl } from "../../lib/access-tokens"
+import { storefrontUrl } from "../../lib/access-tokens"
 
 type ResendOptions = {
     apiKey: string
@@ -151,7 +151,11 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
                         <td align="right" style="padding: 8px 0; font-size: 14px; color: #332d28;">${formatMoney(amount, currencyCode)}</td>
                     </tr>`).join("")
     const total = formatMoney(data.total ?? 0, currencyCode)
-    const lookupUrl = escapeHtml(orderAccessUrl(fullOrderId))
+    // The signed link is pinned into the notification payload on first send
+    // and reused verbatim on retries: re-signing here would change the content
+    // under the same idempotency key, which the provider rejects as a
+    // conflicting reuse.
+    const lookupUrl = escapeHtml(String(data.access_url || ""))
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -284,6 +288,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
             } else if (template === "order_placed") {
                 const fullOrderId = String(data.id || data.display_id || "N/A")
                 const orderId = fullOrderId.startsWith("order_") ? fullOrderId.substring(6) : fullOrderId
+                const lookup = new URL(String(data.access_url || ""), frontendUrl)
+                if (lookup.origin !== new URL(frontendUrl).origin || lookup.pathname !== "/order/lookup") throw new Error("Invalid order access link")
                 htmlContent = renderOrderEmail(data, frontendUrl)
                 subject = `Cansoria Studio order confirmation #${orderId}`
             } else if (template === "password_reset") {

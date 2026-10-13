@@ -5,7 +5,7 @@ import { issueAccessToken } from "../../lib/access-tokens"
 const response = () => ({ status: jest.fn().mockReturnThis(), json: jest.fn(), setHeader: jest.fn() }) as any
 function setup(order: any = { id: "order_a", email: "owner@example.com", customer_id: null }) {
   const graph = jest.fn().mockResolvedValue({ data: order ? [order] : [] })
-  const notification = { createNotifications: jest.fn().mockResolvedValue({}) }
+  const notification = { createNotifications: jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" }) }
   const orders = { updateOrders: jest.fn().mockResolvedValue({}) }
   const locking = { execute: jest.fn(async (_key, fn) => fn()) }
   const req = { params: { id: "order_a" }, headers: {}, body: {}, scope: { resolve: jest.fn((key) => ({ query: { graph }, notification, order: orders, locking }[key])) } } as any
@@ -27,11 +27,17 @@ describe("order ownership and mailbox proof", () => {
   })
   it("accepts a purpose-bound mailbox token and excludes addresses", async () => {
     const { req, res } = setup({ id: "order_a", email: "owner@example.com", shipping_address: { address_1: "secret" }, items: [{ id: "item_a", product_id: "prod_a", metadata: { secret: 1 } }] })
-    req.headers["x-order-access-token"] = issueAccessToken("order", "order_a")
+    req.headers["x-order-access-token"] = issueAccessToken("order-read", "order_a")
     await GET(req, res)
     expect(res.json.mock.calls[0][0].order).not.toHaveProperty("shipping_address")
     expect(res.json.mock.calls[0][0].order.items[0]).toMatchObject({ product_id: "prod_a" })
     expect(res.json.mock.calls[0][0].order.items[0]).not.toHaveProperty("metadata")
+  })
+  it.each([["order-read"], ["order-claim"]])("lets the %s capability read a guest order", async (purpose) => {
+    const { req, res } = setup({ id: "order_a", email: "owner@example.com" })
+    req.headers["x-order-access-token"] = issueAccessToken(purpose as any, "order_a")
+    await GET(req, res)
+    expect(res.status).toHaveBeenCalledWith(200)
   })
   it.each([null, { id: "order_a", email: "different@example.com" }, { id: "order_a", email: "owner@example.com" }])("access request has a uniform accepted response for %p", async (order) => {
     const { req, res, notification } = setup(order)
@@ -46,16 +52,25 @@ describe("order ownership and mailbox proof", () => {
     const { req, res, orders, locking } = setup({ id: "order_a", customer_id: "cus_guest", customer: { has_account: false } })
     req.auth_context = { actor_id: "cus_real" }
     req.body = { order_id: "order_a", customer_id: "cus_spoof" }
-    req.headers["x-order-access-token"] = issueAccessToken("order", "order_a")
+    req.headers["x-order-access-token"] = issueAccessToken("order-claim", "order_a")
     await transfer(req, res)
     expect(locking.execute).toHaveBeenCalledWith("order-claim:order_a", expect.any(Function), expect.any(Object))
     expect(orders.updateOrders).toHaveBeenCalledWith("order_a", { customer_id: "cus_real" })
     expect(res.status).toHaveBeenCalledWith(200)
   })
+  it("rejects the completion read capability as claim proof", async () => {
+    const { req, res, orders } = setup({ id: "order_a", customer_id: "cus_guest", customer: { has_account: false } })
+    req.auth_context = { actor_id: "cus_attacker" }
+    req.body = { order_id: "order_a" }
+    req.headers["x-order-access-token"] = issueAccessToken("order-read", "order_a")
+    await transfer(req, res)
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(orders.updateOrders).not.toHaveBeenCalled()
+  })
   it("cannot reassign an already registered customer's order", async () => {
     const { req, res, orders } = setup({ id: "order_a", customer_id: "cus_victim", customer: { has_account: true } })
     req.auth_context = { actor_id: "cus_attack" }; req.body = { order_id: "order_a" }
-    req.headers["x-order-access-token"] = issueAccessToken("order", "order_a")
+    req.headers["x-order-access-token"] = issueAccessToken("order-claim", "order_a")
     await transfer(req, res)
     expect(res.status).toHaveBeenCalledWith(403)
     expect(orders.updateOrders).not.toHaveBeenCalled()

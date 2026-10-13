@@ -48,8 +48,15 @@ export async function backendFetch(path: string, init: RequestInit = {}, orderTo
   if (capability) headers.set('x-cart-access-token', capability);
   if (orderToken && orderToken.length <= 2048) headers.set('x-order-access-token', orderToken);
   else {
-    const orderCapability = jar.get(ORDER_COOKIE)?.value;
-    if (orderCapability && orderCapability.length <= 2048) headers.set('x-order-access-token', orderCapability);
+    // The completion cookie is a read-only capability: attach it only to order
+    // reads. Claiming (POST /store/orders/transfer) requires the emailed
+    // verification link, which callers pass explicitly via orderToken.
+    const method = (init.method || 'GET').toUpperCase();
+    const requestPath = path.split('?')[0];
+    if (method === 'GET' && /^store\/orders\//.test(requestPath)) {
+      const orderCapability = jar.get(ORDER_COOKIE)?.value;
+      if (orderCapability && orderCapability.length <= 2048) headers.set('x-order-access-token', orderCapability);
+    }
   }
   // Enable only behind an ingress that overwrites this header and blocks direct access.
   // The backend separately verifies that this request comes from its trusted BFF IP.
