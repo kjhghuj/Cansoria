@@ -28,7 +28,7 @@ export function cartWrapperFixture(initial: Record<string, unknown> = {}) {
       countries: [{ iso_2: "us" }],
     },
     region_id: "reg_a",
-    metadata: { portrait_photos: [{ id: "existing-photo" }] },
+    metadata: { note: "existing" },
     items: [],
     shipping_methods: [],
     promotions: [],

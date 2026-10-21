@@ -8,10 +8,11 @@ import ProductActions from "./ProductActions";
 import {
   STUDIO,
   STUDIO_FAQ,
+  STUDIO_FAQ_OPEN,
   PREPARATION_STEPS,
+  OPEN_STEPS,
   studioProduct,
 } from "@/lib/studio-content";
-import { portraitStyles, type PortraitStyle } from "@/lib/portrait";
 import ProductInfo from "./ProductInfo";
 import { formatPrice } from "@/lib/medusa";
 import { StoreProduct, StoreProductCategory } from "@/lib/types";
@@ -25,7 +26,6 @@ interface ProductImage {
 }
 
 interface ProductClientProps {
-  initialStyle: PortraitStyle;
   product: StoreProduct;
   images: ProductImage[];
   thumbnail?: string | null;
@@ -102,44 +102,45 @@ function getPriceSummary(product: StoreProduct, currencyCode: string) {
 
 function getProductBadges(salePercent?: number) {
   return [
-    "Style illustration",
+    "Collection illustration",
     salePercent ? "-" + salePercent + "%" : null,
   ].filter((badge): badge is string => Boolean(badge));
 }
 
 const sellingPoints = [
-  "Four illustrated style concepts",
-  "Reference and preferences together",
-  "Production details to be confirmed",
-  "Questions welcome before commissioning",
+  "Assembled and regulated in-house",
+  "Complimentary caseback engraving (engravable models)",
+  "Size, strap and dial options at checkout",
+  "Two-year international warranty",
 ];
 const trustItems: TrustBadgeItem[] = [
   {
     kind: "artist",
-    title: "Style Concepts",
-    text: "Illustrations to help you describe a preferred direction.",
+    title: "In-House Assembly",
+    text: "Every watch is built and regulated on our own benches.",
   },
   {
     kind: "preview",
-    title: "Photo Guidance",
-    text: "Prepare a clear reference with the expression you love.",
+    title: "Free Engraving",
+    text: "Up to twenty characters on the caseback of engravable models.",
   },
   {
     kind: "guarantee",
-    title: "Personal Details",
-    text: "Note the colours, composition and memories that matter.",
+    title: "Two-Year Warranty",
+    text: "International coverage on movement and manufacturing faults.",
   },
   {
     kind: "secure",
     title: "Clear Expectations",
-    text: "Service arrangements will be confirmed before commissions open.",
+    text: "Service arrangements will be confirmed before orders open.",
   },
 ];
 const customSteps = PREPARATION_STEPS;
+const openSteps = OPEN_STEPS;
 const conversionAnswers = STUDIO_FAQ;
+const openConversionAnswers = STUDIO_FAQ_OPEN;
 
 export default function ProductClient({
-  initialStyle,
   product: rawProduct,
   images,
   thumbnail,
@@ -153,11 +154,6 @@ export default function ProductClient({
     () => studioProduct(rawProduct, { ordersOpen }),
     [rawProduct, ordersOpen],
   );
-  const isPortrait = product.handle === "pet-portrait-oil-painting";
-  const [previewStyle, setPreviewStyle] = useState(initialStyle);
-  const previewStyleName =
-    portraitStyles.find((style) => style.id === previewStyle)?.name ||
-    "Classic Oil";
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(() =>
     getInitialSelectedOptions(product),
   );
@@ -185,26 +181,11 @@ export default function ProductClient({
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)] lg:gap-16">
         <div className="min-w-0">
           <ProductGallery
-            key={
-              isPortrait
-                ? previewStyle
-                : selectedVariant?.id || "product-gallery"
-            }
-            images={
-              isPortrait
-                ? [
-                    { url: `/images/pet-oil/${previewStyle}.webp` },
-                    { url: "/images/pet-oil/hero-room.png" },
-                  ]
-                : images
-            }
-            thumbnail={isPortrait ? null : thumbnail}
-            title={
-              isPortrait
-                ? `${previewStyleName} style example`
-                : product.title || "Cansoria Oil Painting"
-            }
-            selectedVariant={isPortrait ? null : selectedVariant}
+            key={selectedVariant?.id || "product-gallery"}
+            images={images}
+            thumbnail={thumbnail}
+            title={product.title || "Cansoria Watch"}
+            selectedVariant={selectedVariant}
             badges={galleryBadges}
           />
           <p className="studio-image-caption">{STUDIO.illustration}</p>
@@ -264,8 +245,6 @@ export default function ProductClient({
             </ul>
 
             <ProductActions
-              initialStyle={initialStyle}
-              onStyleChange={setPreviewStyle}
               product={product}
               selectedOptions={selectedOptions}
               selectedVariant={selectedVariant}
@@ -282,10 +261,10 @@ export default function ProductClient({
         <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
           <div>
             <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-              Custom Order
+              Your Order
             </p>
             <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
-              Preparing Your Portrait
+              Preparing Your Watch
             </h2>
           </div>
           <div className="relative grid gap-6 sm:grid-cols-3">
@@ -294,7 +273,7 @@ export default function ProductClient({
               aria-hidden="true"
               className="hidden sm:block absolute top-7 left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-toffee/15 via-toffee/50 to-toffee/15"
             />
-            {customSteps.map((step, index) => (
+            {(ordersOpen ? openSteps : customSteps).map((step, index) => (
               <div
                 key={step.title}
                 className="relative text-center sm:text-left"
@@ -320,7 +299,7 @@ export default function ProductClient({
       <section className="mt-16 grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-            {ordersOpen ? "Commissions Open" : "Before Commissions Open"}
+            {ordersOpen ? "Orders Open" : "Before Orders Open"}
           </p>
           <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
             A Few Helpful Questions
@@ -328,11 +307,11 @@ export default function ProductClient({
           <p className="mt-4 text-sm leading-7 text-charcoal-light">
             {ordersOpen
               ? "Our studio is taking orders. Here is what to know before you place yours."
-              : "Our service is in preparation. Here is what is known and what will be confirmed before commissions open."}
+              : "Our service is in preparation. Here is what is known and what will be confirmed before orders open."}
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {conversionAnswers.map((item) => (
+          {(ordersOpen ? openConversionAnswers : conversionAnswers).map((item) => (
             <div key={item.title} className="border border-border bg-white p-5">
               <h3 className="font-serif text-xl text-charcoal">{item.title}</h3>
               <p className="mt-3 text-sm leading-6 text-charcoal-light">
@@ -347,53 +326,53 @@ export default function ProductClient({
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="/images/pet-oil/original-photo.webp"
-              alt="Pet reference photo concept"
+              src="/images/watches/size-36.svg"
+              alt="36mm watch concept on the wrist"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
-              Reference Concept
+              36mm Concept
             </span>
           </div>
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-border-subtle bg-white">
             <Image
-              src="/images/pet-oil/finished-oil.webp"
-              alt="Pet portrait style concept"
+              src="/images/watches/size-42.svg"
+              alt="42mm watch concept on the wrist"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 50vw, 28vw"
             />
             <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-charcoal">
-              Portrait Concept
+              42mm Concept
             </span>
           </div>
         </div>
 
         <div>
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-terracotta">
-            Photo to Painting
+            Size &amp; Wear
           </p>
           <h2 className="font-serif text-3xl text-charcoal sm:text-4xl">
-            An Idea Inspired by Your Photo
+            An Idea Inspired by Your Wrist
           </h2>
           <p className="mt-4 text-sm leading-7 text-charcoal-light">
-            {STUDIO.comparison} These illustrations explore a possible mood and
-            composition; they do not document a completed painting.
+            {STUDIO.comparison} These illustrations explore how case sizes wear;
+            they do not document a delivered customer watch.
           </p>
         </div>
       </section>
 
-      <ProductInfo product={product} />
+      <ProductInfo product={product} ordersOpen={ordersOpen} />
 
       <div className="mt-12 flex flex-col gap-3 border border-border bg-white p-5 text-sm text-charcoal-light sm:flex-row sm:items-center sm:justify-between">
-        <span>Need help choosing a size or style?</span>
+        <span>Need help choosing a size or strap?</span>
         <span className="flex items-center gap-2 text-charcoal">
           <Truck className="h-4 w-4 text-terracotta" aria-hidden="true" />
           {ordersOpen
             ? "Delivery options and costs are shown at checkout before you pay."
-            : "Delivery arrangements will be confirmed before commissions open."}
+            : "Delivery arrangements will be confirmed before orders open."}
         </span>
       </div>
       <div className="h-24 lg:hidden" aria-hidden="true" />

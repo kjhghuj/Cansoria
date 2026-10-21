@@ -1,0 +1,112 @@
+Browser tab: 1, Title: "Our Studio | Cansoria", URL: "http://localhost:3030/our-studio".
+1 AXWebArea Our Studio | Cansoria, URL: localhost:3030/our-studio
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 text OUR STUDIO
+		11 heading A thoughtful approach to watches., Value: 1
+			12 text A thoughtful approach to watches.
+		13 text Cansoria is preparing a collection of in-house watches. Explore the collections, dials and straps, and prepare the details that make your watch yours.
+		14 container The little details make it personal.
+			15 text 01 · OUR APPROACH
+			16 heading The little details make it personal., Value: 2, ID: studio-approach-title
+				17 text The little details make it personal.
+			18 text A case that sits flat on the wrist. A dial you read at a glance. An engraving only you know is there. These are the details we want a Cansoria watch to hold.
+			19 text Our approach starts with your wrist and how you actually wear time. We are developing a watch service around in-house assembly, hand regulation, clear communication and attention to your preferences.
+			20 link Description: Read our story →, Value: localhost:3030/about
+			21 container
+				22 image Dress watch collection illustration
+				23 text Collection illustration — not a customer watch.
+		24 container Find the watch that feels like yours.
+			25 text 02 · EXPLORE THE COLLECTIONS
+			26 heading Find the watch that feels like yours., Value: 2, ID: studio-styles-title
+				27 text Find the watch that feels like yours.
+			28 text Four collections to help you describe your preferred case, dial and strap. These images illustrate a direction; they are not delivered orders.
+			29 container
+				30 link Description: Explore Dress, Value: localhost:3030/product/heritage-classic-40
+				31 heading Dress, Value: 3
+					32 text Dress
+				33 text Slim cases and quiet dials for tailoring and evenings.
+				34 text Collection illustration
+			35 container
+				36 link Description: Explore Dive, Value: localhost:3030/product/northsea-diver
+				37 heading Dive, Value: 3
+					38 text Dive
+				39 text Ceramic bezels and 20 ATM ratings for real water.
+				40 text Collection illustration
+			41 container
+				42 link Description: Explore Chronograph, Value: localhost:3030/product/regent-chronograph
+				43 heading Chronograph, Value: 3
+					44 text Chronograph
+				45 text Meca-quartz stopwatches for timing what matters.
+				46 text Collection illustration
+			47 container
+				48 link Description: Explore Automatic, Value: localhost:3030/product/meridian-automatic
+				49 heading Automatic, Value: 3
+					50 text Automatic
+				51 text Self-winding movements behind sapphire casebacks.
+				52 text Collection illustration
+		53 container Start with your wrist and a few notes.
+			54 text 03 · PREPARING YOUR ORDER
+			55 heading Start with your wrist and a few notes., Value: 2, ID: studio-preparing-title
+				56 text Start with your wrist and a few notes.
+			57 heading Measure your wrist., Value: 3
+				58 text Measure your wrist.
+			59 text Wrists under 16cm suit 36–38mm cases, 16–18cm suits 38–40mm, and larger wrists carry 40–42mm with presence.
+			60 heading Think about the strap., Value: 3
+				61 text Think about the strap.
+			62 text Leather dresses a watch down, steel adds polish, mesh wears light. All straps are quick-release and swappable without tools.
+			63 heading Plan your engraving., Value: 3
+				64 text Plan your engraving.
+			65 text Up to twenty characters on the caseback — initials, a date, or a short message. Engrave the occasion, not the trend.
+			66 link Description: Read the Buying Guide →, Value: localhost:3030/how-it-works
+		67 container Good things begin with clear expectations.
+			68 text 04 · BEFORE ORDERS OPEN
+			69 heading Good things begin with clear expectations., Value: 2, ID: studio-opening-title
+				70 text Good things begin with clear expectations.
+			71 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+			72 text We will share genuine work and production information once it is verified and authorised for publication. For now, explore the concepts and tell us what you have in mind.
+		73 text A PERSONAL STARTING POINT
+		74 heading Imagine a watch that feels like yours., Value: 2
+			75 text Imagine a watch that feels like yours.
+		76 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		77 link Description: Explore Watches →, Value: localhost:3030/#collections
+		78 link Description: Contact Us →, Value: localhost:3030/contact
+	79 container
+		80 link Description: Cansoria, Value: localhost:3030/
+		81 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		82 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		83 container Watches
+			84 heading Watches, Value: 2
+				85 text Watches
+			86 content list
+				87 link Description: Explore Watches, Value: localhost:3030/#collections
+				88 link Description: Collections, Value: localhost:3030/gallery
+				89 link Description: How It Works, Value: localhost:3030/how-it-works
+				90 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		91 container Our Studio
+			92 heading Our Studio, Value: 2
+				93 text Our Studio
+			94 content list
+				95 link Description: Our Story, Value: localhost:3030/about
+				96 link Description: Our Studio, Value: localhost:3030/our-studio
+				97 link Description: Contact Us, Value: localhost:3030/contact
+		98 container Help & Support
+			99 heading Help & Support, Value: 2
+				100 text Help & Support
+			101 content list
+				102 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				103 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				104 link Description: Returns & Refunds, Value: localhost:3030/returns
+				105 link Description: FAQs, Value: localhost:3030/faq
+		106 text ©  2026  Cansoria. All rights reserved.
+		107 container Legal
+			108 link Description: Privacy Policy, Value: localhost:3030/privacy
+			109 link Description: Terms & Conditions, Value: localhost:3030/terms
+
+The focused UI element is 1 AXWebArea Our Studio | Cansoria, URL: localhost:3030/our-studio

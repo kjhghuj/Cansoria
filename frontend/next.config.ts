@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(process.cwd()),
   poweredByHeader: false,
   async redirects() {
-    return [{ source: "/shop", destination: "/#styles", permanent: true }];
+    return [{ source: "/shop", destination: "/#collections", permanent: true }];
   },
   images: {
     // In development, disable image optimization to avoid private IP blocking

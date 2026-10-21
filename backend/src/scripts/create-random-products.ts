@@ -7,69 +7,69 @@ import {
     createProductsWorkflow,
     createInventoryLevelsWorkflow,
 } from "@medusajs/medusa/core-flows";
-import { artworkPrices, sampleUsdPrice } from "../lib/studio-prices";
+import { watchPrices, sampleUsdPrice } from "../lib/watch-prices";
 
 const productData = [
     {
-        title: "Sunlit Family Portrait",
-        subtitle: "Custom oil portrait from a family photo",
-        description: "A warm hand-painted family portrait created from a favorite reference photo, designed for living rooms, hallways, and meaningful gifts.",
+        title: "Harbor Moonphase",
+        subtitle: "Moonphase complication watch",
+        description: "A moonphase display set against a deep blue dial, with a date ring and polished case for evenings out.",
     },
     {
-        title: "Golden Retriever Portrait",
-        subtitle: "Pet portrait oil painting",
-        description: "A characterful oil portrait that captures a beloved pet's expression, fur texture, and everyday charm on premium canvas.",
+        title: "Cedar GMT",
+        subtitle: "Dual-time travel watch",
+        description: "A GMT watch with a 24-hour hand and two-tone bezel, made for keeping home time while away.",
     },
     {
-        title: "Anniversary Ceremony Portrait",
-        subtitle: "Wedding memory on canvas",
-        description: "A hand-painted artwork based on a wedding or anniversary photo, made for lasting home display.",
+        title: "Aster Skeleton",
+        subtitle: "Open-heart automatic watch",
+        description: "An open-heart dial that shows the balance wheel at work, finished with an exhibition caseback.",
     },
     {
-        title: "Quiet Lake Landscape",
-        subtitle: "Landscape oil painting",
-        description: "A calm landscape composition with layered brushwork, soft water reflections, and a timeless palette.",
+        title: "Quill Small Seconds",
+        subtitle: "Dress watch with small seconds",
+        description: "A restrained dial with a sub-seconds register at six o'clock and a slim leather strap.",
     },
     {
-        title: "Warm Abstract Canvas",
-        subtitle: "Abstract wall art",
-        description: "A textured abstract canvas designed to add movement, warmth, and depth to a modern interior.",
+        title: "Beacon Pilot",
+        subtitle: "Flieger-style pilot watch",
+        description: "A pilot watch with luminous Arabic numerals, a fluted bezel, and a soft riveted strap.",
     },
     {
-        title: "Classic Garden Reproduction",
-        subtitle: "Classic art inspired reproduction",
-        description: "A classic-style garden scene painted to order with expressive brush texture and rich color transitions.",
+        title: "Wren Pocket Watch",
+        subtitle: "Modern pocket watch",
+        description: "A contemporary pocket watch with a chain, exhibition back, and a stand for desk display.",
     },
     {
-        title: "Neutral Home Decor Canvas",
-        subtitle: "Interior wall art",
-        description: "A soft neutral canvas created for bedrooms, reading corners, and calm home styling.",
+        title: "Fable Rectangular",
+        subtitle: "Art-deco rectangular watch",
+        description: "A stepped rectangular case with a guilloche-style dial and blued hands.",
     },
     {
-        title: "Mountain Air Study",
-        subtitle: "Made-to-order landscape artwork",
-        description: "A crisp mountain landscape study with atmospheric distance and a balanced natural color palette.",
+        title: "Tarn Pocket Chrono",
+        subtitle: "Single-button chronograph",
+        description: "A single-push chronograph with a telemeter scale and domed pusher.",
     },
     {
-        title: "Heirloom Portrait Study",
-        subtitle: "Custom portrait painting",
-        description: "A refined portrait study for personal milestones, family keepsakes, and thoughtful gifts.",
+        title: "Birch Field Watch",
+        subtitle: "Everyday field watch",
+        description: "A matte field watch with crossed-out luminous numerals and a quick-release canvas strap.",
     },
     {
-        title: "Coastal Light Canvas",
-        subtitle: "Ocean-inspired wall art",
-        description: "A coastal oil painting with gentle light, open space, and painterly texture for relaxed interiors.",
+        title: "Solen Dress Minimal",
+        subtitle: "Two-hand minimalist watch",
+        description: "A two-hand watch with a clean sandwich dial and hidden lugs for an uninterrupted profile.",
     },
 ];
 
-const sizes = ["8x10", "12x16", "16x20", "24x36"];
-const framing = ["Canvas Only", "Framed"];
+const sizes = ["36mm", "38mm", "40mm", "42mm"];
+const straps = ["Leather Strap", "Steel Bracelet"];
 
 export default async function createRandomProducts({ container }: ExecArgs) {
     const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
     const query = container.resolve(ContainerRegistrationKeys.QUERY);
 
-    logger.info("Creating 10 Cansoria sample artwork products...");
+    logger.info("Creating 10 Cansoria sample watch products...");
 
     const { data: salesChannels } = await query.graph({
         entity: "sales_channel",
@@ -111,7 +111,7 @@ export default async function createRandomProducts({ container }: ExecArgs) {
 
     const productsToCreate = productData.map((product, index) => {
         const selectedSize = sizes[index % sizes.length];
-        const selectedFraming = framing[index % framing.length];
+        const selectedStrap = straps[index % straps.length];
         const priceUsd = sampleUsdPrice();
 
         return {
@@ -119,7 +119,7 @@ export default async function createRandomProducts({ container }: ExecArgs) {
             handle: product.title.toLowerCase().replace(/\s+/g, "-"),
             subtitle: product.subtitle,
             description: product.description,
-            weight: Math.floor(Math.random() * 1800) + 500,
+            weight: Math.floor(Math.random() * 180) + 150,
             status: ProductStatus.PUBLISHED,
             shipping_profile_id: shippingProfile.id,
             images: [
@@ -127,23 +127,24 @@ export default async function createRandomProducts({ container }: ExecArgs) {
             ],
             options: [
                 { title: "Size", values: [selectedSize] },
-                { title: "Framing", values: [selectedFraming] },
+                { title: "Strap", values: [selectedStrap] },
             ],
             metadata: {
-                customizable: true,
-                free_preview: true,
-                production_time: "2-3 weeks",
+                engraveable: false,
+                movement: "Japanese quartz, 3-year battery",
+                water_resistance: "5 ATM",
+                warranty: "2-year international warranty",
             },
             variants: [
                 {
-                    title: `${selectedSize} / ${selectedFraming}`,
+                    title: `${selectedSize} / ${selectedStrap}`,
                     sku: `CANSORIA-SAMPLE-${String(index + 1).padStart(2, "0")}`,
                     options: {
                         Size: selectedSize,
-                        Framing: selectedFraming,
+                        Strap: selectedStrap,
                     },
                     manage_inventory: true,
-                    prices: artworkPrices(priceUsd),
+                    prices: watchPrices(priceUsd),
                 },
             ],
             sales_channels: [{ id: defaultSalesChannel.id }],
@@ -180,7 +181,7 @@ export default async function createRandomProducts({ container }: ExecArgs) {
             logger.info(`Set inventory to 100 for ${inventoryLevels.length} variants`);
         }
 
-        logger.info("Successfully created 10 Cansoria sample artwork products.");
+        logger.info("Successfully created 10 Cansoria sample watch products.");
 
         for (const product of createdProducts as any[]) {
             const variant = product.variants?.[0];

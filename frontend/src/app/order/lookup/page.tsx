@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/money";
-import { portraitSummary, portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import { useSearchParams } from "next/navigation";
 import { getProductsWithVariantImages } from "@/lib/medusa";
 import { useAuth } from "@/lib/providers";
-import PortraitOrderDetails from "@/components/PortraitOrderDetails";
+import EngravingOrderDetails from "@/components/EngravingOrderDetails";
 
 // Icons
 function SearchIcon() {
@@ -288,9 +288,7 @@ function OrderLookupContent() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-gray-50 rounded flex-shrink-0 relative overflow-hidden">
                                             {/* Display resolved variant image or fallback to thumbnail */}
-                                            {portraitSummary(item.metadata)?.image ? (
-                                                <Image src={portraitSummary(item.metadata)!.image!} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
-                                            ) : (item.variant_id && variantImageMap[item.variant_id]) ? (
+                                            {(item.variant_id && variantImageMap[item.variant_id]) ? (
                                                 <Image src={variantImageMap[item.variant_id]} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
                                             ) : item.thumbnail ? (
                                                 <Image src={item.thumbnail} alt={item.title} width={48} height={48} unoptimized className="w-full h-full object-cover" />
@@ -299,7 +297,7 @@ function OrderLookupContent() {
                                         <div>
                                             <p className="font-medium text-charcoal">{item.title}</p>
                                             <p className="text-charcoal-light">Qty: {item.quantity}</p>
-                                            <PortraitOrderDetails metadata={item.metadata} orderId={orderData.id} token={accessToken} />
+                                            <EngravingOrderDetails metadata={item.metadata} />
                                         </div>
                                     </div>
                                     <span className="font-medium text-charcoal">
@@ -317,7 +315,7 @@ function OrderLookupContent() {
                         </div>
 
                         <div className="text-center space-y-3">
-                              <a href={portraitStylesUrl} className="block w-full text-center bg-charcoal text-white py-3 rounded-full hover:bg-charcoal-light transition-colors font-medium">
+                              <a href={collectionsUrl} className="block w-full text-center bg-charcoal text-white py-3 rounded-full hover:bg-charcoal-light transition-colors font-medium">
                                 Continue Shopping
                             </a>
                             <button onClick={() => setOrderData(null)} className="text-sm text-charcoal-light hover:text-terracotta underline">

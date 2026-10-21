@@ -9,7 +9,6 @@ import {
   completeCartWorkflow,
   processPaymentWorkflow,
 } from "@medusajs/medusa/core-flows";
-import { signPhoto } from "../../lib/portrait-photos";
 import { issueAccessToken } from "../../lib/access-tokens";
 
 import "../../workflows/hooks/complete-cart-validation";
@@ -17,20 +16,8 @@ import "../../workflows/hooks/complete-cart-validation";
 jest.mock("@medusajs/medusa/api/store/carts/helpers", () => ({
   refetchCart: jest.fn(async () => ({ id: "cart_a" })),
 }));
-export const completionPhotoBytes = Buffer.from([
-  137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,2,0,0,0,144,119,83,222,0,0,0,9,112,72,89,115,0,0,3,232,0,0,3,232,1,181,123,82,107,0,0,0,12,73,68,65,84,8,153,99,104,104,104,0,0,3,4,1,129,30,206,255,166,0,0,0,0,73,69,78,68,174,66,96,130,
-]);
-import { Readable } from "stream";
 
 export function completionWorkflowFixture() {
-  const photo = signPhoto({
-    id: "2c0e1371-36f3-40a7-b8c7-861f3c185559",
-    cart_id: "cart_a",
-    file_id: "file_a",
-    name: "pet.png",
-    mime: "image/png",
-    size: completionPhotoBytes.length,
-  });
   const cart = {
     id: "cart_a",
     email: "owner@example.com",
@@ -39,7 +26,7 @@ export function completionWorkflowFixture() {
     credit_line_total: 0,
     customer: { id: "cus_a", email: "owner@example.com", has_account: true },
     customer_id: "cus_a",
-    metadata: { portrait_photos: [photo] },
+    metadata: {},
     promotions: [],
     shipping_methods: [],
     completed_at: null,
@@ -48,20 +35,20 @@ export function completionWorkflowFixture() {
         id: "item_a",
         variant_id: "variant_a",
         product_id: "prod_a",
-        product_handle: "pet-portrait-oil-painting",
+        product_handle: "meridian-automatic",
         quantity: 1,
         unit_price: 100,
         requires_shipping: false,
-        title: "Pet portrait",
+        title: "Meridian Automatic",
         variant: {
           id: "variant_a",
           manage_inventory: false,
-          product: { id: "prod_a", title: "Pet portrait" },
+          product: { id: "prod_a", title: "Meridian Automatic" },
         },
         metadata: {
-          portrait: {
-            photo_id: photo.id,
-            style: "classic-oil",
+          engraving: {
+            text: "For Dad, 2026",
+            font: "serif",
             source_cart_id: "cart_a",
           },
         },
@@ -93,7 +80,7 @@ export function completionWorkflowFixture() {
       return { data: [snapshot] };
     }
     if (entity === "product")
-      return { data: [{ id: "prod_a", handle: "pet-portrait-oil-painting" }] };
+      return { data: [{ id: "prod_a", handle: "meridian-automatic" }] };
     if (entity === "order_cart")
       return { data: linked ? [{ order_id: linked }] : [] };
     if (entity === "order")
@@ -195,9 +182,7 @@ export function completionWorkflowFixture() {
     cancelPayment: jest.fn(async () => {}),
   };
   const files = {
-    getDownloadStream: jest.fn(async () =>
-      Readable.from([completionPhotoBytes]),
-    ),
+    getDownloadStream: jest.fn(),
   };
   const promotion = {
     registerUsage: jest.fn(async () => {}),

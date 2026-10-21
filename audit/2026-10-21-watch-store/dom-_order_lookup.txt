@@ -1,0 +1,60 @@
+Browser tab: 1, Title: "Cansoria | Watch Concepts", URL: "http://localhost:3030/order/lookup".
+1 AXWebArea Cansoria | Watch Concepts, URL: localhost:3030/order/lookup
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Track Your Order, Value: 1
+			11 text Track Your Order
+		12 text Enter your order ID and checkout email to receive a secure verification link.
+		13 text ORDER ID
+		14 text field (settable)
+		15 text EMAIL ADDRESS
+		16 text field (settable)
+		17 button Email Verification Link
+			18 image
+			19 text Email Verification Link
+	20 container
+		21 link Description: Cansoria, Value: localhost:3030/
+		22 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		23 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		24 container Watches
+			25 heading Watches, Value: 2
+				26 text Watches
+			27 content list
+				28 link Description: Explore Watches, Value: localhost:3030/#collections
+				29 link Description: Collections, Value: localhost:3030/gallery
+				30 link Description: How It Works, Value: localhost:3030/how-it-works
+				31 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		32 container Our Studio
+			33 heading Our Studio, Value: 2
+				34 text Our Studio
+			35 content list
+				36 link Description: Our Story, Value: localhost:3030/about
+				37 link Description: Our Studio, Value: localhost:3030/our-studio
+				38 link Description: Contact Us, Value: localhost:3030/contact
+		39 container Help & Support
+			40 heading Help & Support, Value: 2
+				41 text Help & Support
+			42 content list
+				43 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				44 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				45 link Description: Returns & Refunds, Value: localhost:3030/returns
+				46 link Description: FAQs, Value: localhost:3030/faq
+		47 text ©  2026  Cansoria. All rights reserved.
+		48 container Legal
+			49 link Description: Privacy Policy, Value: localhost:3030/privacy
+			50 link Description: Terms & Conditions, Value: localhost:3030/terms
+	51 container
+		52 button Open issues overlay
+			53 image
+			54 text 1
+			55 text Issue
+		56 button Collapse issues badge
+			57 image
+
+The focused UI element is 1 AXWebArea Cansoria | Watch Concepts, URL: localhost:3030/order/lookup

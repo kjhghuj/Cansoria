@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="CANSORIA">
+  <rect width="1600" height="900" fill="#f2ece3"/>
+  <rect x="8" y="8" width="1584" height="884" fill="none" stroke="#e3d9c9" stroke-width="2"/>
+  <rect x="766" y="0" width="68" height="-73" rx="12" fill="#8a6f4d"/>
+  <rect x="766" y="973" width="68" height="-73" rx="12" fill="#8a6f4d"/>
+  <circle cx="800" cy="450" r="503" fill="#d9c9a8" stroke="#3a332c" stroke-width="6"/>
+  <circle cx="800" cy="450" r="485" fill="#fbf7ef"/>
+  <circle cx="800" cy="450" r="4" fill="#3a332c"/>
+  <line x1="800" y1="450" x2="800" y2="130" stroke="#3a332c" stroke-width="7" stroke-linecap="round"/>
+  <line x1="800" y1="450" x2="1120" y2="440" stroke="#8a6f4d" stroke-width="5" stroke-linecap="round"/>
+  <text x="800" y="872" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#5d534b" letter-spacing="3">CANSORIA</text>
+</svg>

@@ -4,9 +4,15 @@ import { resolveJournalArticles } from "@/lib/cms";
 
 export const revalidate = 3600; // Revalidate sitemap every hour
 
+// Real content revision dates, not build time. Static route copy (home, FAQ,
+// journal index, legal and info pages) was last revised with the 2026-10-21
+// watch storefront release; update this constant whenever those pages
+// meaningfully change.
+const STATIC_CONTENT_LAST_MODIFIED = "2026-10-21";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
-  const region = await getRegion("gb");
+  const region = await getRegion();
 
   // 1. Static Routes
   const staticRoutes = [
@@ -16,7 +22,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/gallery",
     "/how-it-works",
     "/our-studio",
-    "/upload-photo",
     "/faq",
     "/contact",
     "/privacy",
@@ -25,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/returns",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date(),
+    lastModified: new Date(STATIC_CONTENT_LAST_MODIFIED),
     changeFrequency: "daily" as const,
     priority: route === "" ? 1.0 : 0.8,
   }));

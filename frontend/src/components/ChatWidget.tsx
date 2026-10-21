@@ -12,7 +12,7 @@ export default function ChatWidget() {
     {
       id: "0",
       role: "model",
-      text: "Hello, I'm your Cansoria art concierge. I can help you choose a painting style, canvas size, or custom gift idea.",
+      text: "Hello, I'm your Cansoria watch concierge. I can help you choose a case size, strap, dial, or engraving.",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -129,7 +129,7 @@ export default function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about sizes, pets, gifts..."
+                placeholder="Ask about sizes, straps, gifts..."
                 className="flex-1 text-sm p-2 border border-gray-200 focus:outline-none focus:border-terracotta rounded-sm bg-gray-50"
               />
               <button

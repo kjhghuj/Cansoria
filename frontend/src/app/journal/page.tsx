@@ -13,25 +13,24 @@ export const dynamic = 'force-dynamic';
 
 // SEO Metadata
 export const metadata: Metadata = {
-  title: "Journal | Cansoria - Custom Oil Painting Guides",
+  title: "Journal | Cansoria - Watch Guides",
   description:
-    "Explore custom oil painting guides, portrait tips, gift ideas, canvas styling notes, and home decor art inspiration.",
+    "Explore watch buying guides, movement basics, care tips, engraving ideas, and styling notes for wearing time well.",
   openGraph: {
     title: "Journal | Cansoria",
     description:
-      "Explore custom oil painting guides, portrait tips, gift ideas, canvas styling notes, and home decor art inspiration.",
+      "Explore watch buying guides, movement basics, care tips, engraving ideas, and styling notes for wearing time well.",
     type: "website",
   },
 };
 
 const CATEGORIES = [
   "All Stories",
-  "Photo to Painting",
-  "Home Decor",
+  "Watch Basics",
+  "Buying Guide",
+  "Care",
   "Gift Ideas",
-  "Pet Portraits",
   "Style Guide",
-  "Art Education",
 ];
 
 export default async function JournalPage() {

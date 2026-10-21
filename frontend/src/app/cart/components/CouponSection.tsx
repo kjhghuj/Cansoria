@@ -9,7 +9,7 @@ import {
 } from "./utils";
 
 const CART_EXPIRED_MESSAGE =
-  "Your cart session expired. Please add your artwork again.";
+  "Your cart session expired. Please add your watch again.";
 
 export default function CouponSection({
   cart,

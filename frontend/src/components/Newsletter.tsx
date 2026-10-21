@@ -43,8 +43,8 @@ export default function Newsletter() {
       <div className="cansoria-footer-container cansoria-footer-newsletter-layout">
         <div className="cansoria-footer-newsletter-copy">
           <p className="cansoria-footer-eyebrow">CANSORIA STUDIO NOTES</p>
-          <h2 id={`${id}-title`}>For the love of your pet.</h2>
-          <p>Pet portrait inspiration, studio updates, and news about our upcoming commissions — straight to your inbox.</p>
+          <h2 id={`${id}-title`}>For the love of a good watch.</h2>
+          <p>Watch inspiration, studio updates, and news about our upcoming collections — straight to your inbox.</p>
         </div>
         <div className="cansoria-footer-newsletter-signup">
           {status === "success" ? (
@@ -108,7 +108,7 @@ export default function Newsletter() {
                 <p className="cansoria-footer-error" role="alert">{captchaError}</p>
               )}
               <p id={consentId} className="cansoria-footer-consent">
-                Subscribe to receive Cansoria pet portrait emails. Unsubscribe anytime.{" "}
+                Subscribe to receive Cansoria watch emails. Unsubscribe anytime.{" "}
                 <Link href="/privacy">Privacy Policy</Link>
               </p>
             </form>

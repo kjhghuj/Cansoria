@@ -2,7 +2,7 @@ import type { MedusaContainer } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 
 export const ORDERS_CLOSED_MESSAGE =
-  "Commissions are not open yet. Please contact the studio to be notified when orders open."
+  "Orders are not open yet. Please contact the studio to be notified when orders open."
 
 type StoreLike = { listStores: (...args: unknown[]) => Promise<{ metadata?: Record<string, unknown> | null }[]> }
 

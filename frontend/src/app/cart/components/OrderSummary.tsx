@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import { Check, ShieldCheck, Truck } from "lucide-react";
 import { formatPrice } from "@/lib/money";
+import { useStoreStatus } from "@/lib/providers";
 import type { StoreCart } from "@/lib/types";
 
 interface OrderSummaryProps {
@@ -27,6 +28,7 @@ export default function OrderSummary({
   itemCount,
   isLoading,
 }: OrderSummaryProps) {
+  const { ordersOpen } = useStoreStatus();
   const hasDelivery = Boolean(cart.shipping_methods?.length);
   const checkoutClass =
     "flex w-full items-center justify-center rounded-full bg-toffee px-4 py-4 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-toffee-dark";
@@ -39,7 +41,7 @@ export default function OrderSummary({
       </p>
       <dl className="space-y-3 border-t border-border pt-6 text-sm">
         <div className="flex justify-between gap-3">
-          <dt>Artwork subtotal</dt>
+          <dt>Order subtotal</dt>
           <dd>{formatPrice(subtotal, currencyCode)}</dd>
         </div>
         {discount > 0 && (
@@ -84,7 +86,7 @@ export default function OrderSummary({
           </Link>
         )}
         <a
-          href={portraitStylesUrl}
+          href={collectionsUrl}
           className="block py-2 text-center text-xs uppercase tracking-widest text-charcoal-light hover:text-toffee"
         >
           Continue Shopping
@@ -97,11 +99,11 @@ export default function OrderSummary({
         </p>
         <p className="flex items-center gap-2">
           <Check className="h-4 w-4 text-toffee" aria-hidden="true" />
-          Commissions in preparation
+          {ordersOpen ? "Commissions open — order today" : "Commissions in preparation"}
         </p>
         <p className="flex items-center gap-2">
           <Truck className="h-4 w-4 text-toffee" aria-hidden="true" />
-          Delivery details to be confirmed
+          {ordersOpen ? "Delivery options calculated at checkout" : "Delivery details to be confirmed"}
         </p>
       </div>
     </aside>

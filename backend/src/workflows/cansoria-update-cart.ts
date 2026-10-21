@@ -45,11 +45,6 @@ export const prepareCansoriaCartUpdateStep = createStep(
         "This cart is no longer active",
       );
     const prepared = { ...input };
-    if ("metadata" in prepared && Array.isArray(cart.metadata?.portrait_photos))
-      prepared.metadata = {
-        ...prepared.metadata,
-        portrait_photos: cart.metadata.portrait_photos,
-      };
     const guestId =
       !registeredOwner(cart) && typeof input.email === "string"
         ? await guestCustomerForContainer(container, input.email)

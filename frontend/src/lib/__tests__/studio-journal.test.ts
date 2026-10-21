@@ -6,27 +6,27 @@ describe("journal concept product cards", () => {
   it("shows the catalog currency, a concept image and its label", () => {
     const product = {
       id: "prod_test",
-      title: "Pet Portrait",
-      handle: "pet-portrait-oil-painting",
-      thumbnail: "/images/pet-oil/artist-at-work.webp",
+      title: "Meridian Automatic",
+      handle: "meridian-automatic",
+      thumbnail: "/images/watches/meridian-automatic.svg",
       variants: [
         {
-          calculated_price: { calculated_amount: 85.02, currency_code: "eur" },
+          calculated_price: { calculated_amount: 334.62, currency_code: "eur" },
         },
       ],
     } as unknown as StoreProduct;
     const html = renderToStaticMarkup(
       createElement(InlineProductBlock, { product }),
     );
-    expect(html).toContain("€85.02");
-    expect(html).not.toContain("$85.02");
-    expect(html).toContain("Style illustration");
+    expect(html).toContain("€334.62");
+    expect(html).not.toContain("$334.62");
+    expect(html).toContain("Collection illustration");
     expect(html).not.toContain("artist-at-work");
   });
   it("does not invent a free price when a catalog item has no calculated price", () => {
     const product = {
       id: "prod_test",
-      title: "Portrait Concept",
+      title: "Watch Concept",
       handle: "generic",
       variants: [],
     } as unknown as StoreProduct;

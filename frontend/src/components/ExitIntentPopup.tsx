@@ -156,7 +156,7 @@ export default function ExitIntentPopup() {
                     <div className="text-center">
                         <h2 className="font-serif text-3xl text-charcoal mb-3">Wait, don&apos;t leave empty-handed.</h2>
                         <p className="text-charcoal-light mb-8 text-sm leading-relaxed">
-                            Get studio updates and member offers on custom paintings and canvas artwork.
+                            Get studio updates and member offers on watches and engraving.
                         </p>
 
                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

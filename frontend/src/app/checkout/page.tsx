@@ -14,7 +14,9 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { useCart, useRegion, useStoreStatus } from "@/lib/providers";
+import { PAYMENT_PROVIDER_ID, IS_LOCAL_PAYMENT_MOCK } from "@/lib/payment-provider";
 import { formatPrice, getCart } from "@/lib/medusa";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import {
   confirmDelivery,
   deliveryDetailsKey,
@@ -25,7 +27,7 @@ import {
   type DeliveryOption,
 } from "@/lib/checkout-delivery";
 import type { StoreCart } from "@/lib/types";
-import { portraitSummary } from "@/lib/portrait";
+import { engravingSummary } from "@/lib/engraving";
 import { CheckoutError } from "./components/CheckoutError";
 import { BillingData, CardData, ContactForm } from "./components/ContactForm";
 import { SubmitButton } from "./components/SubmitButton";
@@ -33,7 +35,7 @@ import { TrustBadgeGrid } from "@/components/TrustBadgeGrid";
 import type { TrustBadgeItem } from "@/components/TrustBadgeGrid";
 
 const CART_EXPIRED_MESSAGE =
-  "Your cart session expired. Please add your artwork again.";
+  "Your cart session expired. Please add your watch again.";
 const PAYMENT_FAILED_MESSAGE =
   "Payment could not be completed. Please try another card or contact support.";
 const PAYMENT_NOT_CONFIGURED_MESSAGE =
@@ -120,14 +122,15 @@ function CheckoutForm() {
   const [deliveryOptions, setDeliveryOptions] = useState<DeliveryOption[]>([]);
   const [deliveryChoice, setDeliveryChoice] = useState("");
   const [confirmedDeliveryKey, setConfirmedDeliveryKey] = useState("");
-  const [cardReady, setCardReady] = useState(false);
+  const [cardReady, setCardReady] = useState(IS_LOCAL_PAYMENT_MOCK);
   const [paymentConfirmed, setPaymentConfirmed] = useState(() =>
     hasAuthorizedStripePayment(cart),
   );
   const paidCartId = useRef(paymentConfirmed ? cart?.id : null);
   const [stripeUnavailable, setStripeUnavailable] =
-    useState(!isStripeConfigured);
+    useState(!isStripeConfigured && !IS_LOCAL_PAYMENT_MOCK);
   useEffect(() => {
+    if (IS_LOCAL_PAYMENT_MOCK) return;
     let active = true;
     void stripePromise.then((client) => {
       if (active) setStripeUnavailable(!client);
@@ -236,11 +239,14 @@ function CheckoutForm() {
           setConfirmedDeliveryKey(`${currentAddressKey}:${deliveryChoice}`);
           return;
         }
-        if (!stripe || !elements)
-          throw new Error(PAYMENT_NOT_CONFIGURED_MESSAGE);
-        const cardElement = elements.getElement(CardElement);
-        if (!cardElement || !cardReady)
-          throw new Error("Please complete your card details.");
+        let cardElement = null;
+        if (!IS_LOCAL_PAYMENT_MOCK) {
+          if (!stripe || !elements)
+            throw new Error(PAYMENT_NOT_CONFIGURED_MESSAGE);
+          cardElement = elements.getElement(CardElement);
+          if (!cardElement || !cardReady)
+            throw new Error("Please complete your card details.");
+        }
         const latestCart = await getCart(cart.id);
         if (!latestCart || !paymentTotalsMatch(cart, latestCart)) {
           await refreshCart();
@@ -256,7 +262,7 @@ function CheckoutForm() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              provider_id: "pp_stripe_stripe",
+              provider_id: PAYMENT_PROVIDER_ID,
             }),
           },
         );
@@ -278,36 +284,39 @@ function CheckoutForm() {
         }
         const clientSecret = data.client_secret;
 
-        if (!clientSecret) {
+        if (!clientSecret && !IS_LOCAL_PAYMENT_MOCK) {
           throw new Error("Payment failed");
         }
 
-        const result = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: cardElement,
-            billing_details: {
-              name: cardData.name || billingData.name,
-              email: billingData.email,
-              phone: billingData.phone,
-              address: {
-                line1: billingData.address,
-                city: billingData.city,
-                state: billingData.state || undefined,
-                postal_code: billingData.postalCode,
-                country: billingData.country,
+        if (!IS_LOCAL_PAYMENT_MOCK) {
+          if (!stripe) throw new Error(PAYMENT_NOT_CONFIGURED_MESSAGE);
+          const result = await stripe.confirmCardPayment(clientSecret as string, {
+            payment_method: {
+              card: cardElement as NonNullable<typeof cardElement>,
+              billing_details: {
+                name: cardData.name || billingData.name,
+                email: billingData.email,
+                phone: billingData.phone,
+                address: {
+                  line1: billingData.address,
+                  city: billingData.city,
+                  state: billingData.state || undefined,
+                  postal_code: billingData.postalCode,
+                  country: billingData.country,
+                },
               },
             },
-          },
-        });
+          });
 
-        if (result.error) {
-          throw new Error(result.error.message || "Payment failed");
+          if (result.error) {
+            throw new Error(result.error.message || "Payment failed");
+          }
+          // The store charges automatically: success means the payment is captured.
+          // Any other status (for example a stray manual-capture intent) must not be
+          // presented to the customer as a completed order.
+          if (result.paymentIntent?.status !== "succeeded")
+            throw new Error(PAYMENT_FAILED_MESSAGE);
         }
-        // The store charges automatically: success means the payment is captured.
-        // Any other status (for example a stray manual-capture intent) must not be
-        // presented to the customer as a completed order.
-        if (result.paymentIntent?.status !== "succeeded")
-          throw new Error(PAYMENT_FAILED_MESSAGE);
         paidCartId.current = cart.id;
         setPaymentConfirmed(true);
       }
@@ -380,7 +389,7 @@ function CheckoutForm() {
   };
 
   const cartItems = cart?.items ?? [];
-  const currencyCode = cart?.currency_code?.toUpperCase() || "GBP";
+  const currencyCode = cart?.currency_code?.toUpperCase() || DEFAULT_CURRENCY_CODE;
   const subtotal = cart?.item_subtotal || 0;
   const shipping =
     cart?.shipping_methods?.length && typeof cart.shipping_total === "number"
@@ -429,6 +438,7 @@ function CheckoutForm() {
                 deliveryReady && !stripeUnavailable && !paymentConfirmed
               }
               onCardReady={setCardReady}
+              localMock={IS_LOCAL_PAYMENT_MOCK}
             />
           </fieldset>
 
@@ -443,14 +453,10 @@ function CheckoutForm() {
                 {cartItems.map((item) => (
                   <li key={item.id} className="flex items-center gap-3">
                     <span className="relative block h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-border-subtle bg-canvas">
-                      {(portraitSummary(item.metadata)?.image ||
-                        item.thumbnail) && (
+                      {item.thumbnail && (
                         <Image
-                          src={
-                            portraitSummary(item.metadata)?.image ||
-                            item.thumbnail!
-                          }
-                          alt={item.product_title || "Custom artwork"}
+                          src={item.thumbnail}
+                          alt={item.product_title || "Cansoria watch"}
                           fill
                           sizes="56px"
                           unoptimized
@@ -460,16 +466,15 @@ function CheckoutForm() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-charcoal">
-                        {item.product_title || "Custom artwork"}
+                        {item.product_title || "Cansoria watch"}
                       </span>
                       <span className="block text-xs text-charcoal-light">
                         {item.variant_title ? `${item.variant_title} · ` : ""}
                         Qty {item.quantity}
                       </span>
-                      {portraitSummary(item.metadata) && (
+                      {engravingSummary(item.metadata) && (
                         <span className="block break-all text-xs text-charcoal-light">
-                          {portraitSummary(item.metadata)?.style} ·{" "}
-                          {portraitSummary(item.metadata)?.photoName}
+                          Engraved · {engravingSummary(item.metadata)!.text}
                         </span>
                       )}
                     </span>
@@ -484,7 +489,7 @@ function CheckoutForm() {
               </ul>
             ) : (
               <div className="mb-6 rounded-xl border border-dashed border-border bg-cream-card px-4 py-5 text-sm leading-6 text-charcoal-light">
-                Your cart is empty. Add a bespoke pet portrait to see your order
+                Your cart is empty. Add a watch to see your order
                 details here.
               </div>
             )}
@@ -587,7 +592,7 @@ function CheckoutForm() {
                   ((addressReady &&
                     deliveryOptions.length > 0 &&
                     !deliveryChoice) ||
-                    (deliveryReady && (!stripe || !elements || !cardReady))))
+                    (deliveryReady && !IS_LOCAL_PAYMENT_MOCK && (!stripe || !elements || !cardReady))))
               }
               label={
                 paymentConfirmed

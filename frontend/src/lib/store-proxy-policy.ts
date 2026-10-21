@@ -1,17 +1,15 @@
 const ID = '[A-Za-z0-9_-]{1,128}';
 const readPaths = [
   /^store\/(products|regions|collections|product-categories)(\/[A-Za-z0-9_-]{1,128})?$/,
-  /^store\/(store-info|shipping-options|orders)$/,
+  /^store\/(store-info|shipping-options|payment-providers|orders)$/,
   new RegExp(`^store/carts/${ID}$`),
-  new RegExp(`^store/carts/${ID}/photos/[a-f0-9-]{36}$`),
-  new RegExp(`^store/orders/${ID}/photos/[a-f0-9-]{36}$`),
   new RegExp(`^store/orders/${ID}$`),
   new RegExp(`^store/customers/me(/addresses(/${ID})?)?$`),
 ];
 const writePaths = [
   /^store\/(carts|newsletter)$/,
   /^store\/contact$/,
-  new RegExp(`^store/carts/${ID}/(photos|portrait-items)$`),
+  new RegExp(`^store/carts/${ID}/engraving-items$`),
   /^store\/orders\/(access|transfer)$/,
   new RegExp(`^store/carts/${ID}(/(line-items(/${ID})?|promotions|shipping-methods|customer|complete))?$`),
   new RegExp(`^store/customers/me(/addresses(/${ID})?)?$`),
@@ -31,6 +29,7 @@ const queryKeysByPath: Array<[RegExp, string[]]> = [
   [/^store\/collections$/, ["fields", "limit", "offset", "id"]],
   [/^store\/product-categories$/, ["fields", "limit", "offset", "id", "include_descendants_tree"]],
   [/^store\/shipping-options$/, ["fields", "limit", "offset", "cart_id"]],
+  [/^store\/payment-providers$/, ["region_id"]],
   [/^store\/orders$/, ["fields", "limit", "offset", "id"]],
   [new RegExp(`^store/carts/${ID}$`), ["fields"]],
   [new RegExp(`^store/orders/${ID}$`), ["fields"]],

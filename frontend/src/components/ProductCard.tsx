@@ -4,15 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { STUDIO, studioProduct } from "@/lib/studio-content";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { STUDIO, studioProduct, collectionsUrl } from "@/lib/studio-content";
 import { StoreProduct } from "@/lib/types";
 import { formatPrice } from "@/lib/medusa";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import { useStoreStatus } from "@/lib/providers";
 
 const FALLBACK_IMAGES = [
   "/products/generic.svg",
-  "/products/portrait.svg",
+  "/products/watch.svg",
   "/products/canvas.svg",
 ];
 
@@ -113,7 +113,7 @@ interface ProductCardProps {
 
 export default function ProductCard({
   product: rawProduct,
-  regionCurrency = "GBP",
+  regionCurrency = DEFAULT_CURRENCY_CODE,
 }: ProductCardProps) {
   // Closed store: preparation copy. Open store: reviewed admin content as managed.
   const { ordersOpen } = useStoreStatus();
@@ -122,23 +122,20 @@ export default function ProductCard({
   const [imageError, setImageError] = useState(false);
 
   const images = product.images || [];
-  const isPortrait = product.handle === "pet-portrait-oil-painting";
   const fallbackImage = getFallbackImage(product.id);
-  const mainImage = isPortrait
-    ? "/images/pet-oil/classic-oil.webp"
-    : imageError || !isPresentString(product.thumbnail || images[0]?.url)
+  const mainImage =
+    imageError || !isPresentString(product.thumbnail || images[0]?.url)
       ? fallbackImage
       : product.thumbnail || images[0]?.url || fallbackImage;
-  const secondaryImage = isPortrait
-    ? "/images/pet-oil/soft-impression.webp"
-    : imageError || !isPresentString(images[1]?.url)
+  const secondaryImage =
+    imageError || !isPresentString(images[1]?.url)
       ? mainImage
       : images[1]?.url || mainImage;
 
-  const title = product.title || "Untitled Oil Painting";
+  const title = product.title || "Untitled Watch";
   const subtitle = getProductSubtitle(product);
-  const category = product.categories?.[0]?.name || "Oil Painting";
-  const productHref = product.handle ? `/product/${product.handle}` : portraitStylesUrl;
+  const category = product.categories?.[0]?.name || "Watches";
+  const productHref = product.handle ? `/product/${product.handle}` : collectionsUrl;
   const ProductLink = product.handle ? Link : "a";
 
   const variantPrices = getVariantPrices(product);
@@ -172,20 +169,17 @@ export default function ProductCard({
     tagValues.some((tag) => tag === "best seller" || tag === "bestseller") ||
     metadata.best_seller === true ||
     metadata.bestseller === true;
-  const isCustomizable =
-    metadata.customizable === true ||
-    ["custom", "portrait", "photo", "pet", "wedding"].some((keyword) =>
+  const isEngraveable =
+    metadata.engraveable === true ||
+    ["engrav", "automatic", "chronograph", "dive", "dress"].some((keyword) =>
       productText.includes(keyword),
     );
   // Service promises require an explicit opt-in from reviewed admin metadata;
   // a missing key never implies the promise.
-  const hasFreePreview =
-    metadata.free_preview === true || metadata.freePreview === true;
   const badges = [
-    "Style illustration",
-    isCustomizable ? "Customizable" : null,
+    "Collection illustration",
+    isEngraveable ? "Free Engraving" : null,
     isBestSeller ? "Best Seller" : null,
-    hasFreePreview ? "Free Preview" : null,
   ].filter(isPresentString);
 
   const rating = getMetadataNumber(metadata, [

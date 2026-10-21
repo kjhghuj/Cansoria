@@ -1,0 +1,49 @@
+Browser tab: 1, Title: "Search | Cansoria", URL: "http://localhost:3030/search?q=automatic".
+1 AXWebArea Search | Cansoria, URL: localhost:3030/search?q=automatic
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Search the studio, Value: 1
+			11 text Search the studio
+		12 search text field (settable) Description: Search products, Value: automatic
+		13 button Search
+		14 text No products found for “automatic”. Try “automatic” or “dive”.
+		15 link Description: Explore Watches →, Value: localhost:3030/#collections
+	16 container
+		17 link Description: Cansoria, Value: localhost:3030/
+		18 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		19 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		20 container Watches
+			21 heading Watches, Value: 2
+				22 text Watches
+			23 content list
+				24 link Description: Explore Watches, Value: localhost:3030/#collections
+				25 link Description: Collections, Value: localhost:3030/gallery
+				26 link Description: How It Works, Value: localhost:3030/how-it-works
+				27 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		28 container Our Studio
+			29 heading Our Studio, Value: 2
+				30 text Our Studio
+			31 content list
+				32 link Description: Our Story, Value: localhost:3030/about
+				33 link Description: Our Studio, Value: localhost:3030/our-studio
+				34 link Description: Contact Us, Value: localhost:3030/contact
+		35 container Help & Support
+			36 heading Help & Support, Value: 2
+				37 text Help & Support
+			38 content list
+				39 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				40 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				41 link Description: Returns & Refunds, Value: localhost:3030/returns
+				42 link Description: FAQs, Value: localhost:3030/faq
+		43 text ©  2026  Cansoria. All rights reserved.
+		44 container Legal
+			45 link Description: Privacy Policy, Value: localhost:3030/privacy
+			46 link Description: Terms & Conditions, Value: localhost:3030/terms
+
+The focused UI element is 1 AXWebArea Search | Cansoria, URL: localhost:3030/search?q=automatic

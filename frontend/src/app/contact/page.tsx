@@ -6,13 +6,13 @@ import { STUDIO } from "@/lib/studio-content";
 import { COMPANY_INFO } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Contact the Studio | Cansoria",
-  description: "Get help with your pet reference photo, portrait or order.",
+  description: "Get help with your watch, engraving or order.",
 };
 export default function ContactPage() {
   return (
     <StudioPage
       eyebrow="Here to help"
-      title="Let’s talk about your portrait."
+      title="Let’s talk about your watch."
       description="A question about your reference, a special gift or the planned service? Share your ideas with us."
     >
       <div className="studio-split">

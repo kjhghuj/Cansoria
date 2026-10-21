@@ -1,12 +1,13 @@
 import type { StoreProduct } from "./types";
+import { DEFAULT_CURRENCY_CODE, PRICE_LOCALE } from "./market";
 
 // Medusa v2 returns major currency units; Stripe converts these on the server.
 export function formatPrice(
   amount: number | null | undefined,
-  currencyCode = "GBP",
+  currencyCode: string = DEFAULT_CURRENCY_CODE,
 ) {
   if (typeof amount !== "number" || !Number.isFinite(amount)) return "N/A";
-  return new Intl.NumberFormat("en-GB", {
+  return new Intl.NumberFormat(PRICE_LOCALE, {
     style: "currency",
     currency: currencyCode.toUpperCase(),
   }).format(amount);

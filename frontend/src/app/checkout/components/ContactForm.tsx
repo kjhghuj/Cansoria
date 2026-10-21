@@ -17,6 +17,8 @@ interface ContactFormProps {
   countries: NonNullable<StoreRegion["countries"]>;
   showPayment: boolean;
   onCardReady: (ready: boolean) => void;
+  /** Local test provider: payment is authorized server-side, so no card element is collected. */
+  localMock?: boolean;
 }
 
 const inputClass =
@@ -68,13 +70,14 @@ export function ContactForm({
   countries,
   showPayment,
   onCardReady,
+  localMock = false,
 }: ContactFormProps) {
   return (
     <div className="space-y-6">
       <NumberedCard
         step={1}
         title="Contact"
-        subtitle="We will use this email to send your order updates and artwork preview."
+        subtitle="We will use this email to send your order updates and shipping confirmation."
       >
         <div className="space-y-4">
           <div>
@@ -229,28 +232,35 @@ export function ContactForm({
         <NumberedCard
           step={3}
           title="Payment"
-          subtitle="Your payment is processed securely. Your painting preview is sent before the artwork ships."
+          subtitle="Your payment is processed securely. Your order confirmation is emailed once payment is authorized."
         >
           <div className="space-y-4">
             <div>
               <p className={labelClass}>Card Information</p>
-              <div className="rounded-xl border border-border bg-white px-4 py-3 focus-within:border-toffee focus-within:ring-2 focus-within:ring-toffee/15 transition-colors">
-                <CardElement
-                  onChange={(event) =>
-                    onCardReady(event.complete && !event.error)
-                  }
-                  options={{
-                    hidePostalCode: true,
-                    style: {
-                      base: {
-                        fontSize: "16px",
-                        color: "#26221E",
-                        "::placeholder": { color: "#9C8E7F" },
+              {localMock ? (
+                <div className="rounded-xl border border-border bg-white px-4 py-3 text-sm leading-6 text-charcoal-light">
+                  Test payment is active. This order is authorized by the local
+                  test provider and no card details are collected.
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-white px-4 py-3 focus-within:border-toffee focus-within:ring-2 focus-within:ring-toffee/15 transition-colors">
+                  <CardElement
+                    onChange={(event) =>
+                      onCardReady(event.complete && !event.error)
+                    }
+                    options={{
+                      hidePostalCode: true,
+                      style: {
+                        base: {
+                          fontSize: "16px",
+                          color: "#26221E",
+                          "::placeholder": { color: "#9C8E7F" },
+                        },
                       },
-                    },
-                  }}
-                />
-              </div>
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             <div>

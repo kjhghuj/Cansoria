@@ -1,6 +1,8 @@
+import { PAYMENT_PROVIDER_ID } from "./payment-provider";
 import Medusa from "@medusajs/js-sdk";
 import type { StoreCart, StoreProduct } from "@/lib/types";
 import { lowestProductPrice } from "./money";
+import { DEFAULT_COUNTRY_CODE } from "./market";
 export { formatPrice } from "./money";
 
 // Initialize Medusa client
@@ -65,7 +67,7 @@ export async function getStoreOrdersOpen(): Promise<boolean> {
 }
 
 // Region helper - get default region
-export async function getRegion(countryCode: string = "gb") {
+export async function getRegion(countryCode: string = DEFAULT_COUNTRY_CODE) {
   try {
     const { regions } = await sdk.store.region.list();
 
@@ -262,12 +264,12 @@ export async function getCart(cartId: string) {
   }
 }
 
-export async function addToCart(cartId: string, variantId: string, quantity: number = 1, customization?: import("./portrait").PortraitCustomization) {
+export async function addToCart(cartId: string, variantId: string, quantity: number = 1, customization?: import("./engraving").EngravingCustomization) {
   try {
     if (customization) {
-      const response = await fetch(`/api/medusa/store/carts/${encodeURIComponent(cartId)}/portrait-items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ variant_id: variantId, quantity, ...customization }) });
+      const response = await fetch(`/api/medusa/store/carts/${encodeURIComponent(cartId)}/engraving-items`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ variant_id: variantId, quantity, ...customization }) });
       const data = await response.json();
-      if (!response.ok || !data.cart) throw new Error(data.message || "Unable to add your portrait.");
+      if (!response.ok || !data.cart) throw new Error(data.message || "Unable to add your watch.");
       return data.cart as import("./types").StoreCart;
     }
     const { cart } = await sdk.store.cart.createLineItem(cartId, {
@@ -566,7 +568,7 @@ export async function createAndSelectStripePaymentSession(cartId: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        provider_id: "pp_stripe_stripe",
+        provider_id: PAYMENT_PROVIDER_ID,
       }),
     });
 
@@ -593,7 +595,7 @@ export async function selectStripePaymentSession(cartId: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        provider_id: "pp_stripe_stripe",
+        provider_id: PAYMENT_PROVIDER_ID,
       }),
     });
 

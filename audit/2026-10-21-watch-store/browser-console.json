@@ -1,0 +1,482 @@
+[
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:56.426Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:56.437Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:57.026Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:57.133Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:57.148Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:57.159Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:07:57.169Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:08.782Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:08.909Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:08.924Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:08.940Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:08.953Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:09.800Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:09.946Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:09.961Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:09.973Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:08:09.980Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.000Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.140Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.157Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.176Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.184Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.501Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.584Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.600Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.615Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:50.627Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.159Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.292Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.310Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.321Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.334Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:51.954Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.166Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.197Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.214Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.338Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.671Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.770Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.793Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.810Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:52.850Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:53.369Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:53.525Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:53.534Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:53.544Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:53.907Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.026Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.032Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.037Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.833Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.974Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:54.987Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.001Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.021Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.520Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.621Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.621Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.634Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:55.695Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.067Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.148Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.154Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.165Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.571Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.702Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.723Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:56.733Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:57.121Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:57.498Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:57.670Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:57.689Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:09:57.699Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:16.874Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:16.999Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:17.016Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:17.031Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:17.039Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:39.829Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  },
+  {
+    "level": "error",
+    "message": "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. /how-it-works",
+    "timestamp": "2026-10-21T10:10:56.524Z",
+    "url": "http://localhost:3030/_next/static/chunks/node_modules_next_dist_05y3oi5z9mc_3._.js"
+  }
+]

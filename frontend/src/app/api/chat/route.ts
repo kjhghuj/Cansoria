@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-import { GEMINI_SYSTEM_INSTRUCTION } from "@/lib/constants";
+import { GEMINI_SYSTEM_INSTRUCTION, GEMINI_SYSTEM_INSTRUCTION_OPEN } from "@/lib/constants";
+import { getStoreOrdersOpen } from "@/lib/medusa";
 import { admitChatRequest, chatClientKey, ChatControlError, CHAT_DEADLINE_MS, readChatBody } from "@/lib/chat-controls";
 import { isSameOriginWrite } from "@/lib/store-proxy-policy";
 
@@ -37,12 +38,16 @@ export async function POST(request: Request) {
     if (!message || message.length > 2000) return errorResponse(400);
     release = await admitChatRequest(chatClientKey(request));
     if (controller.signal.aborted) throw new ChatControlError(503);
+    // Chat copy follows the store's single go-live switch (orders_open).
+    const systemInstruction = (await getStoreOrdersOpen())
+      ? GEMINI_SYSTEM_INSTRUCTION_OPEN
+      : GEMINI_SYSTEM_INSTRUCTION;
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: message,
       config: {
-        systemInstruction: GEMINI_SYSTEM_INSTRUCTION,
+        systemInstruction,
         maxOutputTokens: 256,
         abortSignal: controller.signal,
         httpOptions: { timeout: CHAT_DEADLINE_MS },

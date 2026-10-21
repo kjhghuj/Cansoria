@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from "@medusajs/framework/http"
 import { defaultStoreCartFields } from "@medusajs/medusa/api/store/carts/query-config"
 import { issueAccessToken } from "./access-tokens"
-import { publicPortraitMetadata } from "./portrait-photos"
+import { publicEngravingMetadata } from "./engraving"
 
 // Never expand a customer's reverse links, including carts, orders or saved addresses.
 export const SAFE_PAYMENT_FIELDS = ["id", "currency_code", "amount", "status", "payment_sessions.id", "payment_sessions.provider_id", "payment_sessions.status", "payment_sessions.data"]
@@ -47,7 +47,7 @@ export function projectOrderMetadata(body: any) {
   for (const order of orders) {
     delete order.metadata
     for (const item of order.items || []) {
-      const metadata = publicPortraitMetadata(item.metadata)
+      const metadata = publicEngravingMetadata(item.metadata)
       if (metadata) item.metadata = metadata
       else delete item.metadata
     }
@@ -72,9 +72,5 @@ export function safeCartInput(input: any): any | null {
     result[field] = properties
   }
   delete result.customer_id
-  if (result.metadata && typeof result.metadata === "object" && !Array.isArray(result.metadata)) {
-    const { portrait_photos: _photos, ...metadata } = result.metadata
-    result.metadata = metadata
-  }
   return result
 }

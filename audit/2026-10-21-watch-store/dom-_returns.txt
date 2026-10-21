@@ -1,0 +1,58 @@
+Browser tab: 1, Title: "Returns & Refunds | Cansoria", URL: "http://localhost:3030/returns".
+1 AXWebArea Returns & Refunds | Cansoria, URL: localhost:3030/returns
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Returns & Refunds, Value: 1
+			11 text Returns & Refunds
+		12 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		13 heading Service arrangements, Value: 2
+			14 text Service arrangements
+		15 text Cancellation, revisions, returns, refunds and damaged-delivery procedures have not yet been finalised. We will publish the applicable terms before accepting public orders. Please 
+		16 link Description: contact us, Value: localhost:3030/contact
+		17 text  with questions about the planned service.
+	18 container
+		19 link Description: Cansoria, Value: localhost:3030/
+		20 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		21 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		22 container Watches
+			23 heading Watches, Value: 2
+				24 text Watches
+			25 content list
+				26 link Description: Explore Watches, Value: localhost:3030/#collections
+				27 link Description: Collections, Value: localhost:3030/gallery
+				28 link Description: How It Works, Value: localhost:3030/how-it-works
+				29 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		30 container Our Studio
+			31 heading Our Studio, Value: 2
+				32 text Our Studio
+			33 content list
+				34 link Description: Our Story, Value: localhost:3030/about
+				35 link Description: Our Studio, Value: localhost:3030/our-studio
+				36 link Description: Contact Us, Value: localhost:3030/contact
+		37 container Help & Support
+			38 heading Help & Support, Value: 2
+				39 text Help & Support
+			40 content list
+				41 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				42 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				43 link Description: Returns & Refunds, Value: localhost:3030/returns
+				44 link Description: FAQs, Value: localhost:3030/faq
+		45 text ©  2026  Cansoria. All rights reserved.
+		46 container Legal
+			47 link Description: Privacy Policy, Value: localhost:3030/privacy
+			48 link Description: Terms & Conditions, Value: localhost:3030/terms
+	49 container
+		50 button Open issues overlay
+			51 image
+			52 text 1
+			53 text Issue
+		54 button Collapse issues badge
+			55 image
+
+The focused UI element is 1 AXWebArea Returns & Refunds | Cansoria, URL: localhost:3030/returns

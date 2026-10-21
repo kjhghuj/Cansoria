@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import { usePathname } from "next/navigation";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import {
   ListIcon,
   MagnifyingGlassIcon,
@@ -19,7 +19,7 @@ interface NavbarProps {
   topOffset?: number;
 }
 const navigationLinks = [
-  { name: "Pet Portraits", href: portraitStylesUrl },
+  { name: "Watches", href: collectionsUrl },
   { name: "Gallery", href: "/gallery" },
   { name: "How It Works", href: "/how-it-works" },
   { name: "Our Studio", href: "/our-studio" },
@@ -61,7 +61,7 @@ export default function Navbar({
         </Link>
         <div className="portrait-desktop-navigation">
           {navigationLinks.map((link) => (
-            link.href === portraitStylesUrl ? (
+            link.href === collectionsUrl ? (
               <a key={link.name} href={link.href} onClick={closeMenus}>{link.name}</a>
             ) : (
               <Link key={link.name} href={link.href} onClick={closeMenus}>{link.name}</Link>
@@ -111,7 +111,7 @@ export default function Navbar({
           aria-label="Mobile navigation"
         >
           {navigationLinks.map((link) => (
-            link.href === portraitStylesUrl ? (
+            link.href === collectionsUrl ? (
               <a key={link.name} href={link.href} onClick={closeMenus}>{link.name}</a>
             ) : (
               <Link key={link.name} href={link.href} onClick={closeMenus}>{link.name}</Link>

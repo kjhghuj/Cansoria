@@ -8,7 +8,7 @@ function loadCms(apiUrl: string | undefined): CmsModule {
   return require("../cms") as CmsModule;
 }
 
-const staticSlug = "how-to-turn-a-photo-into-a-hand-painted-oil-painting";
+const staticSlug = "automatic-vs-quartz-which-watch-movement-is-right-for-you";
 const strapiArticle = (id: number) => ({ id, slug: `cms-${id}`, title: `CMS ${id}`, publishedAt: "2026-01-01", content: "<p>Body</p>" });
 const jsonResponse = (status: number, body: unknown) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
 

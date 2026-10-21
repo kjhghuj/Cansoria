@@ -3,14 +3,14 @@ import { retrieveTransformQueryConfig as cartQueryConfig } from "@medusajs/medus
 import { StoreGetCartsCart } from "@medusajs/medusa/api/store/carts/validators"
 import { applyCartFields, forceCartFields, forcePaymentFields, SAFE_CART_FIELDS, SAFE_PAYMENT_FIELDS, safeCartInput, projectOrderMetadata } from "../cart-fields"
 describe("all Store cart field boundaries", () => {
-  it("keeps signed storage records out of customer order list responses", () => {
-    const body = { orders: [{ metadata: { portrait_photos: [{ file_id: "private" }] }, items: [{ metadata: { portrait: { style: "dark-classic", photo_name: "pet.png", internal: "private" }, server: "secret" } }] }] } as any
+  it("keeps internal metadata out of customer order list responses", () => {
+    const body = { orders: [{ metadata: { internal: "private" }, items: [{ metadata: { engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_a", internal: "private" }, server: "secret" } }] }] } as any
     projectOrderMetadata(body)
     expect(body.orders[0]).not.toHaveProperty("metadata")
-    expect(body.orders[0].items[0].metadata).toEqual({ portrait: { style: "dark-classic", photo_name: "pet.png" } })
+    expect(body.orders[0].items[0].metadata).toEqual({ engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_a" } })
   })
-  it("prevents clients from overwriting server-owned photo records", () => {
-    expect(safeCartInput({ metadata: { gift_message: "Hello", portrait_photos: [{ file_id: "victim" }] } }).metadata).toEqual({ gift_message: "Hello" })
+  it("passes only client-facing cart metadata through update inputs", () => {
+    expect(safeCartInput({ metadata: { gift_message: "Hello" } }).metadata).toEqual({ gift_message: "Hello" })
   })
   it.each(["customer.carts.shipping_address.*", "customer.addresses.*", "customer.orders.*", "payment_collection.cart.customer.orders.*"])('ignores unsafe remote expansion %s using the actual Medusa parser', async fields => {
     const req = { originalUrl: "/store/carts/cart_a/line-items", allowed: [], query: { fields } } as any

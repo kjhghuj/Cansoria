@@ -21,6 +21,7 @@ import {
 import ReadingProgressBar from "@/components/journal/ReadingProgressBar";
 import MobileStickyBar from "@/components/journal/MobileStickyBar";
 import { StoreProduct } from "@/lib/types";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import HtmlContentRenderer from "./HtmlContentRenderer";
 import InlineProductBlock from "@/components/journal/InlineProductBlock";
 
@@ -76,12 +77,12 @@ const StickySidebar = ({
   if (!product) return null;
 
   const imageUrl =
-    product.handle === "pet-portrait-oil-painting"
-      ? "/images/pet-oil/classic-oil.webp"
+    product.handle === "heritage-classic-40"
+      ? "/images/watches/heritage-classic-40.svg"
       : getProductImage(product) || "/products/generic.svg";
   const currency =
     product.variants?.find((variant) => variant.calculated_price?.currency_code)
-      ?.calculated_price?.currency_code || "GBP";
+      ?.calculated_price?.currency_code || DEFAULT_CURRENCY_CODE;
   const price = lowestProductPrice(product, currency);
   const category = product.categories?.[0]?.name || "Wall Art";
 
@@ -289,7 +290,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     : [];
 
   // Get default region for context
-  const region = await getRegion("gb");
+  const region = await getRegion();
   const cleanedProductId = article.featuredProductId?.trim();
 
   // Find featured product from Medusa (for legacy blocks or sidebar)
@@ -418,8 +419,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               About Cansoria Journal
             </h4>
             <p className="text-sm font-light text-charcoal-light leading-relaxed">
-              Cansoria Journal shares ideas for reference photos, portrait
-              concepts, thoughtful gifting and displaying art at home.
+              Cansoria Journal shares watch guides, movement basics,
+              thoughtful gifting and wearing time well.
             </p>
           </div>
         </div>

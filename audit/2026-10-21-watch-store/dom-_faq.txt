@@ -1,0 +1,77 @@
+Browser tab: 1, Title: "Frequently Asked Questions | Cansoria", URL: "http://localhost:3030/faq".
+1 AXWebArea Frequently Asked Questions | Cansoria, URL: localhost:3030/faq
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 text A FEW HELPFUL ANSWERS
+		11 heading Before the first order., Value: 1
+			12 text Before the first order.
+		13 text Explore the collections, prepare your preferences and understand what is still being determined.
+		14 button (collapsed) Are orders open?, Secondary Actions: Expand
+			15 text Are orders open?
+		16 button (collapsed) Are these delivered customer watches?, Secondary Actions: Expand
+			17 text Are these delivered customer watches?
+		18 button (collapsed) Who assembles my watch?, Secondary Actions: Expand
+			19 text Who assembles my watch?
+		20 button (collapsed) Can I have my watch engraved?, Secondary Actions: Expand
+			21 text Can I have my watch engraved?
+		22 button (collapsed) What movements and materials will be used?, Secondary Actions: Expand
+			23 text What movements and materials will be used?
+		24 button (collapsed) Where will watches be made and shipped from?, Secondary Actions: Expand
+			25 text Where will watches be made and shipped from?
+		26 button (collapsed) How do I choose the right case size?, Secondary Actions: Expand
+			27 text How do I choose the right case size?
+		28 button (collapsed) Which strap should I choose?, Secondary Actions: Expand
+			29 text Which strap should I choose?
+		30 button (collapsed) How does caseback engraving work?, Secondary Actions: Expand
+			31 text How does caseback engraving work?
+		32 button (collapsed) Can I plan a gift engraving?, Secondary Actions: Expand
+			33 text Can I plan a gift engraving?
+		34 button (collapsed) Where can I find service and delivery information?, Secondary Actions: Expand
+			35 text Where can I find service and delivery information?
+		36 text Still have a question? 
+		37 link Description: Contact Us →, Value: localhost:3030/contact
+		38 text A PERSONAL STARTING POINT
+		39 heading Imagine a watch that feels like yours., Value: 2
+			40 text Imagine a watch that feels like yours.
+		41 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		42 link Description: Explore Watches →, Value: localhost:3030/#collections
+		43 link Description: Contact Us →, Value: localhost:3030/contact
+	44 container
+		45 link Description: Cansoria, Value: localhost:3030/
+		46 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		47 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		48 container Watches
+			49 heading Watches, Value: 2
+				50 text Watches
+			51 content list
+				52 link Description: Explore Watches, Value: localhost:3030/#collections
+				53 link Description: Collections, Value: localhost:3030/gallery
+				54 link Description: How It Works, Value: localhost:3030/how-it-works
+				55 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		56 container Our Studio
+			57 heading Our Studio, Value: 2
+				58 text Our Studio
+			59 content list
+				60 link Description: Our Story, Value: localhost:3030/about
+				61 link Description: Our Studio, Value: localhost:3030/our-studio
+				62 link Description: Contact Us, Value: localhost:3030/contact
+		63 container Help & Support
+			64 heading Help & Support, Value: 2
+				65 text Help & Support
+			66 content list
+				67 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				68 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				69 link Description: Returns & Refunds, Value: localhost:3030/returns
+				70 link Description: FAQs, Value: localhost:3030/faq
+		71 text ©  2026  Cansoria. All rights reserved.
+		72 container Legal
+			73 link Description: Privacy Policy, Value: localhost:3030/privacy
+			74 link Description: Terms & Conditions, Value: localhost:3030/terms
+
+The focused UI element is 1 AXWebArea Frequently Asked Questions | Cansoria, URL: localhost:3030/faq

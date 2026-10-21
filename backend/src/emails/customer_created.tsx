@@ -49,17 +49,17 @@ export const CansoriaCustomerCreatedEmail = ({
                         <Heading style={heading}>Welcome to Cansoria Studio.</Heading>
                         <Text style={greeting}>Hi {first_name},</Text>
                         <Text style={paragraph}>
-                            Thank you for creating an account with Cansoria. Your studio account helps you track custom portraits, canvas artwork, shipping updates, and private offers.
+                            Thank you for creating an account with Cansoria. Your studio account helps you track orders, caseback engravings, shipping updates, and private offers.
                         </Text>
                         <Text style={paragraph}>
-                            Every Cansoria piece is hand-painted to order, with careful attention to reference photos, size, framing, and the story behind the artwork.
+                            Every Cansoria watch is assembled and regulated in-house, with careful attention to case size, strap, dial, and the details that make it yours.
                         </Text>
 
                         {discountCode && (
                             <Section style={discountContainer}>
                                 <Text style={discountTitle}>Your Studio Welcome Gift</Text>
                                 <Text style={discountText}>
-                                    Please enjoy 15% off your first painting.
+                                    Please enjoy 15% off your first watch.
                                 </Text>
                                 <Section style={codeBox}>
                                     <Text style={codeText}>{discountCode}</Text>
@@ -72,12 +72,12 @@ export const CansoriaCustomerCreatedEmail = ({
 
                         <Section style={buttonContainer}>
                             <Button style={button} href={`${storefrontUrl}/shop`}>
-                                Explore Paintings
+                                Explore Watches
                             </Button>
                         </Section>
 
                         <Text style={supportNote}>
-                            If you have questions about reference photos, artwork sizes, or timelines, just reply to this email.
+                            If you have questions about sizing, straps, engraving, or timelines, just reply to this email.
                         </Text>
                     </Section>
 
@@ -85,7 +85,7 @@ export const CansoriaCustomerCreatedEmail = ({
 
                     <Section style={footer}>
                         <Text style={footerText}>
-                            Cansoria Studio, online art studio serving homes worldwide
+                            Cansoria Studio, independent watch studio serving collectors worldwide
                         </Text>
                         <Text style={footerLinks}>
                             <Link href={storefrontUrl} style={link}>Visit Website</Link>

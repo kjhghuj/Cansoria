@@ -1,0 +1,62 @@
+Browser tab: 1, Title: "Journal | Cansoria - Watch Guides", URL: "http://localhost:3030/journal".
+1 AXWebArea Journal | Cansoria - Watch Guides, URL: localhost:3030/journal
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 container
+			11 image Automatic vs Quartz: Which Watch Movement Is Right for You?
+		12 container
+			13 text FEATURED STORY
+			14 heading Automatic vs Quartz: Which Watch Movement Is Right for You?, Value: 1
+				15 text Automatic vs Quartz: Which Watch Movement Is Right for You?
+			16 link Description: READ THE STORY, Value: localhost:3030/journal/automatic-vs-quartz-which-watch-movement-is-right-for-you
+		17 container
+			18 button ALL STORIES
+			19 button WATCH BASICS
+			20 button BUYING GUIDE
+			21 button CARE
+			22 button GIFT IDEAS
+			23 button STYLE GUIDE
+		24 link Value: localhost:3030/journal/how-to-choose-the-right-watch-case-size, Description: How to Choose the Right Watch Case Size BUYING GUIDE 6 min read How to Choose the Right Watch Case Size Wrist size, strap style and dial layout all change how a case sits. Use this guide to pick between 36, 38, 40 and 42mm.
+		25 link Value: localhost:3030/journal/how-to-care-for-a-leather-watch-strap, Description: How to Care for a Leather Watch Strap CARE 4 min read How to Care for a Leather Watch Strap A leather strap ages beautifully with a few simple habits: rotation, drying, cleaning and knowing when to retire it.
+		26 link Value: localhost:3030/journal/water-resistance-ratings-explained, Description: Water Resistance Ratings Explained: 3, 5, 10 and 20 ATM WATCH BASICS 5 min read Water Resistance Ratings Explained: 3, 5, 10 and 20 ATM What ATM really means, which rating handles swimming and diving, and why you should never press a crown underwater.
+		27 link Value: localhost:3030/journal/engraved-watch-gift-ideas, Description: Engraved Watch Gift Ideas: Words That Stay GIFT IDEAS 5 min read Engraved Watch Gift Ideas: Words That Stay An engraved caseback turns a watch into a keepsake. Ideas and rules of thumb for the twenty characters that matter.
+		28 link Value: localhost:3030/journal/how-to-style-a-dress-watch, Description: How to Style a Dress Watch STYLE GUIDE 6 min read How to Style a Dress Watch A slim case, a leather strap and a quiet dial: how to wear a dress watch with tailoring, knitwear and weekends.
+	29 container
+		30 link Description: Cansoria, Value: localhost:3030/
+		31 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		32 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		33 container Watches
+			34 heading Watches, Value: 2
+				35 text Watches
+			36 content list
+				37 link Description: Explore Watches, Value: localhost:3030/#collections
+				38 link Description: Collections, Value: localhost:3030/gallery
+				39 link Description: How It Works, Value: localhost:3030/how-it-works
+				40 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		41 container Our Studio
+			42 heading Our Studio, Value: 2
+				43 text Our Studio
+			44 content list
+				45 link Description: Our Story, Value: localhost:3030/about
+				46 link Description: Our Studio, Value: localhost:3030/our-studio
+				47 link Description: Contact Us, Value: localhost:3030/contact
+		48 container Help & Support
+			49 heading Help & Support, Value: 2
+				50 text Help & Support
+			51 content list
+				52 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				53 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				54 link Description: Returns & Refunds, Value: localhost:3030/returns
+				55 link Description: FAQs, Value: localhost:3030/faq
+		56 text ©  2026  Cansoria. All rights reserved.
+		57 container Legal
+			58 link Description: Privacy Policy, Value: localhost:3030/privacy
+			59 link Description: Terms & Conditions, Value: localhost:3030/terms
+
+The focused UI element is 1 AXWebArea Journal | Cansoria - Watch Guides, URL: localhost:3030/journal

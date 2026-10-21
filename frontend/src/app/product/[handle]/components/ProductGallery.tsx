@@ -118,7 +118,7 @@ export default function ProductGallery({
           <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-charcoal-light">
             <ImageIcon className="h-10 w-10" aria-hidden="true" />
             <p className="text-xs uppercase tracking-[0.22em]">
-              Artwork image coming soon
+              Watch image coming soon
             </p>
           </div>
         )}

@@ -3,12 +3,8 @@ import {
   completeCartWorkflow,
   processPaymentWorkflow,
 } from "@medusajs/medusa/core-flows";
-import { Readable } from "stream";
 import { POST as completeHTTP } from "../../api/store/carts/[id]/complete/route";
-import {
-  completionWorkflowFixture as harness,
-  completionPhotoBytes as bytes,
-} from "./completion-workflow-fixture";
+import { completionWorkflowFixture as harness } from "./completion-workflow-fixture";
 jest.mock("@medusajs/medusa/api/store/carts/helpers", () => ({
   refetchCart: jest.fn(async () => ({ id: "cart_a" })),
 }));
@@ -29,15 +25,14 @@ describe("installed complete-cart validation hook and native entries", () => {
       expect.objectContaining({ input: { id: "cart_a" } }),
     );
     expect(h.order.createOrders).toHaveBeenCalledTimes(1);
-    expect(h.files.getDownloadStream).toHaveBeenCalledWith("file_a");
     expect(h.res.status).toHaveBeenCalledWith(200);
     expect(h.req.queryConfig.fields).not.toContain("metadata");
     expect(h.events[0]).toBe("identity:cart-identity:cart_a");
     expect(h.events.at(-1)).toBe("identity-released:cart-identity:cart_a");
   });
-  it("native payment callback dispatches the same engine ID and rejects missing portrait metadata", async () => {
+  it("native payment callback dispatches the same engine ID and rejects tampered engraving metadata", async () => {
     const h = harness();
-    h.cart.items[0].metadata = {};
+    h.cart.items[0].metadata.engraving.font = "invalid";
     await processPaymentWorkflow(h.container).run({
       input: {
         action: PaymentActions.AUTHORIZED,
@@ -48,7 +43,6 @@ describe("installed complete-cart validation hook and native entries", () => {
       input: { id: "cart_a" },
     });
     expect(h.order.createOrders).not.toHaveBeenCalled();
-    expect(h.files.getDownloadStream).not.toHaveBeenCalled();
     expect(h.events).toEqual([
       "acquire:cart_a",
       "release:cart_a",
@@ -56,15 +50,22 @@ describe("installed complete-cart validation hook and native entries", () => {
       "release:cart_a",
     ]);
   });
-  it.each(["metadata", "style", "signature", "provider"])(
+  it("native ID dispatch accepts an engravable watch without an engraving payload", async () => {
+    const h = harness();
+    h.cart.items[0].metadata = {};
+    await h.engine.run("complete-cart", { input: { id: "cart_a" } });
+    expect(h.order.createOrders).toHaveBeenCalledTimes(1);
+  });
+  it.each(["text", "font", "source_cart_id", "provider"])(
     "native ID dispatch rejects unsafe %s before order or usage",
     async (mutation) => {
       const h = harness();
-      if (mutation === "metadata") h.cart.metadata = {};
-      if (mutation === "style")
-        h.cart.items[0].metadata.portrait.style = "invalid";
-      if (mutation === "signature")
-        h.cart.metadata.portrait_photos[0].signature = "wrong";
+      if (mutation === "text")
+        h.cart.items[0].metadata.engraving.text = "not allowed <script>";
+      if (mutation === "font")
+        h.cart.items[0].metadata.engraving.font = "invalid";
+      if (mutation === "source_cart_id")
+        h.cart.items[0].metadata.engraving.source_cart_id = "cart_b";
       if (mutation === "provider")
         h.cart.payment_collection.payment_sessions[0].provider_id =
           "pp_system_default";
@@ -81,21 +82,19 @@ describe("installed complete-cart validation hook and native entries", () => {
   );
   it("HTTP surfaces known policy errors while keeping native authorization and no-store", async () => {
     const h = harness();
-    h.cart.items[0].metadata = {};
+    h.cart.items[0].metadata.engraving.font = "invalid";
     await completeHTTP(h.req, h.res);
     expect(h.res.status).toHaveBeenCalledWith(400);
     expect(h.res.setHeader).toHaveBeenCalledWith("Cache-Control", "no-store");
   });
-  it("native order-link retries preserve a committed order without re-reading changed photos", async () => {
+  it("native order-link retries preserve a committed order without re-validating changed metadata", async () => {
     const h = harness();
     await h.engine.run("complete-cart", { input: { id: "cart_a" } });
-    h.cart.metadata = {};
-    h.files.getDownloadStream.mockClear();
+    h.cart.items[0].metadata = { engraving: { text: "x", font: "nope" } };
     await completeHTTP(h.req, h.res);
     expect(h.res.status).toHaveBeenCalledWith(200);
     expect(h.order.createOrders).toHaveBeenCalledTimes(1);
     expect(h.promotion.registerUsage).not.toHaveBeenCalled();
-    expect(h.files.getDownloadStream).not.toHaveBeenCalled();
   });
   it("existing-order retry still requires HTTP authorization", async () => {
     const h = harness();
@@ -123,10 +122,10 @@ describe("installed complete-cart validation hook and native entries", () => {
     const gate = new Promise<void>((r) => {
       release = r;
     });
-    h.files.getDownloadStream.mockImplementationOnce(async () => {
+    h.store.listStores.mockImplementationOnce(async () => {
       started();
       await gate;
-      return Readable.from([bytes]);
+      return [{ id: "store_a", metadata: { orders_open: true } }];
     });
     const http = completeHTTP(h.req, h.res);
     await entered;
@@ -144,7 +143,7 @@ describe("installed complete-cart validation hook and native entries", () => {
     expect(h.order.createOrders).toHaveBeenCalledTimes(1);
     expect(h.promotion.registerUsage).toHaveBeenCalledTimes(1);
     expect(h.promotion.revertUsage).not.toHaveBeenCalled();
-    expect(h.files.getDownloadStream).toHaveBeenCalledTimes(1);
+    expect(h.store.listStores).toHaveBeenCalledTimes(1);
     expect(h.linked()).toBe("order_a");
     await processPaymentWorkflow(h.container).run({
       input: {

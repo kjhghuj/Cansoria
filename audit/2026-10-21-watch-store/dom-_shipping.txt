@@ -1,0 +1,62 @@
+Browser tab: 1, Title: "Shipping & Delivery | Cansoria", URL: "http://localhost:3030/shipping".
+1 AXWebArea Shipping & Delivery | Cansoria, URL: localhost:3030/shipping
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Shipping & Delivery, Value: 1
+			11 text Shipping & Delivery
+		12 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		13 heading Production and dispatch, Value: 2
+			14 text Production and dispatch
+		15 text Production locations, dispatch locations and lead times have not yet been finalised. We will confirm them before orders open.
+		16 heading Destinations and costs, Value: 2
+			17 text Destinations and costs
+		18 text Supported destinations, delivery methods, shipping charges and any insurance arrangements are still being determined. Delivery availability and charges will be confirmed before orders open.
+		19 heading Packaging and tracking, Value: 2
+			20 text Packaging and tracking
+		21 text Packaging specifications, tracking arrangements and the procedure for reporting delivery issues will be published once confirmed. Have a question? 
+		22 link Description: Contact Us →, Value: localhost:3030/contact
+	23 container
+		24 link Description: Cansoria, Value: localhost:3030/
+		25 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		26 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		27 container Watches
+			28 heading Watches, Value: 2
+				29 text Watches
+			30 content list
+				31 link Description: Explore Watches, Value: localhost:3030/#collections
+				32 link Description: Collections, Value: localhost:3030/gallery
+				33 link Description: How It Works, Value: localhost:3030/how-it-works
+				34 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		35 container Our Studio
+			36 heading Our Studio, Value: 2
+				37 text Our Studio
+			38 content list
+				39 link Description: Our Story, Value: localhost:3030/about
+				40 link Description: Our Studio, Value: localhost:3030/our-studio
+				41 link Description: Contact Us, Value: localhost:3030/contact
+		42 container Help & Support
+			43 heading Help & Support, Value: 2
+				44 text Help & Support
+			45 content list
+				46 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				47 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				48 link Description: Returns & Refunds, Value: localhost:3030/returns
+				49 link Description: FAQs, Value: localhost:3030/faq
+		50 text ©  2026  Cansoria. All rights reserved.
+		51 container Legal
+			52 link Description: Privacy Policy, Value: localhost:3030/privacy
+			53 link Description: Terms & Conditions, Value: localhost:3030/terms
+	54 container
+		55 button Open issues overlay
+			56 image
+			57 text Issue
+		58 button Collapse issues badge
+			59 image
+
+The focused UI element is 1 AXWebArea Shipping & Delivery | Cansoria, URL: localhost:3030/shipping

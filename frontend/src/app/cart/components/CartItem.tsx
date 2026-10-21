@@ -2,7 +2,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { formatPrice } from "@/lib/medusa";
 import { StoreCartLineItem } from "@/lib/types";
-import { portraitSummary } from "@/lib/portrait";
+import { engravingSummary } from "@/lib/engraving";
 import { FALLBACK_IMAGE, MinusIcon, PlusIcon, TrashIcon } from "./utils";
 
 export default function CartItem({
@@ -23,11 +23,11 @@ export default function CartItem({
   fallbackImage?: string | null;
 }) {
   const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
-  const portrait = portraitSummary(item.metadata);
-  const preferredImage = portrait?.image || variantImage || item.thumbnail || fallbackImage || FALLBACK_IMAGE;
+  const engraving = engravingSummary(item.metadata);
+  const preferredImage = variantImage || item.thumbnail || fallbackImage || FALLBACK_IMAGE;
   const imageSrc = failedImageSrc === preferredImage ? FALLBACK_IMAGE : preferredImage;
   const productTitle =
-    item.product_title || item.variant?.product?.title || "Custom Artwork";
+    item.product_title || item.variant?.product?.title || "Cansoria Watch";
   const variantTitle = item.variant_title || item.variant?.title;
 
   // Get the price
@@ -61,9 +61,15 @@ export default function CartItem({
               </p>
             )}
             <p className="mt-2 text-xs uppercase tracking-[0.18em] text-toffee">
-              Custom artwork
+              Cansoria Studio
             </p>
-            {portrait && <div className="mt-2 space-y-1 text-sm text-charcoal-light"><p>{portrait.style}</p><p className="break-all">Photo: {portrait.photoName}</p></div>}
+            {engraving && (
+              <div className="mt-2 space-y-1 text-sm text-charcoal-light">
+                <p>
+                  Engraved: <span className="font-medium text-charcoal">“{engraving.text}”</span> · {engraving.font}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Remove Button - Desktop */}

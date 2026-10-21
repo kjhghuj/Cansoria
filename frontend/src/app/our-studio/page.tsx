@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StudioPage, StudioCTA, StudioImage } from "@/components/StudioPage";
-import { portraitStyles, portraitUrl } from "@/lib/portrait";
 import { STUDIO } from "@/lib/studio-content";
 
 export const metadata: Metadata = {
@@ -15,11 +14,34 @@ export const metadata: Metadata = {
   },
 };
 
+const collections = [
+  {
+    handle: "heritage-classic-40",
+    name: "Dress",
+    description: "Slim cases and quiet dials for tailoring and evenings.",
+  },
+  {
+    handle: "northsea-diver",
+    name: "Dive",
+    description: "Ceramic bezels and 20 ATM ratings for real water.",
+  },
+  {
+    handle: "regent-chronograph",
+    name: "Chronograph",
+    description: "Meca-quartz stopwatches for timing what matters.",
+  },
+  {
+    handle: "meridian-automatic",
+    name: "Automatic",
+    description: "Self-winding movements behind sapphire casebacks.",
+  },
+];
+
 export default function OurStudioPage() {
   return (
     <StudioPage
       eyebrow="Our Studio"
-      title="A thoughtful approach to pet portraits."
+      title="A thoughtful approach to watches."
       description={STUDIO.description}
     >
       <section className="studio-split" aria-labelledby="studio-approach-title">
@@ -29,14 +51,14 @@ export default function OurStudioPage() {
             The little details make it personal.
           </h2>
           <p>
-            A familiar expression. A favourite blanket. The tilt of a head you
-            know by heart. These are the details we want a personal portrait to
-            hold.
+            A case that sits flat on the wrist. A dial you read at a glance. An
+            engraving only you know is there. These are the details we want a
+            Cansoria watch to hold.
           </p>
           <p>
-            Our approach starts with your reference and the memories behind it.
-            We are developing a custom portrait service around thoughtful
-            composition, clear communication and attention to your preferences.
+            Our approach starts with your wrist and how you actually wear time.
+            We are developing a watch service around in-house assembly, hand
+            regulation, clear communication and attention to your preferences.
           </p>
           <p>
             <Link href="/about">Read our story →</Link>
@@ -44,34 +66,34 @@ export default function OurStudioPage() {
         </div>
         <StudioImage
           priority
-          src="/images/pet-oil/classic-oil.webp"
-          alt="Classic Oil pet portrait style illustration"
+          src="/images/watches/heritage-classic-40.svg"
+          alt="Dress watch collection illustration"
           caption={STUDIO.illustration}
         />
       </section>
       <section className="studio-section" aria-labelledby="studio-styles-title">
         <div className="studio-section-heading">
-          <p className="studio-eyebrow">02 · Explore the Styles</p>
-          <h2 id="studio-styles-title">Find the mood that feels like them.</h2>
+          <p className="studio-eyebrow">02 · Explore the Collections</p>
+          <h2 id="studio-styles-title">Find the watch that feels like yours.</h2>
           <p>
-            Four concepts to help you describe your preferred colours,
-            background and atmosphere. These images illustrate a direction; they
-            are not completed orders.
+            Four collections to help you describe your preferred case, dial and
+            strap. These images illustrate a direction; they are not delivered
+            orders.
           </p>
         </div>
         <div className="studio-style-grid">
-          {portraitStyles.map((style) => (
-            <figure key={style.id}>
-              <Link href={`${portraitUrl}?style=${style.id}`} aria-label={"Explore " + style.name}>
+          {collections.map((collection) => (
+            <figure key={collection.handle}>
+              <Link href={"/product/" + collection.handle} aria-label={"Explore " + collection.name}>
                 <StudioImage
-                  src={"/images/pet-oil/" + style.id + ".webp"}
-                  alt={style.name + " style illustration"}
+                  src={"/images/watches/" + collection.handle + ".svg"}
+                  alt={collection.name + " collection illustration"}
                 />
               </Link>
               <figcaption>
-                <h3>{style.name}</h3>
-                <p>{style.description}</p>
-                <p className="studio-image-caption">Style illustration</p>
+                <h3>{collection.name}</h3>
+                <p>{collection.description}</p>
+                <p className="studio-image-caption">Collection illustration</p>
               </figcaption>
             </figure>
           ))}
@@ -82,44 +104,43 @@ export default function OurStudioPage() {
         aria-labelledby="studio-preparing-title"
       >
         <div className="studio-section-heading">
-          <p className="studio-eyebrow">03 · Preparing Your Portrait</p>
+          <p className="studio-eyebrow">03 · Preparing Your Order</p>
           <h2 id="studio-preparing-title">
-            Start with a photo and a few notes.
+            Start with your wrist and a few notes.
           </h2>
         </div>
         <div className="studio-grid">
           <div className="studio-card">
-            <h3>Choose an expression.</h3>
+            <h3>Measure your wrist.</h3>
             <p>
-              Look for clear eyes, natural light and the expression you love.
-              Keep the face and ears within the frame.
+              Wrists under 16cm suit 36–38mm cases, 16–18cm suits 38–40mm, and
+              larger wrists carry 40–42mm with presence.
             </p>
           </div>
           <div className="studio-card">
-            <h3>Think about the setting.</h3>
+            <h3>Think about the strap.</h3>
             <p>
-              Note your preferred colours, background, composition and where you
-              imagine displaying the portrait.
+              Leather dresses a watch down, steel adds polish, mesh wears light.
+              All straps are quick-release and swappable without tools.
             </p>
           </div>
           <div className="studio-card">
-            <h3>Keep the memories.</h3>
+            <h3>Plan your engraving.</h3>
             <p>
-              Tell us about a collar, a favourite toy or any detail that
-              matters. For several pets or older photos, prepare your questions
-              in advance.
+              Up to twenty characters on the caseback — initials, a date, or a
+              short message. Engrave the occasion, not the trend.
             </p>
           </div>
         </div>
         <p className="studio-section-link">
-          <Link href="/upload-photo">Read the Photo Guide →</Link>
+          <Link href="/how-it-works">Read the Buying Guide →</Link>
         </p>
       </section>
       <section
         className="studio-readiness"
         aria-labelledby="studio-opening-title"
       >
-        <p className="studio-eyebrow">04 · Before Commissions Open</p>
+        <p className="studio-eyebrow">04 · Before Orders Open</p>
         <h2 id="studio-opening-title">
           Good things begin with clear expectations.
         </h2>

@@ -1,4 +1,4 @@
-import { artworkPrices, artworkSku, artworkUsdPrice, deliveryPrices, seededArtwork, shippingPrice } from "./studio-prices"
+import { watchPrices, watchSku, watchUsdPrice, deliveryPrices, seededWatches, shippingPrice } from "./watch-prices"
 
 export type PriceRule = {
   attribute: string; value: string; operator: string
@@ -23,21 +23,21 @@ export type PriceChange = {
 
 export function expectedCatalogAmount(row: CatalogPriceRow): number | undefined {
   if (row.kind === "product") {
-    const product = seededArtwork[row.handle as keyof typeof seededArtwork]
+    const product = seededWatches[row.handle as keyof typeof seededWatches]
     if (!product) return undefined
-    const { Size: size, Framing: framing, Orientation: orientation } = row.options || {}
-    if (row.option_count !== 3 || row.metadata?.size !== size || row.metadata?.framing !== framing ||
-        row.metadata?.orientation !== orientation) throw new Error("Options and metadata do not match the seed")
-    const usd = artworkUsdPrice(size, framing, orientation, product.offset)
-    if (row.sku !== artworkSku(product.skuPrefix, size, framing, orientation)) throw new Error("SKU does not match the seed")
+    const { Size: size, Strap: strap, Dial: dial } = row.options || {}
+    if (row.option_count !== 3 || row.metadata?.size !== size || row.metadata?.strap !== strap ||
+        row.metadata?.dial !== dial) throw new Error("Options and metadata do not match the seed")
+    const usd = watchUsdPrice(size, strap, product.offset)
+    if (row.sku !== watchSku(product.skuPrefix, size, strap, dial)) throw new Error("SKU does not match the seed")
     if (row.rules.length || row.rules_count !== 0) throw new Error("Custom product price rules")
-    const amount = artworkPrices(usd).find(price => price.currency_code === row.currency_code)?.amount
+    const amount = watchPrices(usd).find(price => price.currency_code === row.currency_code)?.amount
     if (amount === undefined) throw new Error("Unsupported currency")
     return amount
   }
 
   if (!deliveryPrices[row.shipping_name || ""]) return undefined
-  const code = { "Standard Art Delivery": "standard-art-delivery", "Priority Art Delivery": "priority-art-delivery", "Free Art Delivery": "free-art-delivery" }[row.shipping_name!]
+  const code = { "Standard Watch Delivery": "standard-watch-delivery", "Priority Watch Delivery": "priority-watch-delivery", "Free Watch Delivery": "free-watch-delivery" }[row.shipping_name!]
   if (row.shipping_code !== code || row.price_type !== "flat" || row.provider_id !== "manual_manual") {
     throw new Error("Shipping identity does not match the seed")
   }

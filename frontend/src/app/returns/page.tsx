@@ -4,7 +4,7 @@ import { STUDIO } from "@/lib/studio-content";
 export const metadata: Metadata = {
   title: "Returns & Refunds | Cansoria",
   description:
-    "Cansoria service and returns arrangements will be confirmed before commissions open.",
+    "Cansoria service and returns arrangements will be confirmed before orders open.",
 };
 export default function ReturnsPage() {
   return (

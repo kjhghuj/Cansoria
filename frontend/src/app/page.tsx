@@ -1,20 +1,28 @@
-import { PortraitHome } from "./components/home/PortraitHome";
+import { WatchHome } from "./components/home/WatchHome";
 import type { Metadata } from "next";
-import { STUDIO } from "@/lib/studio-content";
+import { getStoreOrdersOpen } from "@/lib/medusa";
+import { STUDIO, STUDIO_OPEN, studioHomeTitle } from "@/lib/studio-content";
 
-export const metadata: Metadata = {
-  title: "Cansoria | Pet Portrait Concepts",
-  description: STUDIO.description,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Cansoria | Pet Portrait Concepts",
-    description: STUDIO.description,
-    url: "/",
-    images: [{ url: "/images/home/hero-room.png", alt: STUDIO.scene }],
-    type: "website",
-  },
-};
+export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  return <PortraitHome />;
+export async function generateMetadata(): Promise<Metadata> {
+  const ordersOpen = await getStoreOrdersOpen();
+  const description = ordersOpen ? STUDIO_OPEN.description : STUDIO.description;
+  return {
+    title: studioHomeTitle(ordersOpen),
+    description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: studioHomeTitle(ordersOpen),
+      description,
+      url: "/",
+      images: [{ url: "/images/watches/hero.svg", alt: STUDIO.scene }],
+      type: "website",
+    },
+  };
+}
+
+export default async function HomePage() {
+  const ordersOpen = await getStoreOrdersOpen();
+  return <WatchHome ordersOpen={ordersOpen} />;
 }

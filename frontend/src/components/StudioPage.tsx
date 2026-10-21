@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { STUDIO } from "@/lib/studio-content";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { STUDIO, STUDIO_OPEN, collectionsUrl } from "@/lib/studio-content";
+
 
 export function StudioPage({
   eyebrow,
@@ -26,15 +26,15 @@ export function StudioPage({
     </div>
   );
 }
-export function StudioCTA() {
+export function StudioCTA({ ordersOpen = false }: { ordersOpen?: boolean }) {
   return (
     <section className="studio-cta">
       <p className="studio-eyebrow">A personal starting point</p>
-      <h2>Imagine a portrait that feels like them.</h2>
-      <p>{STUDIO.readiness}</p>
+      <h2>Imagine a watch that feels like yours.</h2>
+      <p>{ordersOpen ? STUDIO_OPEN.readiness : STUDIO.readiness}</p>
       <div className="studio-cta-actions">
-        <a href={portraitStylesUrl} className="studio-button">
-          Explore Portrait Styles →
+        <a href={collectionsUrl} className="studio-button">
+          {ordersOpen ? "Shop Watches →" : "Explore Watches →"}
         </a>
         <Link href="/contact" className="studio-secondary-button">
           Contact Us →

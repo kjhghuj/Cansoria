@@ -1,0 +1,104 @@
+Browser tab: 1, Title: "Privacy Policy | Cansoria", URL: "http://localhost:3030/privacy".
+1 AXWebArea Privacy Policy | Cansoria, URL: localhost:3030/privacy
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Privacy Policy, Value: 1
+			11 text Privacy Policy
+		12 text Last updated: January 2026
+		13 heading Your Privacy Matters, Value: 2
+			14 text Your Privacy Matters
+		15 text Cansoria uses customer information to process orders, create custom watches, provide support, and send updates you request.
+		16 heading Information We Collect, Value: 2
+			17 text Information We Collect
+		18 content list
+			19 container
+				20 AXListMarker • 
+				21 text Name and contact details for order processing
+			22 container
+				23 AXListMarker • 
+				24 text Delivery address
+			25 container
+				26 AXListMarker • 
+				27 text Payment information handled by secure payment providers
+			28 container
+				29 AXListMarker • 
+				30 text Engraving text and notes submitted with your order
+			31 container
+				32 AXListMarker • 
+				33 text Email preferences for offers or studio updates
+		34 heading How We Use Your Data, Value: 2
+			35 text How We Use Your Data
+		36 text We use your information to:
+		37 content list
+			38 container
+				39 AXListMarker • 
+				40 text Process and deliver orders
+			41 container
+				42 AXListMarker • 
+				43 text Produce and review your watch order
+			44 container
+				45 AXListMarker • 
+				46 text Send order confirmations and shipping updates
+			47 container
+				48 AXListMarker • 
+				49 text Provide customer support
+			50 container
+				51 AXListMarker • 
+				52 text Send marketing communications only when permitted
+		53 heading Data Security, Value: 2
+			54 text Data Security
+		55 text We use reasonable technical and organizational measures to protect customer information. Payment data is handled by payment processors.
+		56 heading Your Rights, Value: 2
+			57 text Your Rights
+		58 text Depending on your location, you may have rights to access, correct, delete, or restrict use of your personal information.
+		59 heading Contact Us, Value: 2
+			60 text Contact Us
+		61 text For privacy-related questions, contact us at
+		62 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		63 text Cansoria Studio  |  Independent watch studio in preparation
+	64 container
+		65 link Description: Cansoria, Value: localhost:3030/
+		66 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		67 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		68 container Watches
+			69 heading Watches, Value: 2
+				70 text Watches
+			71 content list
+				72 link Description: Explore Watches, Value: localhost:3030/#collections
+				73 link Description: Collections, Value: localhost:3030/gallery
+				74 link Description: How It Works, Value: localhost:3030/how-it-works
+				75 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		76 container Our Studio
+			77 heading Our Studio, Value: 2
+				78 text Our Studio
+			79 content list
+				80 link Description: Our Story, Value: localhost:3030/about
+				81 link Description: Our Studio, Value: localhost:3030/our-studio
+				82 link Description: Contact Us, Value: localhost:3030/contact
+		83 container Help & Support
+			84 heading Help & Support, Value: 2
+				85 text Help & Support
+			86 content list
+				87 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				88 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				89 link Description: Returns & Refunds, Value: localhost:3030/returns
+				90 link Description: FAQs, Value: localhost:3030/faq
+		91 text ©  2026  Cansoria. All rights reserved.
+		92 container Legal
+			93 link Description: Privacy Policy, Value: localhost:3030/privacy
+			94 link Description: Terms & Conditions, Value: localhost:3030/terms
+	95 container
+		96 button Open issues overlay
+			97 image
+			98 text 1
+			99 text Issue
+		100 button Collapse issues badge
+			101 image
+
+The focused UI element is 1 AXWebArea Privacy Policy | Cansoria, URL: localhost:3030/privacy

@@ -3,40 +3,40 @@ import Link from "next/link";
 import { StudioPage, StudioCTA, StudioImage } from "@/components/StudioPage";
 import { STUDIO } from "@/lib/studio-content";
 export const metadata: Metadata = {
-  title: "Pet Portrait Style Gallery | Cansoria",
+  title: "Watch Collections Gallery | Cansoria",
   description:
-    "Explore illustrated pet portrait concepts and find inspiration for your preferred style.",
+    "Explore illustrated watch collection concepts and find the case, dial and strap that fit your wrist.",
   alternates: { canonical: "/gallery" },
 };
-const portraits = [
-  { breed: "Golden Retriever", image: "milo", style: "classic-oil" },
-  { breed: "Ragdoll Cat", image: "luna", style: "soft-impression" },
-  { breed: "French Bulldog", image: "charlie", style: "dark-classic" },
-  { breed: "Tabby Cat", image: "bella", style: "classic-oil" },
-  { breed: "Cavalier King Charles", image: "cooper", style: "textured-oil" },
-  { breed: "Poodle", image: "daisy", style: "soft-impression" },
+const models = [
+  { name: "Heritage Classic 40", handle: "heritage-classic-40", tag: "Dress watch" },
+  { name: "Meridian Automatic", handle: "meridian-automatic", tag: "Automatic" },
+  { name: "Regent Chronograph", handle: "regent-chronograph", tag: "Chronograph" },
+  { name: "Averly Dress Watch", handle: "averly-dress-watch", tag: "Mother-of-pearl dial" },
+  { name: "Northsea Diver", handle: "northsea-diver", tag: "20 ATM dive watch" },
+  { name: "Lucienne Slim 32", handle: "lucienne-slim-32", tag: "Ultra-thin" },
 ];
 export default function GalleryPage() {
   return (
     <StudioPage
-      eyebrow="Style inspiration"
-      title="Imagine a familiar face in art."
-      description="These design illustrations explore possible moods and compositions. They are not completed customer commissions."
+      eyebrow="Collection inspiration"
+      title="Imagine the watch on your wrist."
+      description="These design illustrations explore possible cases, dials and straps. They are not delivered customer watches."
     >
       <div className="studio-grid studio-gallery">
-        {portraits.map((pet) => (
-          <figure key={pet.image}>
+        {models.map((model) => (
+          <figure key={model.handle}>
             <Link
-              href={"/product/pet-portrait-oil-painting?style=" + pet.style}
-              aria-label={"Explore a " + pet.breed + " portrait concept"}
+              href={"/product/" + model.handle}
+              aria-label={"Explore the " + model.name + " concept"}
             >
               <StudioImage
-                src={"/images/home/" + pet.image + ".webp"}
-                alt={pet.breed + " portrait concept"}
+                src={"/images/watches/" + model.handle + ".svg"}
+                alt={model.name + " collection concept"}
               />
             </Link>
             <figcaption>
-              <h3>{pet.breed}</h3>
+              <h3>{model.name}</h3>
               <p>{STUDIO.illustration}</p>
             </figcaption>
           </figure>

@@ -18,11 +18,12 @@ describe('storefront proxy boundary', () => {
     expect(isSameOriginWrite(new Request('https://shop.test/api/auth/logout', { method: 'POST' }))).toBe(false);
     expect(isSameOriginWrite(new Request('https://shop.test/api/auth/logout', { method: 'POST', headers: { Origin: 'https://shop.test' } }))).toBe(true);
   });
-  it('allows scoped portrait endpoints without exposing file or admin routes', () => {
+  it('allows scoped engraving endpoints without exposing photos, files or admin routes', () => {
     const photo = '2c0e1371-36f3-40a7-b8c7-861f3c185559';
-    expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'photos'], 'POST')).toBe(true);
-    expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'portrait-items'], 'POST')).toBe(true);
-    expect(isStorePathAllowed(['store', 'orders', 'order_a', 'photos', photo], 'GET')).toBe(true);
+    expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'engraving-items'], 'POST')).toBe(true);
+    expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'photos'], 'POST')).toBe(false);
+    expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'portrait-items'], 'POST')).toBe(false);
+    expect(isStorePathAllowed(['store', 'orders', 'order_a', 'photos', photo], 'GET')).toBe(false);
     expect(isStorePathAllowed(['store', 'carts', 'cart_a', 'photos', 'private-file'], 'GET')).toBe(false);
     expect(isStorePathAllowed(['store', 'contact'], 'POST')).toBe(true);
     expect(isStorePathAllowed(['store', 'contact'], 'GET')).toBe(false);

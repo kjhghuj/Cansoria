@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useCart, useRegion, useAuth } from "@/lib/providers";
 import { StoreProduct } from "@/lib/types";
 import { STUDIO } from "@/lib/studio-content";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import { productImageCache } from "./components/utils";
 import { TrustBadgeGrid } from "@/components/TrustBadgeGrid";
 import type { TrustBadgeItem } from "@/components/TrustBadgeGrid";
@@ -192,7 +193,7 @@ function CartContent() {
   const currencyCode =
     cart?.currency_code?.toUpperCase() ||
     region?.currency_code?.toUpperCase() ||
-    "GBP";
+    DEFAULT_CURRENCY_CODE;
 
   const handleUpdateQuantity = async (lineItemId: string, quantity: number) => {
     if (quantity < 1) return;
@@ -220,7 +221,7 @@ function CartContent() {
       setCartError(
         error instanceof Error
           ? error.message
-          : "Unable to remove this artwork. Please try again.",
+          : "Unable to remove this item. Please try again.",
       );
     } finally {
       setUpdatingItemId(null);
@@ -275,7 +276,7 @@ function CartContent() {
         <div className="relative h-[240px] sm:h-[280px] lg:h-[320px] w-full">
           <Image
             src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=2000"
-            alt="Sunlit cream living room with framed hand-painted pet portraits"
+            alt="Cream studio scene with Cansoria watches on a wooden bench"
             fill
             priority
             className="object-cover object-[70%_center] lg:object-center"

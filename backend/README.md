@@ -1,6 +1,6 @@
 # Cansoria Studio Backend
 
-Medusa v2 backend for the Cansoria Studio oil painting storefront.
+Medusa v2 backend for the Cansoria Studio watch storefront.
 
 ## Stack
 
@@ -42,12 +42,12 @@ The seed script creates Cansoria Studio data:
 - Store name and storefront sales channel
 - GBP, USD, and EUR regions
 - Stripe payment provider IDs using `pp_stripe_stripe`
-- Shipping profiles and options for artwork delivery
-- Product categories for custom portraits, pet portraits, wedding gifts, landscape, abstract, classic art, home decor, and wall art
-- Oil painting products with Size, Framing, and Orientation variants
-- Product metadata used by the Next.js storefront, including `customizable`, `free_preview`, `rating`, `review_count`, `production_time`, and `story_sections`
+- Shipping profiles and options for watch delivery
+- Men's, women's, automatic, chronograph, dress, dive, everyday, and gift watch categories
+- Eight demo watch models with Size, Strap, and Dial variants
+- Demo metadata including `engraveable`, `movement`, `water_resistance`, `warranty`, `rating`, `review_count`, and `story_sections`; public field exposure and model-specific specifications still require the changes described in the current audit
 
-Run the seed script after configuring the database:
+Run the seed script only against an empty development database or an isolated test database. It is not a migration from the previous catalog and is not guaranteed to be repeatable; it creates products and inventory levels. Back up existing business data and prepare a scoped migration before changing an existing store.
 
 ```powershell
 npm.cmd run seed
@@ -63,4 +63,4 @@ npm.cmd run test:unit
 
 ## Frontend Contract
 
-The Cansoria storefront expects the Store API to expose products, categories, carts, shipping options, payment collection/session flow, customer account endpoints, order lookup, and newsletter subscription. See `STORE_API_DOCS.md` and `docs/FRONTEND_CART_API.md`.
+The Cansoria storefront uses products, categories, carts, engraving, shipping options, payment collections, customer accounts, secure order lookup, and newsletter subscription. Maintain the shared integration contract in [docs/FRONTEND_CART_API.md](docs/FRONTEND_CART_API.md); access and deployment requirements are in [SECURITY.md](SECURITY.md).

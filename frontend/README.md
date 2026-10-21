@@ -1,6 +1,6 @@
 # Cansoria Frontend
 
-Cansoria Studio oil painting storefront, built with Next.js and connected to the Cansoria Medusa backend.
+Cansoria Studio watch storefront, built with Next.js and connected to the Cansoria Medusa backend.
 
 ## Local development
 
@@ -31,3 +31,5 @@ Keep real credentials in local environment files.
 - `public`: public static assets.
 
 The backend source and its documentation are in `../backend`.
+
+The shared cart and checkout contract is maintained in [backend/docs/FRONTEND_CART_API.md](../backend/docs/FRONTEND_CART_API.md). Current redesign work is tracked in the [watch store audit and plan](../WATCH_STORE_CODE_AUDIT_AND_REDESIGN_PLAN_2026-10-21.md).

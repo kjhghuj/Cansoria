@@ -10,27 +10,25 @@ import {
 import { GEMINI_SYSTEM_INSTRUCTION, ARTICLES } from "../constants";
 import ProductCard from "@/components/ProductCard";
 import OurStudioPage, { metadata } from "@/app/our-studio/page";
-import { portraitStyles, portraitStylesUrl, portraitUrl } from "../portrait";
 
 const legacy = {
   id: "prod_legacy",
-  handle: "pet-portrait-oil-painting",
-  title: "Pet Portrait",
-  subtitle: "Museum-grade oils by master artists",
+  handle: "meridian-automatic",
+  title: "Meridian Automatic",
+  subtitle: "Swiss-made by master watchmakers",
   description:
-    "Archival fine linen, unlimited revisions and insured worldwide delivery.",
-  material: "Archival linen",
+    "Chronometer-certified accuracy, unlimited servicing and insured worldwide delivery.",
+  material: "904L steel",
   tags: [{ value: "Best Seller" }],
   metadata: {
     rating: 4.8,
     review_count: 156,
     reviews_verified: true,
-    free_preview: true,
     best_seller: true,
-    story_sections: [{ id: "old", title: "Master artists" }],
+    story_sections: [{ id: "old", title: "Master watchmakers" }],
   },
   variants: [
-    { id: "variant_1", calculated_price: { calculated_amount: 85.02 } },
+    { id: "variant_1", calculated_price: { calculated_amount: 334.62 } },
   ],
 } as unknown as StoreProduct;
 
@@ -43,14 +41,14 @@ describe("preparation-stage public facts", () => {
     expect(product.metadata?.reviews_verified).toBe(false);
     expect(product.variants).toBe(legacy.variants);
     expect(product.id).toBe(legacy.id);
-    expect(legacy.description).toContain("unlimited revisions");
-    expect(legacy.metadata?.free_preview).toBe(true);
+    expect(legacy.description).toContain("unlimited servicing");
+    expect(legacy.metadata?.best_seller).toBe(true);
   });
   it("presents reviewed admin content once orders are open", () => {
     const product = studioProduct(legacy, { ordersOpen: true });
     expect(product.description).toBe(legacy.description);
     expect(product.subtitle).toBe(legacy.subtitle);
-    expect(product.material).toBe("Archival linen");
+    expect(product.material).toBe("904L steel");
     // Story sections survive; they are no longer unconditionally cleared.
     expect(product.metadata?.story_sections).toEqual(
       legacy.metadata?.story_sections,
@@ -71,25 +69,22 @@ describe("preparation-stage public facts", () => {
     const seo = studioProductSeo(legacy, { ordersOpen: true });
     expect(seo.description).toBe(legacy.description);
   });
-  it("uses safe catalog copy and concept imagery in SEO", () => {
+  it("uses safe catalog copy and the product image in SEO", () => {
     const seo = studioProductSeo(legacy);
     expect(seo.description).toBe(STUDIO.productDescription);
     expect(seo.openGraph.description).toBe(seo.description);
-    expect(seo.openGraph.images[0]?.url).toBe(
-      "/images/pet-oil/classic-oil.webp",
-    );
     expect(JSON.stringify(seo)).not.toMatch(
-      /master artists|archival|unlimited revisions|insured worldwide/i,
+      /master watchmakers|chronometer-certified|unlimited servicing|insured worldwide/i,
     );
   });
-  it("suppresses seeded preview, popularity and review badges even if metadata claims verification", () => {
+  it("suppresses seeded popularity and review badges even if metadata claims verification", () => {
     const html = renderToStaticMarkup(
       createElement(ProductCard, { product: legacy }),
     );
-    expect(html).toContain("£85.02");
-    expect(html).toContain("Style illustration");
+    expect(html).toContain("$334.62");
+    expect(html).toContain("Collection illustration");
     expect(html).not.toMatch(
-      /Free Preview|Best Seller|4\.8|156|Archival|Museum-grade/,
+      /Best Seller|4\.8|156|904L|Swiss-made/,
     );
   });
   it("shares preparation facts with the actual chat prompt and default articles", () => {
@@ -97,7 +92,7 @@ describe("preparation-stage public facts", () => {
     expect(GEMINI_SYSTEM_INSTRUCTION).toContain(STUDIO.readiness);
     expect(GEMINI_SYSTEM_INSTRUCTION).toContain("identities and nationalities");
     expect(JSON.stringify(ARTICLES)).not.toMatch(
-      /the studio reviews your reference|sends a preview before|unlimited revisions/i,
+      /chronometer-certified|unlimited servicing|the studio reviews your reference/i,
     );
   });
   it("renders a complete studio page with labelled concepts and useful destinations", () => {
@@ -105,17 +100,21 @@ describe("preparation-stage public facts", () => {
     expect(metadata.alternates?.canonical).toBe("/our-studio");
     for (const section of [
       "Our Approach",
-      "Explore the Styles",
-      "Preparing Your Portrait",
-      "Before Commissions Open",
+      "Explore the Collections",
+      "Preparing Your Order",
+      "Before Orders Open",
     ])
       expect(html).toContain(section);
     expect(html).toContain(STUDIO.illustration);
-    expect(html).toContain(`href="${portraitStylesUrl}"`);
-    for (const style of portraitStyles)
-      expect(html).toContain(`href="${portraitUrl}?style=${style.id}"`);
+    for (const handle of [
+      "heritage-classic-40",
+      "northsea-diver",
+      "regent-chronograph",
+      "meridian-automatic",
+    ])
+      expect(html).toContain(`href="/product/${handle}"`);
     expect(html).toContain('href="/contact"');
-    expect(html).toContain('href="/upload-photo"');
+    expect(html).toContain('href="/how-it-works"');
     expect(html).not.toContain("artist-at-work");
     expect(html).not.toContain("profiles are being prepared");
   });
@@ -128,16 +127,16 @@ it("uses a sensible SEO fallback for an incomplete concept record", () => {
     metadata: null,
     images: [],
   } as unknown as StoreProduct);
-  expect(seo.title).toBe("Portrait Concept | Cansoria");
+  expect(seo.title).toBe("Watch Concept | Cansoria");
   expect(seo.openGraph.images).toEqual([]);
   expect(seo.alternates.canonical).toBe("/");
 });
-it("keeps generic concept images without inheriting legacy descriptions", () => {
+it("keeps the product image without inheriting legacy descriptions", () => {
   const seo = studioProductSeo({
     ...legacy,
-    handle: "generic-artwork",
-    thumbnail: "/products/canvas.svg",
+    handle: "ellery-everyday",
+    thumbnail: "/products/watch.svg",
   });
-  expect(seo.openGraph.images[0]?.url).toBe("/products/canvas.svg");
+  expect(seo.openGraph.images[0]?.url).toBe("/products/watch.svg");
   expect(seo.description).toBe(STUDIO.productDescription);
 });

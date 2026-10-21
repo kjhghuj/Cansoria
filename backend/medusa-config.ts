@@ -4,7 +4,6 @@ import fs from "fs"
 import { isLocalDevelopment } from "./src/lib/env-mode"
 import { signingSecret, storefrontUrl } from "./src/lib/access-tokens"
 import { STORE_RESTRICTED_FIELDS } from "./src/lib/catalog-fields"
-import { portraitPhotoSecret } from "./src/lib/portrait-photos"
 import { visitorSigningSecret } from "./src/lib/visitor-identity"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
@@ -23,7 +22,6 @@ if (!isLocalDevelopment() && !hasS3FileConfig) {
 if (!isLocalDevelopment()) {
   signingSecret()
   visitorSigningSecret()
-  portraitPhotoSecret()
   storefrontUrl()
   const cookieSecret = process.env.COOKIE_SECRET || ""
   if (cookieSecret.length < 32 || /supersecret|replace|changeme|your[_-]|example/i.test(cookieSecret)) throw new Error("SECURITY ERROR: A strong COOKIE_SECRET is required")

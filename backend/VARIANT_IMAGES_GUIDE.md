@@ -15,13 +15,13 @@ GET /store/products/{productId}
 {
   product: {
     id: "prod_123",
-    title: "Sunset Landscape",
+    title: "Heritage Classic 40",
     thumbnail: "https://...",
     images: [...],  // 产品级别图片
     variants: [
       {
         id: "variant_123",
-        title: "Dusty Rose",
+        title: "40mm / Leather Strap / Black",
         images: [...],  // ✅ 变体专属图片
         prices: [...]
       }
@@ -43,7 +43,7 @@ GET /store/carts/{cartId}
       {
         variant: {
           id: "variant_123",
-          title: "Dusty Rose",
+          title: "40mm / Leather Strap / Black",
           images: [...],  // ✅ 变体图片
           product: {
             thumbnail: "https://..."

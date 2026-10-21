@@ -17,22 +17,22 @@ export default function TermsPage() {
 
           <h2>1. Introduction</h2>
           <p>
-            Welcome to Cansoria. By accessing our website or purchasing artwork,
+            Welcome to Cansoria. By accessing our website or purchasing watches,
             you agree to these terms and conditions.
           </p>
 
           <h2>2. Products</h2>
           <p>
             Product images, dimensions, colors, and descriptions are provided
-            for guidance. Hand-painted artwork may include natural variations in
+            for guidance. Engraved watches are personalised to the text you approve, and
             brushwork, tone, and texture.
           </p>
 
           <h2>3. Custom Orders</h2>
           <p>
-            Custom artwork is produced from customer-provided references or
+            Personalised engraving is produced from the text you provide or
             selected style directions. You are responsible for ensuring you have
-            the right to use submitted photos.
+            the right to use the words you submit.
           </p>
 
           <h2>4. Pricing</h2>
@@ -49,9 +49,9 @@ export default function TermsPage() {
 
           <h2>6. Intellectual Property</h2>
           <p>
-            Website content, brand assets, and original artwork presentations
+            Website content, brand assets, and original watch presentations
             belong to Cansoria or their respective rights holders. Do not submit
-            photos or references you are not permitted to use.
+            engraving text you are not permitted to use.
           </p>
 
           <h2>7. Limitation of Liability</h2>

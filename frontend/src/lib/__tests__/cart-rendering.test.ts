@@ -15,39 +15,38 @@ function imageSources(html: string) {
 describe("customer-facing cart and catalog", () => {
   const item = {
     id: "item_test",
-    product_title: "Pet Portrait",
-    unit_price: 85.02,
+    product_title: "Meridian Automatic",
+    unit_price: 334.62,
     quantity: 1,
-    total: 85.02,
+    total: 334.62,
     thumbnail: "/products/generic.svg",
     metadata: {
-      portrait: { style: "dark-classic", photo_name: "reference.webp" },
+      engraving: { text: "For Dad, 2026", font: "serif" },
     },
   } as unknown as StoreCartLineItem;
-  it("shows the selected portrait style and the actual price in the cart", () => {
+  it("shows the engraving and the actual price in the cart", () => {
     const html = renderToStaticMarkup(
       createElement(CartItem, {
         item,
-        currencyCode: "GBP",
+        currencyCode: "USD",
         onUpdateQuantity: () => {},
         onRemove: () => {},
         isUpdating: false,
       }),
     );
-    expect(imageSources(html)).toContain("/images/pet-oil/dark-classic.webp");
-    expect(html).toContain("Dark Classic");
-    expect(html).toContain("reference.webp");
-    expect(html).toContain("£85.02");
+    expect(html).toContain("For Dad, 2026");
+    expect(html).toContain("Roman Serif");
+    expect(html).toContain("$334.62");
   });
   it("allows checkout before an address is entered and disables navigation during changes", () => {
     const props = {
       cart: { id: "cart_test", shipping_methods: [] } as unknown as StoreCart,
-      subtotal: 85.02,
+      subtotal: 334.62,
       shipping: null,
       tax: 0,
       discount: 0,
-      total: 85.02,
-      currencyCode: "GBP",
+      total: 334.62,
+      currencyCode: "USD",
       itemCount: 1,
       isLoading: false,
     };
@@ -63,16 +62,15 @@ describe("customer-facing cart and catalog", () => {
   it("does not publish seeded customer ratings as verified reviews", () => {
     const product = {
       id: "prod_test",
-      handle: "pet-portrait-oil-painting",
-      title: "Pet Portrait",
+      handle: "meridian-automatic",
+      title: "Meridian Automatic",
       metadata: { rating: 4.8, review_count: 156 },
-      variants: [{ calculated_price: { calculated_amount: 85.02 } }],
+      variants: [{ calculated_price: { calculated_amount: 334.62 } }],
     } as unknown as StoreProduct;
     const html = renderToStaticMarkup(
-      createElement(ProductCard, { product, regionCurrency: "GBP" }),
+      createElement(ProductCard, { product, regionCurrency: "USD" }),
     );
-    expect(imageSources(html)).toContain("/images/pet-oil/classic-oil.webp");
-    expect(html).toContain("£85.02");
+    expect(html).toContain("$334.62");
     expect(html).not.toContain("4.8");
     expect(html).not.toContain("(156)");
   });

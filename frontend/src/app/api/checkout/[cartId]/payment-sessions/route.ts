@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { PAYMENT_PROVIDER_ID, IS_LOCAL_PAYMENT_MOCK } from '@/lib/payment-provider';
 import { backendFetch, privateJson, safeBackendFailure } from '@/lib/server-medusa';
 import { isSameOriginWrite, readBoundedJson } from '@/lib/store-proxy-policy';
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try { body = await readBoundedJson(request, 4096); }
   catch (error) { return privateJson({ message: 'Invalid request.' }, error instanceof Error && error.message === 'Request too large' ? 413 : 400); }
   try {
-    if (body.provider_id && body.provider_id !== 'pp_stripe_stripe') return privateJson({ message: 'Invalid payment provider.' }, 400);
+    if (body.provider_id && body.provider_id !== PAYMENT_PROVIDER_ID) return privateJson({ message: 'Invalid payment provider.' }, 400);
     const cartResponse = await backendFetch(`store/carts/${cartId}`, {}, undefined, request);
     if (!cartResponse.ok) return safeBackendFailure(cartResponse);
     const { cart } = await cartResponse.json();
@@ -29,13 +30,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     if (!collectionId || !/^[A-Za-z0-9_-]{1,128}$/.test(collectionId)) throw new Error('Payment unavailable');
     const sessionResponse = await backendFetch(`store/payment-collections/${collectionId}/payment-sessions`, {
-      method: 'POST', body: JSON.stringify({ provider_id: 'pp_stripe_stripe' }),
+      method: 'POST', body: JSON.stringify({ provider_id: PAYMENT_PROVIDER_ID }),
     }, undefined, request);
     if (!sessionResponse.ok) return safeBackendFailure(sessionResponse);
     const data = await sessionResponse.json();
-    const session = (data.payment_collection?.payment_sessions as PaymentSession[] | undefined)?.find((item) => item.provider_id === 'pp_stripe_stripe');
+    const session = (data.payment_collection?.payment_sessions as PaymentSession[] | undefined)?.find((item) => item.provider_id === PAYMENT_PROVIDER_ID);
     const clientSecret = session?.data?.client_secret;
-    if (!session || !clientSecret) throw new Error('Payment unavailable');
+    if (!session) throw new Error('Payment unavailable');
+    // Stripe returns a client secret the browser confirms with. The local test
+    // provider authorizes server-side, so no secret is required or expected.
+    if (!clientSecret && !IS_LOCAL_PAYMENT_MOCK) throw new Error('Payment unavailable');
     return privateJson({
       cart,
       payment_session: { id: session.id, status: session.status, provider_id: session.provider_id, data: { client_secret: clientSecret } },

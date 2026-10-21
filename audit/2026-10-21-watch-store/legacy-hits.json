@@ -1,0 +1,397 @@
+[
+  {
+    "file": "frontend/src/app/cart/components/CartLoading.tsx",
+    "line": 7,
+    "text": "<p className=\"mt-4 text-charcoal-light\">Loading your artwork cart...</p>"
+  },
+  {
+    "file": "frontend/src/app/cart/components/OrderSummary.tsx",
+    "line": 102,
+    "text": "{ordersOpen ? \"Commissions open — order today\" : \"Commissions in preparation\"}"
+  },
+  {
+    "file": "frontend/src/app/cart/page.tsx",
+    "line": 25,
+    "text": "{ kind: \"preview\", title: \"Commissions in preparation\" },"
+  },
+  {
+    "file": "frontend/src/app/checkout/page.tsx",
+    "line": 67,
+    "text": "{ kind: \"preview\", title: \"Commissions in preparation\" },"
+  },
+  {
+    "file": "frontend/src/app/checkout/page.tsx",
+    "line": 199,
+    "text": "\"Commissions are not open yet. Your cart has been saved — please contact the studio to be notified when orders open.\","
+  },
+  {
+    "file": "frontend/src/app/checkout/page.tsx",
+    "line": 418,
+    "text": "<p className=\"font-medium\">Commissions are not open yet.</p>"
+  },
+  {
+    "file": "frontend/src/app/checkout/page.tsx",
+    "line": 613,
+    "text": "Commissions are in preparation. Production, previews, revisions"
+  },
+  {
+    "file": "frontend/src/app/checkout/page.tsx",
+    "line": 643,
+    "text": "Our service is in preparation. Production, previews, revisions and"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 32,
+    "text": "className=\"portrait-styles\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 34,
+    "text": "aria-labelledby=\"portrait-styles-title\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 36,
+    "text": "<div className=\"portrait-container\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 37,
+    "text": "<div className=\"portrait-styles-heading\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 38,
+    "text": "<h2 id=\"portrait-styles-title\">Explore the Collections</h2>"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 41,
+    "text": "<div className=\"portrait-style-grid\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 46,
+    "text": "className=\"portrait-style-card\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 49,
+    "text": "<div className=\"portrait-style-image\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 59,
+    "text": "<p className=\"portrait-style-description\">{collection.description}</p>"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 60,
+    "text": "<p className=\"portrait-style-caption\">Collection illustration</p>"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchCollections.tsx",
+    "line": 61,
+    "text": "<span className=\"portrait-style-link\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 35,
+    "text": "<div className=\"portrait-home\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 36,
+    "text": "<section className=\"portrait-hero\" aria-labelledby=\"portrait-hero-title\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 45,
+    "text": "<div className=\"portrait-container hero-content\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 47,
+    "text": "<h1 id=\"portrait-hero-title\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 55,
+    "text": "<a href={collectionsUrl} className=\"portrait-button\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 76,
+    "text": "<section className=\"portrait-magic\" aria-labelledby=\"magic-title\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 77,
+    "text": "<div className=\"portrait-container magic-layout\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 89,
+    "text": "<a className=\"portrait-text-link\" href={collectionsUrl}>"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 126,
+    "text": "className=\"portrait-process\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 130,
+    "text": "<div className=\"portrait-container process-layout\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 151,
+    "text": "<StepLink href={step.href} className=\"portrait-text-link\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 161,
+    "text": "className=\"portrait-gallery\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 162,
+    "text": "id=\"portraits\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 165,
+    "text": "<div className=\"portrait-container portrait-section-heading\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 173,
+    "text": "<Link className=\"portrait-text-link\" href=\"/gallery\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 177,
+    "text": "<div className=\"pet-gallery-grid\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 182,
+    "text": "className=\"pet-portrait-card\""
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 185,
+    "text": "<div className=\"pet-portrait-image\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 199,
+    "text": "<section className=\"portrait-forever\" aria-labelledby=\"forever-title\">"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 207,
+    "text": "<span className=\"portrait-scene-caption\">{STUDIO.scene}</span>"
+  },
+  {
+    "file": "frontend/src/app/components/home/WatchHome.tsx",
+    "line": 219,
+    "text": "<Link href=\"/our-studio\" className=\"portrait-button\">"
+  },
+  {
+    "file": "frontend/src/app/footer.css",
+    "line": 1,
+    "text": "/* Shared pet portrait footer. Styles are isolated from page-specific layouts. */"
+  },
+  {
+    "file": "frontend/src/app/returns/page.tsx",
+    "line": 20,
+    "text": "Cancellation, revisions, returns, refunds and damaged-delivery"
+  },
+  {
+    "file": "frontend/src/app/terms/page.tsx",
+    "line": 28,
+    "text": "brushwork, tone, and texture."
+  },
+  {
+    "file": "frontend/src/components/ContactForm.tsx",
+    "line": 77,
+    "text": "<option value=\"commission\">Planning a watch order</option>"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 42,
+    "text": "className=\"portrait-navbar\""
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 48,
+    "text": "<nav className=\"portrait-nav-inner\" aria-label=\"Main navigation\">"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 51,
+    "text": "className=\"portrait-mobile-toggle portrait-icon-button\""
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 59,
+    "text": "<Link href=\"/\" className=\"portrait-wordmark\" onClick={closeMenus}>"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 62,
+    "text": "<div className=\"portrait-desktop-navigation\">"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 71,
+    "text": "<div className=\"portrait-nav-actions\">"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 74,
+    "text": "className=\"portrait-icon-button\""
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 85,
+    "text": "className=\"portrait-icon-button nav-account\""
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 93,
+    "text": "className=\"portrait-icon-button nav-cart\""
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 99,
+    "text": "className={`portrait-cart-count ${cartCount ? \"has-items\" : \"\"}`}"
+  },
+  {
+    "file": "frontend/src/components/Navbar.tsx",
+    "line": 109,
+    "text": "className=\"portrait-mobile-navigation\""
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 14,
+    "text": "const portraits = (data.items || []).flatMap((item) => {"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 15,
+    "text": "const portrait = item?.metadata?.portrait as"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 18,
+    "text": "return portrait &&"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 19,
+    "text": "typeof portrait.style === \"string\" &&"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 20,
+    "text": "names[portrait.style]"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 21,
+    "text": "? [{ item, portrait }]"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 24,
+    "text": "if (!portraits.length) return null;"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 28,
+    "text": "<Heading level=\"h2\">Portrait references & preferences</Heading>"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 30,
+    "text": "{portraits.map(({ item, portrait }) => ("
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 33,
+    "text": "{item.title} · {names[String(portrait.style)]}"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 36,
+    "text": "Reference: {String(portrait.photo_name || \"Uploaded photo\")}"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 39,
+    "text": "Artist notes: {String(portrait.notes || \"No additional notes\")}"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 41,
+    "text": "{typeof portrait.photo_id === \"string\" &&"
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 42,
+    "text": "/^[a-f0-9-]{36}$/.test(portrait.photo_id) && ("
+  },
+  {
+    "file": "backend/src/admin/widgets/order-portrait-details.tsx",
+    "line": 45,
+    "text": "href={`/admin/orders/${encodeURIComponent(data.id)}/portrait-photos/${portrait.photo_id}`}"
+  },
+  {
+    "file": "backend/src/api/store/carts/route.ts",
+    "line": 14,
+    "text": "if (Array.isArray(input.promo_codes) && input.promo_codes.some((code: unknown) => typeof code === \"string\" && /^ART15-/i.test(code))) return res.status(400).json({ type: \"invalid_request\", message: \"Apply welcome codes after creating your cart\" })"
+  },
+  {
+    "file": "backend/src/api/store/contact/route.ts",
+    "line": 25,
+    "text": "![\"photo\", \"commission\", \"order\", \"feedback\"].includes(topic)"
+  },
+  {
+    "file": "backend/src/lib/asset-cleanup-preview.ts",
+    "line": 14,
+    "text": "const OBJECT_FIELDS = new Set([\"metadata\", \"line_item_metadata\", \"portrait\"])"
+  },
+  {
+    "file": "backend/src/lib/catalog-fields.ts",
+    "line": 71,
+    "text": "export const PUBLIC_PRODUCT_METADATA_KEYS = [\"story_sections\", \"rating\", \"average_rating\", \"review_rating\", \"reviews\", \"rating_count\", \"review_count\", \"reviews_verified\", \"free_preview\", \"freePreview\"]"
+  },
+  {
+    "file": "backend/src/lib/checkout-completion.ts",
+    "line": 232,
+    "text": "if (!/^ART15-/i.test(promotion.code || \"\")) continue;"
+  },
+  {
+    "file": "backend/src/lib/welcome-promotions.ts",
+    "line": 39,
+    "text": "/** Old anonymous ART15 promotions remain in deployed databases; reject them at application/checkout too. */"
+  },
+  {
+    "file": "backend/src/lib/welcome-promotions.ts",
+    "line": 50,
+    "text": "const codes = [...(Array.isArray(input) ? input : []), ...(cart?.promotions || []).map(p => p?.code)].filter((code: unknown) => typeof code === \"string\" && /^ART15-/i.test(code as string))"
+  },
+  {
+    "file": "backend/src/modules/resend/service.ts",
+    "line": 139,
+    "text": "[\"Artwork subtotal (before tax)\", data.item_subtotal ?? 0],"
+  },
+  {
+    "file": "backend/src/subscribers/customer-created.ts",
+    "line": 21,
+    "text": "const code = `ART15-${createHash(\"sha256\").update(`cansoria-welcome:${customer.id}`).digest(\"hex\").slice(0, 16).toUpperCase()}`"
+  }
+]

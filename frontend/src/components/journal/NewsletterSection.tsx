@@ -27,7 +27,7 @@ export default function NewsletterSection() {
                     Artful ideas in your inbox.
                 </h2>
                 <p className="text-charcoal-light font-light mb-8 leading-relaxed">
-                    Join our community for home decor notes, custom painting ideas,
+                    Join our community for watch guides, collecting ideas,
                     and <span className="font-medium text-terracotta">member offers</span>.
                 </p>
 

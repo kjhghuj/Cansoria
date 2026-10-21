@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
 import { getProductByHandle, getRegion, getStoreOrdersOpen } from "@/lib/medusa";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import ProductClient from "./components/ProductClient";
-import { studioProduct, studioProductSeo } from "@/lib/studio-content";
-import { getPortraitStyle } from "@/lib/portrait";
+import { studioProduct, studioProductSeo, collectionsUrl } from "@/lib/studio-content";
 import { Breadcrumb } from "./components/Breadcrumb";
 import ProductStory, { StorySection } from "./components/ProductStory";
 
@@ -14,7 +14,6 @@ export const dynamic = "force-dynamic";
 
 interface ProductPageProps {
   params: Promise<{ handle: string }>;
-  searchParams: Promise<{ style?: string }>;
 }
 
 function parseStorySections(
@@ -48,7 +47,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params;
-  const [region, ordersOpen] = await Promise.all([getRegion("gb"), getStoreOrdersOpen()]);
+  const [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
   const rawProduct = await getProductByHandle(handle, region?.id);
   const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
 
@@ -64,11 +63,9 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
-  searchParams,
 }: ProductPageProps) {
   const { handle } = await params;
-  const initialStyle = getPortraitStyle((await searchParams).style);
-  const [region, ordersOpen] = await Promise.all([getRegion("gb"), getStoreOrdersOpen()]);
+  const [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
   const rawProduct = await getProductByHandle(handle, region?.id);
   const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
 
@@ -76,17 +73,12 @@ export default async function ProductPage({
     notFound();
   }
 
-  const images =
-    product.handle === "pet-portrait-oil-painting"
-      ? [
-          { url: "/images/pet-oil/" + initialStyle + ".webp" },
-          { url: "/images/pet-oil/hero-room.png" },
-        ]
-      : product.images || [];
+  const images = product.images || [];
   const thumbnail = product.thumbnail;
   const category = product.categories?.[0] || null;
-  const currencyCode = region?.currency_code?.toUpperCase() || "GBP";
+  const currencyCode = region?.currency_code?.toUpperCase() || DEFAULT_CURRENCY_CODE;
   const storySections = parseStorySections(product.metadata);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
 
   return (
     <>
@@ -94,8 +86,7 @@ export default async function ProductPage({
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <Breadcrumb product={product} />
           <ProductClient
-            key={`${product.id}:${initialStyle}`}
-            initialStyle={initialStyle}
+            key={product.id}
             product={product}
             images={images}
             thumbnail={thumbnail}
@@ -125,6 +116,38 @@ export default async function ProductPage({
               "@type": "Brand",
               name: "Cansoria",
             },
+          }),
+        }}
+      />
+      {/* Mirrors the visible breadcrumb trail (Home / Watches / product). */}
+      <script
+        type="application/ld+json"
+        nonce={(await headers()).get("x-nonce") ?? undefined}
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: `${baseUrl}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Watches",
+                item: `${baseUrl}${collectionsUrl}`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: product.title,
+                item: `${baseUrl}/product/${product.handle}`,
+              },
+            ],
           }),
         }}
       />

@@ -2,9 +2,7 @@ import { Children, isValidElement, type ReactNode } from "react";
 import type { StoreProduct } from "../types";
 import { getProductByHandle, getRegion, getStoreOrdersOpen } from "../medusa";
 import ProductPage, { generateMetadata } from "@/app/product/[handle]/page";
-import { STUDIO } from "../studio-content";
-import { portraitStyles } from "../portrait";
-import ProductClient from "@/app/product/[handle]/components/ProductClient";
+import { STUDIO, collectionsUrl } from "../studio-content";
 jest.mock("../medusa", () => ({
   ...jest.requireActual("../medusa"),
   getProductByHandle: jest.fn(),
@@ -16,19 +14,18 @@ jest.mock("next/headers", () => ({
 }));
 const legacy = {
   id: "prod_legacy",
-  handle: "pet-portrait-oil-painting",
-  title: "Pet Portrait",
-  subtitle: "Museum-grade materials",
-  description: "Master artists on archival linen with unlimited revisions.",
-  images: [{ url: "/images/pet-oil/artist-at-work.webp" }],
-  metadata: { story_sections: [{ id: "old", title: "Our master artists" }] },
+  handle: "meridian-automatic",
+  title: "Meridian Automatic",
+  subtitle: "In-house assembly",
+  description: "Chronometer-certified accuracy with unlimited servicing.",
+  images: [{ url: "/images/watches/meridian-automatic.svg" }],
+  metadata: { story_sections: [{ id: "old", title: "Our master watchmakers" }] },
   variants: [
-    { id: "variant_1", calculated_price: { calculated_amount: 85.02 } },
+    { id: "variant_1", calculated_price: { calculated_amount: 334.62 } },
   ],
 } as unknown as StoreProduct;
 const props = () => ({
-  params: Promise.resolve({ handle: "pet-portrait-oil-painting" }),
-  searchParams: Promise.resolve({ style: "dark-classic" }),
+  params: Promise.resolve({ handle: "meridian-automatic" }),
 });
 function findJsonLd(node: ReactNode): Record<string, unknown> | undefined {
   if (
@@ -46,29 +43,22 @@ function findJsonLd(node: ReactNode): Record<string, unknown> | undefined {
   });
   return found;
 }
-function findInitialStyle(node: ReactNode): string | undefined {
-  if (!isValidElement<{ children?: ReactNode; initialStyle?: string }>(node)) return undefined;
-  if (node.type === ProductClient) return node.props.initialStyle;
-  let found: string | undefined;
-  Children.forEach(node.props.children, (child) => { found ??= findInitialStyle(child); });
-  return found;
-}
 describe("actual product route presentation", () => {
   beforeEach(() => {
     jest.mocked(getProductByHandle).mockResolvedValue(legacy);
     jest
       .mocked(getRegion)
-      .mockResolvedValue({ id: "reg_test", currency_code: "gbp" } as never);
+      .mockResolvedValue({ id: "reg_test", currency_code: "usd" } as never);
     jest.mocked(getStoreOrdersOpen).mockResolvedValue(false);
   });
   it("does not inherit unverified catalog copy in the route metadata", async () => {
     const metadata = await generateMetadata(props());
     expect(metadata.description).toBe(STUDIO.productDescription);
     expect(metadata.alternates?.canonical).toBe(
-      "/product/pet-portrait-oil-painting",
+      "/product/meridian-automatic",
     );
     expect(JSON.stringify(metadata)).not.toMatch(
-      /master artists|archival linen|unlimited revisions/i,
+      /master watchmakers|chronometer-certified|unlimited servicing/i,
     );
   });
   it("presents reviewed admin copy once the store opens orders", async () => {
@@ -78,34 +68,51 @@ describe("actual product route presentation", () => {
     const data = findJsonLd(await ProductPage(props()));
     expect(data?.description).toBe(legacy.description);
   });
-  it("keeps concept imagery and safe copy in JSON-LD without advertising an available sale", async () => {
+  it("keeps product imagery and safe copy in JSON-LD without advertising an available sale", async () => {
     const data = findJsonLd(await ProductPage(props()));
     expect(data?.description).toBe(STUDIO.productDescription);
-    expect(data?.image).toContain("/images/pet-oil/dark-classic.webp");
+    expect(data?.image).toContain("/images/watches/meridian-automatic.svg");
     expect(data?.offers).toBeUndefined();
     expect(JSON.stringify(data)).not.toMatch(
-      /artist-at-work|master artists|archival linen|unlimited revisions/i,
+      /master watchmakers|chronometer-certified|unlimited servicing/i,
     );
+  });
+  it("emits a BreadcrumbList that mirrors the visible Home / Watches / product trail", async () => {
+    const page = await ProductPage(props());
+    const scripts: unknown[] = [];
+    (function collect(node: ReactNode) {
+      if (!isValidElement<{ children?: ReactNode; dangerouslySetInnerHTML?: { __html: string } }>(node)) return;
+      if (node.type === "script" && node.props.dangerouslySetInnerHTML)
+        scripts.push(JSON.parse(node.props.dangerouslySetInnerHTML.__html));
+      Children.forEach(node.props.children, collect);
+    })(page);
+    const breadcrumb = scripts.find(
+      (entry) => (entry as { "@type"?: string })["@type"] === "BreadcrumbList",
+    ) as
+      | {
+          itemListElement: { position: number; name: string; item: string }[];
+        }
+      | undefined;
+    expect(breadcrumb?.itemListElement).toEqual([
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://cansoria.com/" },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Watches",
+        item: `https://cansoria.com${collectionsUrl}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Meridian Automatic",
+        item: "https://cansoria.com/product/meridian-automatic",
+      },
+    ]);
   });
   it("handles a missing catalog product without fabricating product metadata", async () => {
     jest.mocked(getProductByHandle).mockResolvedValue(null);
     const metadata = await generateMetadata(props());
     expect(metadata.title).toBe("Product Not Found | Cansoria");
     expect(metadata.description).not.toBe(STUDIO.productDescription);
-  });
-  it.each(portraitStyles)("preselects $name and its preview from the style link", async (style) => {
-    const page = await ProductPage({
-      params: props().params,
-      searchParams: Promise.resolve({ style: style.id }),
-    });
-    expect(findInitialStyle(page)).toBe(style.id);
-    expect(findJsonLd(page)?.image).toContain(`/images/pet-oil/${style.id}.webp`);
-  });
-  it("uses Classic Oil for an invalid style query", async () => {
-    const page = await ProductPage({
-      params: props().params,
-      searchParams: Promise.resolve({ style: "unknown-style" }),
-    });
-    expect(findInitialStyle(page)).toBe("classic-oil");
   });
 });

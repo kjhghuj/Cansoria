@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { StoreProduct } from "@/lib/types";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 
 interface BreadcrumbProps {
   product: StoreProduct;
@@ -17,8 +17,8 @@ export function Breadcrumb({ product }: BreadcrumbProps) {
         </li>
         <li aria-hidden="true">/</li>
         <li>
-          <a href={portraitStylesUrl} className="transition-colors hover:text-charcoal">
-            Pet Portraits
+          <a href={collectionsUrl} className="transition-colors hover:text-charcoal">
+            Watches
           </a>
         </li>
         <li aria-hidden="true">/</li>

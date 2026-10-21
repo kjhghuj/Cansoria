@@ -19,6 +19,6 @@ describe("store commerce readiness", () => {
   })
 
   it("exposes a customer-facing closed message", () => {
-    expect(ORDERS_CLOSED_MESSAGE).toContain("Commissions are not open")
+    expect(ORDERS_CLOSED_MESSAGE).toContain("Orders are not open")
   })
 })

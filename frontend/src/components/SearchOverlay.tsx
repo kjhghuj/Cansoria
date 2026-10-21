@@ -7,9 +7,10 @@ import Link from "next/link";
 import { X, Search, ShoppingBag, FileText } from "lucide-react";
 import { formatPrice, searchProducts } from "@/lib/medusa";
 import { lowestProductPrice } from "@/lib/money";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import { ARTICLES } from "@/lib/constants";
 import { StoreProduct, Article } from "@/lib/types";
-import { portraitStyles, portraitStylesUrl, portraitUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -36,7 +37,13 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
   const searchGeneration = useRef(0);
   const router = useRouter();
 
-  const trendingSearches = ["Dog Portrait", "Cat Portrait", "Multi-Pet Family", "Memorial Keepsake", "Custom Pet Portrait"];
+  const trendingSearches = ["Automatic", "Dive Watch", "Chronograph", "Dress Watch", "Engraving"];
+const collections = [
+  { handle: "heritage-classic-40", name: "Dress" },
+  { handle: "northsea-diver", name: "Dive" },
+  { handle: "regent-chronograph", name: "Chronograph" },
+  { handle: "meridian-automatic", name: "Automatic" },
+];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -199,21 +206,21 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
               </div>
 
               <h4 className="text-xs font-bold uppercase tracking-widest text-charcoal-light mb-6">
-                Portrait Styles
+                Collections
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {portraitStyles.map((style) => (
+                {collections.map((collection) => (
                   <Link
-                    key={style.id}
-                    href={`${portraitUrl}?style=${style.id}`}
+                    key={collection.handle}
+                    href={`/product/${collection.handle}`}
                     onClick={onClose}
                     className="group rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-toffee"
-                    aria-label={`Explore ${style.name}, style illustration`}
+                    aria-label={`Explore ${collection.name}, collection illustration`}
                   >
                     <div className="relative aspect-[200/246] overflow-hidden rounded-sm bg-cream-card">
                       <Image
-                        src={`/images/pet-oil/${style.id}.webp`}
-                        alt={`${style.name} pet portrait style illustration`}
+                        src={`/images/watches/${collection.handle}.svg`}
+                        alt={`${collection.name} watch collection illustration`}
                         fill
                         loading="lazy"
                         sizes="(max-width: 767px) 44vw, 23vw"
@@ -221,9 +228,9 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                       />
                     </div>
                     <span className="mt-3 block font-serif text-lg text-charcoal group-hover:text-toffee transition-colors">
-                      {style.name}
+                      {collection.name}
                     </span>
-                    <span className="mt-1 block text-xs text-charcoal-light">Style illustration</span>
+                    <span className="mt-1 block text-xs text-charcoal-light">Collection illustration</span>
                   </Link>
                 ))}
               </div>
@@ -245,7 +252,7 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                     {productResults.map((p) => (
                       <a
                         key={p.id}
-                        href={p.handle ? `/product/${p.handle}` : portraitStylesUrl}
+                        href={p.handle ? `/product/${p.handle}` : collectionsUrl}
                         onClick={(event) => {
                           if (p.handle) {
                             event.preventDefault();
@@ -272,7 +279,7 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                           </h5>
                           <p className="text-sm text-charcoal-light">
                             {lowestProductPrice(p) !== undefined
-                              ? formatPrice(lowestProductPrice(p), p.variants?.find(variant => variant.calculated_price)?.calculated_price?.currency_code || "GBP")
+                              ? formatPrice(lowestProductPrice(p), p.variants?.find(variant => variant.calculated_price)?.calculated_price?.currency_code || DEFAULT_CURRENCY_CODE)
                               : ""}
                           </p>
                         </div>
@@ -288,8 +295,8 @@ export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverl
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm text-gray-400 italic">No products found.</p>
-                    <a href={portraitStylesUrl} onClick={onClose} className="text-sm text-toffee underline">
-                      Explore Portrait Styles
+                    <a href={collectionsUrl} onClick={onClose} className="text-sm text-toffee underline">
+                      Explore Watches
                     </a>
                   </div>
                 )}

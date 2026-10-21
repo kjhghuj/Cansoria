@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import ProductCard from "@/components/ProductCard";
 import { getRegion, searchProducts } from "@/lib/medusa";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 
 export const metadata: Metadata = {
   title: "Search | Cansoria",
@@ -14,7 +15,7 @@ export default async function SearchPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const query = (await searchParams).q?.trim().slice(0, 200) ?? "";
-  const region = await getRegion("gb");
+  const region = await getRegion();
   const products =
     query.length >= 2 && region ? await searchProducts(query, region.id) : [];
   return (
@@ -32,7 +33,7 @@ export default async function SearchPage({
             minLength={2}
             maxLength={200}
             required
-            placeholder="Search pet portraits"
+            placeholder="Search watches"
             className="min-w-0 flex-1 rounded-xl border border-border bg-white px-4 py-3"
           />
           <button
@@ -52,7 +53,7 @@ export default async function SearchPage({
                 <ProductCard
                   key={product.id}
                   product={product}
-                  regionCurrency={region?.currency_code?.toUpperCase() ?? "GBP"}
+                  regionCurrency={region?.currency_code?.toUpperCase() ?? DEFAULT_CURRENCY_CODE}
                 />
               ))}
             </div>
@@ -62,10 +63,10 @@ export default async function SearchPage({
             <p className="mb-4 text-charcoal-light">
               {query.length < 2
                 ? "Enter at least two characters to search."
-                : `No products found for “${query}”. Try “pet portrait”.`}
+                : `No products found for “${query}”. Try “automatic” or “dive”.`}
             </p>
-            <a href={portraitStylesUrl} className="text-toffee underline">
-              Explore Pet Portraits →
+            <a href={collectionsUrl} className="text-toffee underline">
+              Explore Watches →
             </a>
           </div>
         )}

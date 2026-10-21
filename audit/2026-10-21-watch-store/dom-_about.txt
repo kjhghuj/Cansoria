@@ -1,0 +1,83 @@
+Browser tab: 1, Title: "Our Story | Cansoria", URL: "http://localhost:3030/about".
+1 AXWebArea Our Story | Cansoria, URL: localhost:3030/about
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 text OUR STORY
+		11 heading For the time that stays., Value: 1
+			12 text For the time that stays.
+		13 text Cansoria began with a simple idea: the hours we keep deserve a watch that feels personal.
+		14 container
+			15 image Illustrative studio scene with a Cansoria watch on a wooden bench
+			16 text Illustrative scene
+		17 heading A quiet object. A thousand hours., Value: 2
+			18 text A quiet object.
+			19 text A thousand hours.
+		20 text A watch can mark the happy everyday moments, a new chapter or the memory of an old one. The weight you notice at a glance and an engraving only you know is there make the idea deeply personal.
+		21 text We are preparing a watch service with this in mind. Our current images show possible collections and settings, rather than delivered customer orders.
+		22 link Description: Explore our approach →, Value: localhost:3030/our-studio
+		23 heading Personal fit., Value: 3
+			24 text Personal fit.
+		25 text Start with your wrist and the details that matter to you. Our buying guide helps you choose a case size and strap.
+		26 heading Thoughtful choices., Value: 3
+			27 text Thoughtful choices.
+		28 text Compare four collections and consider the case, dial and strap you would enjoy wearing every day.
+		29 heading Questions welcome., Value: 3
+			30 text Questions welcome.
+		31 container
+			32 link Description: Contact us, Value: localhost:3030/contact
+			33 text  or email
+			34 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+			35 text to share your ideas.
+		36 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		37 text A PERSONAL STARTING POINT
+		38 heading Imagine a watch that feels like yours., Value: 2
+			39 text Imagine a watch that feels like yours.
+		40 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.
+		41 link Description: Explore Watches →, Value: localhost:3030/#collections
+		42 link Description: Contact Us →, Value: localhost:3030/contact
+	43 container
+		44 link Description: Cansoria, Value: localhost:3030/
+		45 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		46 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		47 container Watches
+			48 heading Watches, Value: 2
+				49 text Watches
+			50 content list
+				51 link Description: Explore Watches, Value: localhost:3030/#collections
+				52 link Description: Collections, Value: localhost:3030/gallery
+				53 link Description: How It Works, Value: localhost:3030/how-it-works
+				54 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		55 container Our Studio
+			56 heading Our Studio, Value: 2
+				57 text Our Studio
+			58 content list
+				59 link Description: Our Story, Value: localhost:3030/about
+				60 link Description: Our Studio, Value: localhost:3030/our-studio
+				61 link Description: Contact Us, Value: localhost:3030/contact
+		62 container Help & Support
+			63 heading Help & Support, Value: 2
+				64 text Help & Support
+			65 content list
+				66 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				67 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				68 link Description: Returns & Refunds, Value: localhost:3030/returns
+				69 link Description: FAQs, Value: localhost:3030/faq
+		70 text ©  2026  Cansoria. All rights reserved.
+		71 container Legal
+			72 link Description: Privacy Policy, Value: localhost:3030/privacy
+			73 link Description: Terms & Conditions, Value: localhost:3030/terms
+	74 container
+		75 button Open issues overlay
+			76 image
+			77 text 1
+			78 text Issue
+		79 button Collapse issues badge
+			80 image
+
+The focused UI element is 1 AXWebArea Our Story | Cansoria, URL: localhost:3030/about

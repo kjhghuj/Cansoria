@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 
 const generateContent = jest.fn<(...args: unknown[]) => Promise<{ text: string }>>();
 jest.mock("@google/genai", () => ({ GoogleGenAI: jest.fn(() => ({ models: { generateContent } })) }));
+jest.mock("@/lib/medusa", () => ({ getStoreOrdersOpen: jest.fn(async () => false) }));
 
 describe("chat API abuse controls", () => {
   let post: (request: Request) => Promise<Response>;

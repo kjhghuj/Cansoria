@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
 import "./globals.css";
-import "./portrait-home.css";
+import "./watch-home.css";
 import "./studio.css";
 import "./footer.css";
 import { Providers } from "@/lib/providers";
@@ -12,19 +12,19 @@ import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 
 export const metadata: Metadata = {
-  title: "Cansoria | Pet Portrait Concepts",
+  title: "Cansoria | Watch Concepts",
   description: STUDIO.description,
   keywords: [
-    "custom pet portrait",
-    "pet oil painting",
-    "hand painted dog portrait",
-    "hand painted cat portrait",
-    "pet portrait from photo",
-    "memorial pet painting",
-    "multi pet portrait",
+    "watches",
+    "automatic watch",
+    "dress watch",
+    "dive watch",
+    "chronograph",
+    "engraved watch",
+    "watch gift",
   ],
   openGraph: {
-    title: "Cansoria | Pet Portrait Concepts",
+    title: "Cansoria | Watch Concepts",
     description: STUDIO.description,
     type: "website",
   },

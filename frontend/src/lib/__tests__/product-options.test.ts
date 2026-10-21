@@ -1,5 +1,5 @@
 import { findSelectedVariant } from "../product-options";
-import { portraitSummary } from "../portrait";
+import { engravingSummary } from "../engraving";
 import type { StoreProduct } from "../types";
 
 describe("variant matching", () => {
@@ -28,16 +28,19 @@ describe("variant matching", () => {
   });
 });
 
-describe("portrait imagery", () => {
-  it("shows the saved style example and rejects arbitrary metadata paths", () => {
+describe("engraving metadata", () => {
+  it("returns the engraving text and font, rejecting unsafe text or fonts", () => {
     expect(
-      portraitSummary({
-        portrait: { style: "soft-impression", photo_name: "pet.png" },
-      })?.image,
-    ).toBe("/images/pet-oil/soft-impression.webp");
+      engravingSummary({
+        engraving: { text: "For Dad, 2026", font: "serif" },
+      }),
+    ).toMatchObject({ text: "For Dad, 2026", font: "Roman Serif" });
     expect(
-      portraitSummary({ portrait: { style: "../../private/photo" } })?.image,
+      engravingSummary({ engraving: { text: "unsafe <script>", font: "serif" } }),
     ).toBeNull();
-    expect(portraitSummary(null)).toBeNull();
+    expect(
+      engravingSummary({ engraving: { text: "For Dad", font: "unknown" } }),
+    ).toBeNull();
+    expect(engravingSummary(null)).toBeNull();
   });
 });

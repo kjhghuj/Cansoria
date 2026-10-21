@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction, AuthenticatedMedusaRequest } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { verifyAccessToken } from "./access-tokens"
-import { portraitCartReady, PORTRAIT_CART_FIELDS } from "./portrait-photos"
+import { engravingCartReady, ENGRAVING_CART_FIELDS } from "./engraving"
 import { ORDERS_CLOSED_MESSAGE, storeOrdersOpenForScope } from "./store-status"
 
 export function sensitiveResponse(res: MedusaResponse) {
@@ -79,8 +79,8 @@ export async function paymentAccessGuard(req: MedusaRequest, res: MedusaResponse
     }
     if (req.method === "POST") {
       const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-      const { data } = await query.graph({ entity: "cart", fields: PORTRAIT_CART_FIELDS, filters: { id: cartId } })
-      if (!data[0] || !portraitCartReady(data[0], cartId)) return res.status(400).json({ type: "invalid_request", message: "Each pet portrait needs a valid photo and painting style before payment." })
+      const { data } = await query.graph({ entity: "cart", fields: ENGRAVING_CART_FIELDS, filters: { id: cartId } })
+      if (!data[0] || !engravingCartReady(data[0], cartId)) return res.status(400).json({ type: "invalid_request", message: "Each engraved watch needs valid engraving text and font before payment." })
     }
     return next()
   } catch {

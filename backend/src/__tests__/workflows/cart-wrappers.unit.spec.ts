@@ -9,7 +9,7 @@ describe("public cart parent workflows with actual native child SDK execution", 
       input: {
         id: "cart_a",
         email: "registered@example.com",
-        metadata: { portrait_photos: [], note: "safe" },
+        metadata: { note: "safe", preferences: { currency: "usd" } },
       },
     });
     expect(h.events[0]).toBe("acquire:cart_a");
@@ -19,8 +19,8 @@ describe("public cart parent workflows with actual native child SDK execution", 
     expect(h.cart.customer_id).toBe("cus_guest");
     expect(h.cart.email).toBe("registered@example.com");
     expect(h.cart.metadata).toEqual({
-      portrait_photos: [{ id: "existing-photo" }],
       note: "safe",
+      preferences: { currency: "usd" },
     });
     expect(h.customers.listCustomers).toHaveBeenCalledWith({
       email: "registered@example.com",
@@ -52,7 +52,7 @@ describe("public cart parent workflows with actual native child SDK execution", 
     });
     expect(h.held.size).toBe(0);
   });
-  it("native downstream failure compensates email and guest preselection while retaining photo registry", async () => {
+  it("native downstream failure compensates email, guest preselection, and metadata", async () => {
     const h = cartWrapperFixture();
     h.controls.failRefresh = true;
     const result = await cansoriaUpdateCartWorkflow(h.container).run({

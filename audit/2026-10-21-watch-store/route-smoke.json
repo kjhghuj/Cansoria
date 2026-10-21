@@ -1,0 +1,169 @@
+[
+  {
+    "route": "/account",
+    "headings": [
+      "\t\t\t14 heading Watches, Value: 2",
+      "\t\t\t22 heading Our Studio, Value: 2",
+      "\t\t\t29 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t11 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/register",
+    "headings": [
+      "\t\t10 heading Create Account, Value: 1",
+      "\t\t\t35 heading Watches, Value: 2",
+      "\t\t\t43 heading Our Studio, Value: 2",
+      "\t\t\t50 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t32 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/order/lookup",
+    "headings": [
+      "\t\t10 heading Track Your Order, Value: 1",
+      "\t\t\t25 heading Watches, Value: 2",
+      "\t\t\t33 heading Our Studio, Value: 2",
+      "\t\t\t40 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t22 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/journal",
+    "headings": [
+      "\t\t\t14 heading Automatic vs Quartz: Which Watch Movement Is Right for You?, Value: 1",
+      "\t\t\t34 heading Watches, Value: 2",
+      "\t\t\t42 heading Our Studio, Value: 2",
+      "\t\t\t49 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t31 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/search?q=automatic",
+    "headings": [
+      "\t\t10 heading Search the studio, Value: 1",
+      "\t\t\t21 heading Watches, Value: 2",
+      "\t\t\t29 heading Our Studio, Value: 2",
+      "\t\t\t36 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t14 text No products found for “automatic”. Try “automatic” or “dive”.",
+      "\t\t18 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/faq",
+    "headings": [
+      "\t\t11 heading Before the first order., Value: 1",
+      "\t\t39 heading Imagine a watch that feels like yours., Value: 2",
+      "\t\t\t49 heading Watches, Value: 2",
+      "\t\t\t57 heading Our Studio, Value: 2",
+      "\t\t\t64 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t41 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t46 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/shipping",
+    "headings": [
+      "\t\t10 heading Shipping & Delivery, Value: 1",
+      "\t\t13 heading Production and dispatch, Value: 2",
+      "\t\t16 heading Destinations and costs, Value: 2",
+      "\t\t19 heading Packaging and tracking, Value: 2",
+      "\t\t\t28 heading Watches, Value: 2",
+      "\t\t\t36 heading Our Studio, Value: 2"
+    ],
+    "limits": [
+      "\t\t12 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t25 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/returns",
+    "headings": [
+      "\t\t10 heading Returns & Refunds, Value: 1",
+      "\t\t13 heading Service arrangements, Value: 2",
+      "\t\t\t23 heading Watches, Value: 2",
+      "\t\t\t31 heading Our Studio, Value: 2",
+      "\t\t\t38 heading Help & Support, Value: 2"
+    ],
+    "limits": [
+      "\t\t12 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t20 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/privacy",
+    "headings": [
+      "\t\t10 heading Privacy Policy, Value: 1",
+      "\t\t13 heading Your Privacy Matters, Value: 2",
+      "\t\t16 heading Information We Collect, Value: 2",
+      "\t\t34 heading How We Use Your Data, Value: 2",
+      "\t\t53 heading Data Security, Value: 2",
+      "\t\t56 heading Your Rights, Value: 2"
+    ],
+    "limits": [
+      "\t\t63 text Cansoria Studio  |  Independent watch studio in preparation",
+      "\t\t66 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/about",
+    "headings": [
+      "\t\t11 heading For the time that stays., Value: 1",
+      "\t\t17 heading A quiet object. A thousand hours., Value: 2",
+      "\t\t23 heading Personal fit., Value: 3",
+      "\t\t26 heading Thoughtful choices., Value: 3",
+      "\t\t29 heading Questions welcome., Value: 3",
+      "\t\t38 heading Imagine a watch that feels like yours., Value: 2"
+    ],
+    "limits": [
+      "\t\t36 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t40 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t45 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/our-studio",
+    "headings": [
+      "\t\t11 heading A thoughtful approach to watches., Value: 1",
+      "\t\t\t16 heading The little details make it personal., Value: 2, ID: studio-approach-title",
+      "\t\t\t26 heading Find the watch that feels like yours., Value: 2, ID: studio-styles-title",
+      "\t\t\t\t31 heading Dress, Value: 3",
+      "\t\t\t\t37 heading Dive, Value: 3",
+      "\t\t\t\t43 heading Chronograph, Value: 3"
+    ],
+    "limits": [
+      "\t\t\t71 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t76 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t81 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  },
+  {
+    "route": "/how-it-works",
+    "headings": [
+      "\t\t11 heading Your wrist. A personal starting point., Value: 1",
+      "\t\t\t\t17 heading Explore the collections, Value: 2",
+      "\t\t\t\t23 heading Prepare your engraving, Value: 2",
+      "\t\t\t\t29 heading Ask us anything, Value: 2",
+      "\t\t34 heading Know what to expect., Value: 2",
+      "\t\t39 heading Imagine a watch that feels like yours., Value: 2"
+    ],
+    "limits": [
+      "\t\t13 text Explore your options and prepare the details that matter. Our watch service is in preparation.",
+      "\t\t36 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t41 text Orders are in preparation. Movements, materials, engraving, warranty and delivery arrangements will be confirmed before orders open.",
+      "\t\t46 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation."
+    ]
+  }
+]

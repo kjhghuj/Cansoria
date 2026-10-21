@@ -1,5 +1,4 @@
 import type {
-  IFileModuleService,
   IPromotionModuleService,
   MedusaContainer,
 } from "@medusajs/framework/types";
@@ -8,14 +7,11 @@ import {
   MedusaError,
   Modules,
 } from "@medusajs/framework/utils";
-import { Readable } from "stream";
 import {
-  assertDecodableImage,
-  findPhoto,
-  MAX_PHOTO_BYTES,
-  PORTRAIT_STYLES,
-  type PortraitPhoto,
-} from "./portrait-photos";
+  isEngraveableHandle,
+  validEngravingFont,
+  validEngravingText,
+} from "./engraving";
 import { ORDERS_CLOSED_MESSAGE, storeOrdersOpenForScope } from "./store-status";
 import { welcomePromotionEligible } from "./welcome-promotions";
 
@@ -78,91 +74,6 @@ async function bounded<T>(work: Promise<T>, signal: AbortSignal): Promise<T> {
     return await Promise.race([work, stop]);
   } finally {
     signal.removeEventListener("abort", onAbort);
-  }
-}
-
-function imageMime(head: Buffer): string | undefined {
-  if (head.subarray(0, 3).equals(Buffer.from([255, 216, 255])))
-    return "image/jpeg";
-  if (
-    head.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-  )
-    return "image/png";
-  if (
-    head.length >= 12 &&
-    head.toString("ascii", 0, 4) === "RIFF" &&
-    head.toString("ascii", 8, 12) === "WEBP"
-  )
-    return "image/webp";
-}
-
-async function readPhoto(
-  files: Pick<IFileModuleService, "getDownloadStream">,
-  photo: PortraitPhoto,
-  signal: AbortSignal,
-  total: { bytes: number },
-) {
-  const controller = new AbortController();
-  const cancel = () => controller.abort(signal.reason);
-  signal.addEventListener("abort", cancel, { once: true });
-  if (signal.aborted) cancel();
-  const timer = setTimeout(
-    () =>
-      controller.abort(
-        new CheckoutCompletionError("Photo validation timed out"),
-      ),
-    5000,
-  );
-  let stream: Readable | undefined;
-  const destroy = () => stream?.destroy();
-  controller.signal.addEventListener("abort", destroy, { once: true });
-  try {
-    aborted(controller.signal);
-    // getDownloadStream is the public File Module existence/read contract. retrieveFile only signs URLs.
-    const acquisition = files.getDownloadStream(photo.file_id).then((value) => {
-      if (controller.signal.aborted) {
-        value.destroy();
-        throw controller.signal.reason;
-      }
-      stream = value;
-      return value;
-    });
-    stream = await bounded(acquisition, controller.signal);
-    if (!(stream instanceof Readable)) deny("Photo cannot be read");
-    const consume = async () => {
-      let size = 0;
-      const chunks: Buffer[] = [];
-      for await (const chunk of stream!) {
-        aborted(controller.signal);
-        if (!Buffer.isBuffer(chunk) && !(chunk instanceof Uint8Array))
-          deny("Invalid photo stream");
-        const buffer = Buffer.from(chunk as Uint8Array);
-        size += buffer.length;
-        total.bytes += buffer.length;
-        if (size > MAX_PHOTO_BYTES || total.bytes > 200 * 1024 * 1024)
-          deny("Photo size limit exceeded");
-        chunks.push(buffer);
-      }
-      const bytes = Buffer.concat(chunks, size);
-      // The file must still be the signed, fully decodable image that was
-      // validated at upload: same size, same type, real pixels end to end.
-      if (!size || size !== photo.size || imageMime(bytes) !== photo.mime)
-        deny("Photo size or file type has changed");
-      await assertDecodableImage(bytes, photo.mime);
-    };
-    await bounded(consume(), controller.signal);
-  } catch (error) {
-    if (error instanceof CheckoutCompletionError) throw error;
-    throw new CheckoutCompletionError(
-      "A referenced photo is unavailable. Please upload it again.",
-    );
-  } finally {
-    clearTimeout(timer);
-    signal.removeEventListener("abort", cancel);
-    controller.signal.removeEventListener("abort", destroy);
-    destroy();
-    // Marks pending acquisition as cancelled so its installed then handler destroys a late stream.
-    controller.abort(new CheckoutCompletionError("Photo validation ended"));
   }
 }
 
@@ -241,66 +152,30 @@ async function validateSnapshot(
   const handles = new Map(
     products.map((product) => [product.id, product.handle]),
   );
-  const photos = new Map<string, PortraitPhoto>();
   for (const item of cart.items) {
     const handle = handles.get(item.variant?.product?.id || item.product_id!);
     if (typeof handle !== "string" || !handle)
       deny("Missing product relationship");
+    const engraving = item.metadata?.engraving as
+      | Record<string, unknown>
+      | null
+      | undefined;
+    if (!engraving) continue;
     if (
-      handle !== "pet-portrait-oil-painting" &&
-      item.product_handle !== "pet-portrait-oil-painting"
-    )
-      continue;
-    const portrait = item.metadata?.portrait as
-      Record<string, unknown> | null | undefined;
-    if (
-      !portrait ||
-      !PORTRAIT_STYLES.includes(
-        portrait.style as (typeof PORTRAIT_STYLES)[number],
-      ) ||
-      portrait.source_cart_id !== cart.id ||
-      typeof portrait.photo_id !== "string"
+      !isEngraveableHandle(handle) &&
+      !isEngraveableHandle(item.product_handle)
     )
       deny(
-        "Each pet portrait needs a valid photo and painting style. Please customize it again.",
+        "Engraving is only available on engravable watches. Please customize it again.",
       );
-    const photo = findPhoto(cart.metadata, cart.id, portrait.photo_id);
     if (
-      !photo ||
-      !photo.file_id ||
-      !Number.isSafeInteger(photo.size) ||
-      photo.size <= 0 ||
-      photo.size > MAX_PHOTO_BYTES ||
-      !["image/jpeg", "image/png", "image/webp"].includes(photo.mime)
+      !validEngravingText(engraving.text) ||
+      !validEngravingFont(engraving.font) ||
+      engraving.source_cart_id !== cart.id
     )
       deny(
-        "Each pet portrait needs a valid photo and painting style. Please customize it again.",
+        "Each engraved watch needs valid engraving text and font. Please customize it again.",
       );
-    const prior = photos.get(photo.file_id);
-    if (prior && (prior.size !== photo.size || prior.mime !== photo.mime))
-      deny("Inconsistent signed photo references");
-    photos.set(photo.file_id, photo);
-  }
-  if (photos.size > 20) deny("Photo limit reached for this cart");
-  const photoController = new AbortController();
-  const stopPhotos = () => photoController.abort(signal.reason);
-  signal.addEventListener("abort", stopPhotos, { once: true });
-  if (signal.aborted) stopPhotos();
-  const photoTimer = setTimeout(
-    () =>
-      photoController.abort(
-        new CheckoutCompletionError("Photo validation timed out"),
-      ),
-    25000,
-  );
-  try {
-    const files = container.resolve<IFileModuleService>(Modules.FILE);
-    const total = { bytes: 0 };
-    for (const photo of photos.values())
-      await readPhoto(files, photo, photoController.signal, total);
-  } finally {
-    clearTimeout(photoTimer);
-    signal.removeEventListener("abort", stopPhotos);
   }
   aborted(signal);
 

@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Brush,
   Check,
   Eye,
   Globe,
@@ -14,19 +13,18 @@ import {
   ShoppingBag,
   Zap,
 } from "lucide-react";
-import PhotoUpload from "@/components/PhotoUpload";
 import {
-  portraitStyles,
-  type PortraitStyle,
-  type UploadedPhoto,
-} from "@/lib/portrait";
+  engravingFonts,
+  type EngravingFont,
+  isEngraveableHandle,
+  MAX_ENGRAVING_CHARS,
+  validEngravingText,
+} from "@/lib/engraving";
 import { useCart, useStoreStatus } from "@/lib/providers";
 import { formatPrice } from "@/lib/medusa";
 import { StoreProduct, StoreProductVariant } from "@/lib/types";
 
 interface ProductActionsProps {
-  initialStyle: PortraitStyle;
-  onStyleChange?: (style: PortraitStyle) => void;
   product: StoreProduct;
   selectedOptions: Record<string, string>;
   selectedVariant: StoreProductVariant | null;
@@ -45,14 +43,12 @@ function isVariantInStock(variant: StoreProductVariant | null) {
 }
 
 const panelTrustPoints = [
-  { icon: <Brush size={16} />, label: "Style Concepts" },
-  { icon: <Eye size={16} />, label: "Photo Guidance" },
+  { icon: <Check size={16} />, label: "Regulated In-House" },
+  { icon: <Eye size={16} />, label: "Free Engraving" },
   { icon: <Globe size={16} />, label: "In Preparation" },
 ];
 
 export default function ProductActions({
-  initialStyle,
-  onStyleChange,
   product,
   selectedOptions,
   selectedVariant,
@@ -60,18 +56,19 @@ export default function ProductActions({
   onOptionChange,
 }: ProductActionsProps) {
   const router = useRouter();
-  const { addItem, cartLoading, cart } = useCart();
+  const { addItem, cartLoading } = useCart();
   const { ordersOpen, storeStatusLoading } = useStoreStatus();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
-  const [style, setStyle] = useState<PortraitStyle>(initialStyle);
+  const [engravingText, setEngravingText] = useState("");
+  const [font, setFont] = useState<EngravingFont>("serif");
   const [notes, setNotes] = useState("");
   const [actionError, setActionError] = useState("");
-  const isPortrait = product.handle === "pet-portrait-oil-painting";
-  const photoReady = Boolean(photo && photo.cartId === cart?.id);
+  const isEngraveable = isEngraveableHandle(product.handle);
+  const engravingProvided = engravingText.trim().length > 0;
+  const engravingValid = !engravingProvided || validEngravingText(engravingText.trim());
   // While the store status is still loading, ordering stays possible; the backend
   // completion gate remains the authoritative check. Block only a confirmed closed store.
   const ordersBlocked = !storeStatusLoading && !ordersOpen;
@@ -89,7 +86,7 @@ export default function ProductActions({
     Boolean(selectedVariant?.id) &&
     isAllOptionsSelected &&
     isInStock &&
-    (!isPortrait || photoReady) &&
+    engravingValid &&
     !ordersBlocked &&
     !isProcessing;
 
@@ -104,16 +101,17 @@ export default function ProductActions({
     typeof selectedPrice === "number" &&
     selectedOriginalPrice > selectedPrice;
 
+  const customization = () =>
+    isEngraveable && engravingProvided && engravingValid
+      ? { text: engravingText.trim(), font, notes }
+      : undefined;
+
   const handleAddToCart = async () => {
     if (!canAddToCart || !selectedVariant?.id) return;
     setIsAdding(true);
     setActionError("");
     try {
-      await addItem(
-        selectedVariant.id,
-        quantity,
-        isPortrait && photo ? { style, photo_id: photo.id, notes } : undefined,
-      );
+      await addItem(selectedVariant.id, quantity, customization());
       setJustAdded(true);
       window.setTimeout(() => setJustAdded(false), 2200);
     } catch (error: unknown) {
@@ -129,11 +127,7 @@ export default function ProductActions({
     setIsBuyingNow(true);
     setActionError("");
     try {
-      await addItem(
-        selectedVariant.id,
-        quantity,
-        isPortrait && photo ? { style, photo_id: photo.id, notes } : undefined,
-      );
+      await addItem(selectedVariant.id, quantity, customization());
       router.push("/cart");
     } catch (error: unknown) {
       console.error("Failed to add item for buy now:", error);
@@ -158,41 +152,11 @@ export default function ProductActions({
     if (!isAllOptionsSelected) return "Select Options";
     if (!selectedVariant) return "Combination Unavailable";
     if (!isInStock) return "Out of Stock";
-    if (isPortrait && !photoReady) return "Upload Your Photo";
     return "Add to Cart";
   })();
 
   return (
     <div className="space-y-6">
-      {isPortrait && (
-        <fieldset>
-          <legend className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]">
-            Painting style
-          </legend>
-          <div className="grid grid-cols-2 gap-2">
-            {portraitStyles.map((option) => (
-              <label
-                key={option.id}
-                className={`cursor-pointer rounded-xl border p-3 text-sm ${style === option.id ? "border-toffee bg-cream-card" : "border-border bg-cream-light"}`}
-              >
-                <input
-                  className="mr-2 accent-toffee"
-                  type="radio"
-                  name="portrait-style"
-                  value={option.id}
-                  checked={style === option.id}
-                  disabled={isProcessing}
-                  onChange={() => {
-                    setStyle(option.id);
-                    onStyleChange?.(option.id);
-                  }}
-                />
-                {option.name}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
       {options.length > 0 && (
         <div className="space-y-5">
           {options.map((option) => (
@@ -245,20 +209,56 @@ export default function ProductActions({
         </div>
       )}
 
-      {isPortrait && (
+      {isEngraveable && (
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.22em]">
-            Your reference photo
+            Caseback engraving — complimentary
           </h3>
-          <PhotoUpload onChange={setPhoto} />
-          <Link
-            href="/upload-photo"
-            className="mt-3 inline-block text-sm text-toffee underline"
-          >
-            Photo tips &amp; upload page
-          </Link>
+          <fieldset>
+            <legend className="sr-only">Engraving font</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {engravingFonts.map((option) => (
+                <label
+                  key={option.id}
+                  className={`cursor-pointer rounded-xl border p-3 text-sm ${font === option.id ? "border-toffee bg-cream-card" : "border-border bg-cream-light"}`}
+                >
+                  <input
+                    className="mr-2 accent-toffee"
+                    type="radio"
+                    name="engraving-font"
+                    value={option.id}
+                    checked={font === option.id}
+                    disabled={isProcessing}
+                    onChange={() => setFont(option.id)}
+                  />
+                  {option.name}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <label className="mt-4 block text-sm">
+            Engraving text (optional)
+            <input
+              value={engravingText}
+              maxLength={MAX_ENGRAVING_CHARS}
+              disabled={isProcessing}
+              onChange={(event) => setEngravingText(event.target.value)}
+              className={`mt-2 w-full rounded-xl border p-3 ${engravingValid ? "border-border bg-cream-light" : "border-red-500 bg-cream-light"}`}
+              placeholder="Initials, a date, or a short message"
+              aria-describedby="engraving-help"
+            />
+            <span id="engraving-help" className="mt-1 block text-xs text-charcoal-light">
+              {MAX_ENGRAVING_CHARS - engravingText.length} characters left · letters,
+              numbers, spaces and . , : &apos; &quot; &amp; - / ( )
+            </span>
+          </label>
+          {!engravingValid && (
+            <p role="alert" className="mt-2 text-sm text-red-700">
+              Engraving text uses letters, numbers, spaces and basic punctuation only.
+            </p>
+          )}
           <label className="mt-5 block text-sm">
-            Notes for your artist
+            Notes for the studio (optional)
             <textarea
               value={notes}
               maxLength={1000}
@@ -266,7 +266,7 @@ export default function ProductActions({
               onChange={(event) => setNotes(event.target.value)}
               rows={3}
               className="mt-2 w-full rounded-xl border border-border bg-cream-light p-3"
-              placeholder="Your pet’s name, background preferences, or details to keep."
+              placeholder="Anything we should know about this order."
             />
           </label>
         </div>
@@ -278,9 +278,9 @@ export default function ProductActions({
       )}
       {ordersBlocked && (
         <p role="status" className="rounded-2xl border border-border-subtle bg-cream-card p-4 text-sm leading-6 text-charcoal-light">
-          Commissions are in preparation. You can explore styles and prepare your
-          photo now — ordering opens as soon as the studio confirms production
-          and delivery arrangements.
+          Orders are in preparation. You can explore collections and prepare your
+          size, strap and engraving now — ordering opens as soon as the studio
+          confirms production and delivery arrangements.
         </p>
       )}
       <div>
@@ -380,18 +380,18 @@ export default function ProductActions({
         </Link>
       )}
 
-      {/* Reference preparation guidance */}
+      {/* Order preparation guidance */}
       <div className="rounded-2xl border border-border-subtle bg-cream-card p-5">
         <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-charcoal">
-          Preparing Your Portrait
+          Preparing Your Order
         </p>
         <ul className="space-y-3">
           {[
-            { icon: "📷", text: "1. Upload Your Photo Securely" },
-            { icon: "🎨", text: "2. Choose a Style and Add Your Preferences" },
+            { icon: "🕐", text: "1. Choose Size, Strap and Dial" },
+            { icon: "✒️", text: "2. Add Complimentary Caseback Engraving" },
             {
               icon: "📦",
-              text: "3. Discuss Your Idea Before Commissions Open",
+              text: "3. Studio Checks Before Your Watch Ships",
             },
           ].map((step) => (
             <li
@@ -411,9 +411,9 @@ export default function ProductActions({
       </div>
 
       <p className="text-sm leading-6 text-charcoal-light">
-        Your uploaded photo and painting style stay together in the customizer.
-        Uploading a reference does not reserve a commission. Production and
-        service arrangements will be confirmed before orders open.
+        Your size, strap and engraving stay together in the customizer. Adding
+        an engraving does not reserve a watch. Production and service
+        arrangements will be confirmed before orders open.
       </p>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-cream/95 px-4 py-3 shadow-[0_-10px_30px_rgba(38,35,31,0.12)] backdrop-blur lg:hidden">
@@ -422,10 +422,10 @@ export default function ProductActions({
             <p className="truncate text-sm font-medium text-charcoal">
               {selectedPrice !== undefined
                 ? formatPrice(selectedPrice, selectedCurrency)
-                : "Ready for custom artwork"}
+                : "Ready to configure"}
             </p>
             <p className="truncate text-[11px] text-charcoal-light">
-              Commissions in preparation
+              Orders in preparation
             </p>
           </div>
           <button

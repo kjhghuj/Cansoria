@@ -88,7 +88,7 @@ interface CartContextType {
   addItem: (
     variantId: string,
     quantity?: number,
-    customization?: import("./portrait").PortraitCustomization,
+    customization?: import("./engraving").EngravingCustomization,
   ) => Promise<void>;
   updateItem: (lineItemId: string, quantity: number) => Promise<void>;
   removeItem: (lineItemId: string) => Promise<void>;
@@ -169,7 +169,7 @@ export function Providers({ children }: ProvidersProps) {
   useEffect(() => {
     async function initRegion() {
       try {
-        const fetchedRegion = await getRegion("gb");
+        const fetchedRegion = await getRegion();
         setRegion(fetchedRegion);
       } catch {
       } finally {
@@ -466,7 +466,7 @@ export function Providers({ children }: ProvidersProps) {
     async (
       variantId: string,
       quantity: number = 1,
-      customization?: import("./portrait").PortraitCustomization,
+      customization?: import("./engraving").EngravingCustomization,
     ) => {
       const generation = sessionGeneration.current;
       return runCartMutation(async () => {

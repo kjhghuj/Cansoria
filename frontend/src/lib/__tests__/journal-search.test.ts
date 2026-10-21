@@ -52,7 +52,7 @@ describe("journal search index policy", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ articles: [] }) }) as never;
     const harness = createHookHarness(() => SearchOverlay({ isOpen: true, onClose: jest.fn() }));
     await harness.flush();
-    const result = text(await type(harness, "photo"));
+    const result = text(await type(harness, "quartz"));
     expect(result).toContain("No stories found.");
     expect(result).not.toContain(staticTitle);
     harness.unmount();
@@ -62,7 +62,7 @@ describe("journal search index policy", () => {
     global.fetch = jest.fn().mockReturnValue(new Promise(() => {})) as never;
     const harness = createHookHarness(() => SearchOverlay({ isOpen: true, onClose: jest.fn() }));
     await harness.flush();
-    const result = text(await type(harness, "photo"));
+    const result = text(await type(harness, "quartz"));
     expect(result).toContain("Checking stories...");
     expect(result).not.toContain(staticTitle);
     harness.unmount();
@@ -72,7 +72,7 @@ describe("journal search index policy", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false, json: async () => ({}) }) as never;
     const harness = createHookHarness(() => SearchOverlay({ isOpen: true, onClose: jest.fn() }));
     await harness.flush();
-    const result = text(await type(harness, "photo"));
+    const result = text(await type(harness, "quartz"));
     expect(result).toContain(staticTitle);
     expect(result).not.toContain("Checking stories...");
     harness.unmount();

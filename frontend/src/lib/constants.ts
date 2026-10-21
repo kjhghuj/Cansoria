@@ -1,5 +1,4 @@
-import { STUDIO, STUDIO_CHAT_INSTRUCTION } from "./studio-content";
-import { portraitStylesUrl } from "./portrait";
+import { STUDIO, STUDIO_CHAT_INSTRUCTION, STUDIO_CHAT_INSTRUCTION_OPEN, collectionsUrl } from "./studio-content";
 
 // --- TYPES ---
 export interface Product {
@@ -57,230 +56,240 @@ export interface Article {
 export const COMPANY_INFO = {
   name: "Cansoria Studio",
   supportEmail: "hello@cansoria.com",
-  address: "Custom pet portrait service in preparation",
+  address: "Independent watch studio in preparation",
   studioNote: STUDIO.readiness,
 };
 
 export const PRODUCTS: Product[] = [
   {
     id: "p1",
-    name: "Custom Portrait From Photo",
+    name: "Heritage Classic 40",
     subtitle: STUDIO.productSubtitle,
-    category: "Custom Painting",
-    price: 189,
+    category: "Dress Watches",
+    price: 309,
     rating: 0,
     reviewCount: 0,
     description: STUDIO.productDescription,
     details: STUDIO.readiness,
     material: "To be confirmed",
-    images: ["/products/portrait.svg"],
+    images: ["/products/watch.svg"],
   },
   {
     id: "p2",
-    name: "Pet Portrait Oil Painting",
+    name: "Meridian Automatic",
     subtitle: STUDIO.productSubtitle,
-    category: "Pet Portraits",
-    price: 169,
+    category: "Automatic",
+    price: 429,
     rating: 0,
     reviewCount: 0,
     description: STUDIO.productDescription,
     details: STUDIO.readiness,
     material: "To be confirmed",
-    images: ["/images/pet-oil/classic-oil.webp"],
+    images: ["/products/watch.svg"],
   },
 ];
 
 export const ARTICLES: Article[] = [
   {
     id: 1,
-    slug: "how-to-turn-a-photo-into-a-hand-painted-oil-painting",
-    category: "Photo to Painting",
-    title: "How to Turn a Photo Into a Hand-Painted Oil Painting",
+    slug: "automatic-vs-quartz-which-watch-movement-is-right-for-you",
+    category: "Watch Basics",
+    title: "Automatic vs Quartz: Which Watch Movement Is Right for You?",
     author: "The Cansoria Journal",
     date: "Feb 4, 2026",
     excerpt:
-      "Learn how a favorite portrait, wedding moment, family photo, or travel memory becomes a custom oil painting on canvas.",
-    image: "/products/portrait.svg",
+      "Understand the difference between automatic and quartz movements so you can choose the watch that fits how you actually wear it.",
+    image: "/products/watch.svg",
     readTime: "5 min read",
-    featuredProductId: "p1",
-    relatedArticleIds: [2, 3],
+    featuredProductId: "p2",
+    relatedArticleIds: [2, 4],
     content: [
       {
         type: "paragraph",
-        text: "A custom oil painting begins with a photo that carries personal meaning. The best references are clear, well-lit, and focused on the people, pets, or places you want the artist to preserve.",
+        text: "A watch movement is its heart. Automatic movements store energy from the motion of your wrist, while quartz movements draw precise timekeeping from a battery and a vibrating crystal.",
       },
       {
         type: "heading",
         level: 2,
-        text: "Start with a strong reference",
+        text: "Choose automatic for craft and character",
       },
       {
         type: "paragraph",
-        text: "Choose a photo with visible facial details, natural light, and a composition you already love. If the image is older or imperfect, include notes about what matters most so the artist can focus on expression, posture, and atmosphere.",
+        text: "An automatic watch has no battery to replace. The seconds hand sweeps, the movement stays visible through an exhibition caseback, and a full wind keeps time through the weekend. It suits wearers who enjoy the ritual of a mechanical object.",
       },
       {
         type: "paragraph",
-        text: "Before commissioning a painting, ask the provider to confirm materials, production timing, preview arrangements and revision scope. Cansoria is still preparing these service details.",
+        text: "Quartz suits wearers who want to pick up the watch and go: months of accuracy on one battery, thinner cases, and lower prices for the same finish.",
       },
       {
         type: "image",
-        src: "/products/canvas.svg",
+        src: "/products/watch.svg",
         caption:
-          "A clear photo gives the artist a stronger foundation for likeness and detail.",
+          "An exhibition caseback shows the rotor and balance wheel of an automatic movement.",
       },
     ],
   },
   {
     id: 2,
-    slug: "wedding-anniversary-gift-ideas-custom-oil-portraits",
-    category: "Gift Ideas",
-    title: "Best Wedding Anniversary Gift Ideas: Custom Oil Portraits",
+    slug: "how-to-choose-the-right-watch-case-size",
+    category: "Buying Guide",
+    title: "How to Choose the Right Watch Case Size",
     author: "The Cansoria Journal",
     date: "Feb 10, 2026",
     excerpt:
-      "A custom oil portrait turns a wedding photo, first dance, proposal, or favorite shared memory into a lasting anniversary gift.",
-    image: "/products/canvas.svg",
+      "Wrist size, strap style and dial layout all change how a case sits. Use this guide to pick between 36, 38, 40 and 42mm.",
+    image: "/products/watch.svg",
     readTime: "6 min read",
-    relatedArticleIds: [1, 6],
+    relatedArticleIds: [1, 5],
     content: [
       {
         type: "paragraph",
-        text: "Anniversary gifts feel strongest when they bring a shared memory back into the room. A custom oil portrait can transform a ceremony photo, first dance, engagement moment, or honeymoon scene into a piece of wall art made for daily life.",
+        text: "Case size is the single biggest factor in how a watch wears. Two watches with the same diameter can wear differently depending on lug-to-lug length, dial colour and strap choice.",
       },
       {
         type: "paragraph",
-        text: "For partners, choose a photo with natural emotion rather than a heavily posed frame. Soft expressions, meaningful locations, and balanced composition translate beautifully into paint.",
+        text: "As a starting point, wrists under 16cm suit 36–38mm cases, 16–18cm wrists suit 38–40mm, and larger wrists carry 40–42mm with presence. Measure around the bone of your wrist with a soft tape.",
       },
       {
         type: "blockquote",
-        text: "The most memorable anniversary gifts do not simply decorate a wall. They bring a private story into the home.",
-      },
-    ],
-  },
-  {
-    id: 3,
-    slug: "pet-memorial-portraits-meaningful-way-to-remember",
-    category: "Pet Portraits",
-    title:
-      "Pet Memorial Portraits: A Meaningful Way to Remember Your Companion",
-    author: "The Cansoria Journal",
-    date: "Feb 18, 2026",
-    excerpt:
-      "Pet memorial portraits help preserve the expression, warmth, and everyday presence of a companion you never want to forget.",
-    image: "/products/generic.svg",
-    readTime: "4 min read",
-    relatedArticleIds: [1, 2],
-    content: [
-      {
-        type: "paragraph",
-        text: "A pet memorial portrait is not about creating a perfect photograph in paint. It is about preserving the expression, posture, and small details that made your companion feel known.",
-      },
-      {
-        type: "paragraph",
-        text: "Choose a reference that shows the eyes clearly and captures the personality you remember most. A favorite blanket, collar, or familiar background can make the painting feel even more personal.",
-      },
-      {
-        type: "paragraph",
-        text: "When commissioning a keepsake, discuss how the direction and personal details will be reviewed. Cansoria preview and revision arrangements will be confirmed before commissions open.",
-      },
-    ],
-  },
-  {
-    id: 4,
-    slug: "choose-right-canvas-size-for-your-wall",
-    category: "Home Decor",
-    title: "How to Choose the Right Canvas Size for Your Wall",
-    author: "The Cansoria Journal",
-    date: "Feb 24, 2026",
-    excerpt:
-      "Use wall width, furniture scale, ceiling height, and viewing distance to choose a canvas size that feels intentional.",
-    image: "/products/canvas.svg",
-    readTime: "5 min read",
-    relatedArticleIds: [5, 6],
-    content: [
-      {
-        type: "paragraph",
-        text: "Canvas size changes how a room feels. A small portrait can feel personal on a hallway wall, while a large landscape can anchor a living room, dining room, or office.",
-      },
-      {
-        type: "heading",
-        level: 2,
-        text: "Match the canvas to the furniture below it",
-      },
-      {
-        type: "paragraph",
-        text: "As a starting point, artwork above a sofa, bed, or console often feels balanced when it spans about two-thirds of the furniture width. Leave breathing room around the canvas so the wall still feels calm.",
+        text: "A watch should sit flat on the wrist with the lugs not overhanging either edge. When in doubt, size down.",
       },
       {
         type: "list",
         items: [
-          "Choose smaller sizes for desks, shelves, and narrow halls.",
-          "Choose medium sizes for bedrooms and reading corners.",
-          "Choose large sizes for living rooms, dining rooms, and statement walls.",
+          "36mm wears vintage and disappears under a cuff.",
+          "38–40mm is the versatile middle for most wrists.",
+          "42mm suits dive and chronograph styles with visual weight.",
         ],
       },
     ],
   },
   {
+    id: 3,
+    slug: "how-to-care-for-a-leather-watch-strap",
+    category: "Care",
+    title: "How to Care for a Leather Watch Strap",
+    author: "The Cansoria Journal",
+    date: "Feb 18, 2026",
+    excerpt:
+      "A leather strap ages beautifully with a few simple habits: rotation, drying, cleaning and knowing when to retire it.",
+    image: "/products/watch.svg",
+    readTime: "4 min read",
+    relatedArticleIds: [2, 6],
+    content: [
+      {
+        type: "paragraph",
+        text: "A leather strap is the fastest way to change a watch's character — and the first part to show wear. With a little care it develops a patina instead of cracking.",
+      },
+      {
+        type: "paragraph",
+        text: "Rotate between straps when you can, let the strap dry naturally after rain or sweat, and wipe the lining with a dry cloth at the end of the day. Avoid direct heat, prolonged sun and perfume contact.",
+      },
+      {
+        type: "paragraph",
+        text: "When a strap loses its shape, smells even after cleaning, or the holes stretch out, replace it. Quick-release spring bars make a strap swap a no-tools, one-minute job.",
+      },
+    ],
+  },
+  {
+    id: 4,
+    slug: "water-resistance-ratings-explained",
+    category: "Watch Basics",
+    title: "Water Resistance Ratings Explained: 3, 5, 10 and 20 ATM",
+    author: "The Cansoria Journal",
+    date: "Feb 24, 2026",
+    excerpt:
+      "What ATM really means, which rating handles swimming and diving, and why you should never press a crown underwater.",
+    image: "/products/watch.svg",
+    readTime: "5 min read",
+    relatedArticleIds: [1, 5],
+    content: [
+      {
+        type: "paragraph",
+        text: "Water resistance is measured in atmospheres (ATM), where each ATM is roughly ten metres of static pressure. Real-world water impact is more demanding than the lab, so ratings include a safety margin.",
+      },
+      {
+        type: "heading",
+        level: 2,
+        text: "Which rating fits your life",
+      },
+      {
+        type: "list",
+        items: [
+          "3 ATM — splashes and rain; remove before washing up.",
+          "5 ATM — shower-free daily wear and light splashes.",
+          "10 ATM — swimming and pool holidays.",
+          "20 ATM — recreational diving with a rotating bezel.",
+        ],
+      },
+      {
+        type: "paragraph",
+        text: "Never operate a crown or pusher underwater: it breaks the seal exactly when water pressure is highest. After salt water, rinse a dive watch in fresh water and dry the crown area.",
+      },
+    ],
+  },
+  {
     id: 5,
-    slug: "portrait-vs-landscape-oil-painting-home-style",
-    category: "Style Guide",
-    title: "Portrait vs Landscape Oil Painting: Which Style Fits Your Home?",
+    slug: "engraved-watch-gift-ideas",
+    category: "Gift Ideas",
+    title: "Engraved Watch Gift Ideas: Words That Stay",
     author: "The Cansoria Journal",
     date: "Mar 3, 2026",
     excerpt:
-      "Compare portrait and landscape formats so your custom oil painting fits the wall, room, and feeling you want to create.",
-    image: "/products/portrait.svg",
+      "An engraved caseback turns a watch into a keepsake. Ideas and rules of thumb for the twenty characters that matter.",
+    image: "/products/watch.svg",
     readTime: "5 min read",
+    featuredProductId: "p1",
     relatedArticleIds: [1, 4],
     content: [
       {
         type: "paragraph",
-        text: "Portrait and landscape formats do more than describe the subject. They influence how the eye moves through a room and how the artwork relates to furniture, windows, and architectural lines.",
+        text: "A watch is already a personal gift. An engraved caseback makes it singular: the words are hidden in daily wear and discovered every time the watch is taken off.",
       },
       {
         type: "paragraph",
-        text: "Portrait orientation works beautifully for individual faces, partners, pets, and narrow wall spaces. Landscape orientation is often better for family groups, wedding scenes, travel memories, and wide walls above furniture.",
+        text: "Twenty characters is shorter than you think — it fits initials and a date (\"J & M — 2026\"), a coordinate pair, or a single word that only the wearer understands. Pick words that will still mean something in ten years.",
       },
       {
         type: "blockquote",
-        text: "Choose portrait format for presence. Choose landscape format for atmosphere.",
+        text: "Engrave the occasion, not the trend. Dates and initials outlast phrases.",
       },
     ],
   },
   {
     id: 6,
-    slug: "hand-painted-art-vs-printed-canvas",
-    category: "Art Education",
-    title: "Why Hand-Painted Art Feels Different From Printed Canvas",
+    slug: "how-to-style-a-dress-watch",
+    category: "Style Guide",
+    title: "How to Style a Dress Watch",
     author: "The Cansoria Journal",
     date: "Mar 9, 2026",
     excerpt:
-      "Brush texture, subtle color variation, and the artist's interpretation give hand-painted artwork a presence that prints cannot fully copy.",
-    image: "/products/generic.svg",
+      "A slim case, a leather strap and a quiet dial: how to wear a dress watch with tailoring, knitwear and weekends.",
+    image: "/products/watch.svg",
     readTime: "6 min read",
-    relatedArticleIds: [1, 4],
+    relatedArticleIds: [2, 3],
     content: [
       {
         type: "paragraph",
-        text: "Printed canvas can reproduce an image, but hand-painted art adds texture, interpretation, and small variations that make the piece feel alive in changing light.",
+        text: "A dress watch works because it disappears: a slim case slides under a cuff, and a restrained dial never argues with a lapel or a collar.",
       },
       {
         type: "paragraph",
-        text: "With oil painting, brushwork catches highlights, shadows deepen across layered color, and the surface has a physical presence. These details make the artwork feel less temporary and more connected to the room.",
+        text: "With tailoring, match the strap to your leather — brown strap with brown shoes, black with black. With knitwear and casual layers, the same watch on a lighter strap reads relaxed rather than formal.",
       },
       {
         type: "paragraph",
-        text: "For custom portraits and meaningful gifts, that difference matters. The goal is not only to display a memory, but to give it weight, warmth, and permanence.",
+        text: "The rules are shorter than the exceptions: keep the dial quiet, the case thin, and let the strap do the talking. Everything else is confidence.",
       },
     ],
   },
 ];
 
 export const GEMINI_SYSTEM_INSTRUCTION = STUDIO_CHAT_INSTRUCTION;
+export const GEMINI_SYSTEM_INSTRUCTION_OPEN = STUDIO_CHAT_INSTRUCTION_OPEN;
 
 export const NAV_LINKS = [
-  { name: "Pet Portraits", path: portraitStylesUrl },
+  { name: "Watches", path: collectionsUrl },
   { name: "How It Works", path: "/how-it-works" },
   { name: "Our Story", path: "/about" },
   { name: "Our Studio", path: "/our-studio" },
@@ -288,10 +297,10 @@ export const NAV_LINKS = [
 
 export const FOOTER_LINKS = {
   shop: [
-    { name: "Explore Pet Portraits", href: portraitStylesUrl },
-    { name: "Style Gallery", href: "/gallery" },
+    { name: "Explore Watches", href: collectionsUrl },
+    { name: "Collections", href: "/gallery" },
     { name: "How It Works", href: "/how-it-works" },
-    { name: "Photo Guide", href: "/upload-photo" },
+    { name: "Engraving Guide", href: "/how-it-works" },
   ],
   company: [
     { name: "Our Story", href: "/about" },

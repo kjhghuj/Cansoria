@@ -4,7 +4,7 @@ import { STUDIO } from "@/lib/studio-content";
 export const metadata: Metadata = {
   title: "Shipping & Delivery | Cansoria",
   description:
-    "Cansoria delivery arrangements are in preparation and will be confirmed before commissions open.",
+    "Cansoria delivery arrangements are in preparation and will be confirmed before orders open.",
 };
 export default function ShippingPage() {
   return (
@@ -18,7 +18,7 @@ export default function ShippingPage() {
           <h2>Production and dispatch</h2>
           <p>
             Production locations, dispatch locations and lead times have not yet
-            been finalised. We will confirm them before commissions open.
+            been finalised. We will confirm them before orders open.
           </p>
           <h2>Destinations and costs</h2>
           <p>

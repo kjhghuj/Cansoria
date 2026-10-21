@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/money";
-import { portraitSummary, portraitStylesUrl } from "@/lib/portrait";
+import { PRICE_LOCALE } from "@/lib/market";
+import { collectionsUrl } from "@/lib/studio-content";
 import { Package, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { getProductsWithVariantImages } from "@/lib/medusa";
 import { useRegion } from "@/lib/providers";
-import PortraitOrderDetails from "@/components/PortraitOrderDetails";
+import EngravingOrderDetails from "@/components/EngravingOrderDetails";
 
 const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
@@ -159,8 +160,6 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
 
   // Get the best image for an order item
   const getItemImage = (item: OrderItem): string | undefined => {
-    const portraitImage = portraitSummary(item.metadata)?.image;
-    if (portraitImage) return portraitImage;
     // Priority 1: Variant-specific image (resolved from product API)
     if (item.variant_id && variantImageMap[item.variant_id]) {
       return variantImageMap[item.variant_id];
@@ -189,7 +188,7 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
+    return new Date(dateString).toLocaleDateString(PRICE_LOCALE, {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -209,7 +208,7 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
           <Package size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="text-charcoal-light mb-4">No orders yet</p>
           <a
-            href={portraitStylesUrl}
+            href={collectionsUrl}
             className="inline-block bg-terracotta text-white px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-terracotta-dark transition-colors"
           >
             Start Shopping
@@ -283,7 +282,7 @@ export function OrdersContent({ user }: { user: AccountUser | null }) {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-charcoal truncate">{item.title}</p>
-                              <PortraitOrderDetails metadata={item.metadata} orderId={order.id} />
+                              <EngravingOrderDetails metadata={item.metadata} />
                               <p className="text-xs text-charcoal-light mb-1">{item.variant_title}</p>
                               <div className="flex justify-between items-center text-xs">
                                 <span className="text-charcoal-light">Qty: {item.quantity}</span>

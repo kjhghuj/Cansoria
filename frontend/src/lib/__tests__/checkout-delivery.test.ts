@@ -14,10 +14,10 @@ const details: DeliveryDetails = {
   email: "buyer@example.test",
   phone: "0000000000",
   address: "Test street",
-  city: "London",
+  city: "New York",
   state: "",
-  postalCode: "SW1A 1AA",
-  country: "gb",
+  postalCode: "10001",
+  country: "us",
 };
 const options = [
   { id: "so_standard", name: "Standard", amount: 9 },
@@ -47,7 +47,7 @@ describe("delivery before payment", () => {
     expect(body.shipping_address).toMatchObject({
       first_name: "Test",
       last_name: "Buyer",
-      country_code: "gb",
+      country_code: "us",
     });
     expect(body.billing_address).toEqual(body.shipping_address);
     expect(fetchMock.mock.calls[1][0]).toContain(
@@ -102,7 +102,7 @@ describe("delivery before payment", () => {
       deliveryDetailsKey("cart_test", { ...details, name: "Test Buyer" }),
     ).toBe(key);
     for (const update of [
-      { country: "us" },
+      { country: "gb" },
       { address: "Another street" },
       { email: "other@example.test" },
       { state: "CA" },
@@ -118,7 +118,7 @@ describe("reviewed payment total", () => {
   const cart = {
     id: "cart_test",
     total: 103.02,
-    currency_code: "gbp",
+    currency_code: "usd",
     items: [{ id: "item_1", quantity: 1, total: 85.02 }],
     shipping_methods: [{ shipping_option_id: "so_express" }],
   } as StoreCart;
@@ -132,7 +132,7 @@ describe("reviewed payment total", () => {
     for (const update of [
       { total: 104 },
       { total: NaN },
-      { currency_code: "usd" },
+      { currency_code: "gbp" },
       { shipping_methods: [] },
       { email: "other@example.test" },
       { shipping_address: { address_1: "Changed street" } },

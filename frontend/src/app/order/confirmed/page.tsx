@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import { useAuth } from "@/lib/providers";
 import { readOrderConfirmation, readRememberedOrderRef, rememberOrderRef, type OrderConfirmation } from "@/lib/order-confirmation";
 
@@ -214,8 +214,8 @@ export function OrderConfirmedContent() {
             <Link href="/order/lookup" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
               Find Your Order
             </Link>
-            <a href={portraitStylesUrl} className="text-terracotta font-medium hover:underline">
-              Explore Pet Portraits
+            <a href={collectionsUrl} className="text-terracotta font-medium hover:underline">
+              Explore Watches
             </a>
           </div>
         </div>
@@ -257,8 +257,8 @@ export function OrderConfirmedContent() {
             <Link href="/order/lookup" className="bg-charcoal text-white px-8 py-3 rounded-full hover:bg-charcoal-light transition-colors">
               Verify &amp; View This Order
             </Link>
-            <a href={portraitStylesUrl} className="text-terracotta font-medium hover:underline">
-              Explore Pet Portraits
+            <a href={collectionsUrl} className="text-terracotta font-medium hover:underline">
+              Explore Watches
             </a>
           </div>
         </div>
@@ -285,7 +285,7 @@ export function OrderConfirmedContent() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href={portraitStylesUrl} className="bg-charcoal text-white px-8 py-4 rounded-full hover:bg-charcoal-light transition-colors font-medium min-w-[200px]">
+            <a href={collectionsUrl} className="bg-charcoal text-white px-8 py-4 rounded-full hover:bg-charcoal-light transition-colors font-medium min-w-[200px]">
               Continue Shopping
             </a>
             <Link href="/order/lookup" className="bg-white border border-gray-200 text-charcoal px-8 py-4 rounded-full hover:border-charcoal transition-colors font-medium min-w-[200px]">

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MapPin, Loader2, Plus, Edit, Trash2 } from "lucide-react";
+import { DEFAULT_COUNTRY_CODE } from "@/lib/market";
 
 const BACKEND_URL = "/api/medusa";
 const API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
@@ -25,7 +26,7 @@ export function AddressesContent() {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   // Follows the select so the province field can be required per country.
-  const [formCountry, setFormCountry] = useState("gb");
+  const [formCountry, setFormCountry] = useState(DEFAULT_COUNTRY_CODE);
   const provinceRequired = formCountry === "us";
 
   useEffect(() => {
@@ -116,7 +117,7 @@ export function AddressesContent() {
         <button
           onClick={() => {
             setEditingAddress(null);
-            setFormCountry("gb");
+            setFormCountry(DEFAULT_COUNTRY_CODE);
             setShowAddressModal(true);
           }}
           className="flex items-center gap-2 text-sm text-terracotta hover:underline"
@@ -136,7 +137,7 @@ export function AddressesContent() {
           <button
             onClick={() => {
               setEditingAddress(null);
-              setFormCountry("gb");
+              setFormCountry(DEFAULT_COUNTRY_CODE);
               setShowAddressModal(true);
             }}
             className="inline-block bg-terracotta text-white px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-terracotta-dark transition-colors"
@@ -167,7 +168,7 @@ export function AddressesContent() {
                 <button
                   onClick={() => {
                     setEditingAddress(address);
-                    setFormCountry(address.country_code || "gb");
+                    setFormCountry(address.country_code || DEFAULT_COUNTRY_CODE);
                     setShowAddressModal(true);
                   }}
                   className="text-sm text-charcoal hover:text-terracotta flex items-center gap-1"
@@ -280,8 +281,8 @@ export function AddressesContent() {
                   className="w-full border border-gray-200 px-4 py-3 focus:outline-none focus:border-charcoal"
                   required
                 >
-                  <option value="gb">United Kingdom</option>
                   <option value="us">United States</option>
+                  <option value="gb">United Kingdom</option>
                   <option value="de">Germany</option>
                   <option value="fr">France</option>
                   <option value="nl">Netherlands</option>

@@ -18,7 +18,7 @@ export default function PrivacyPage() {
           <h2>Your Privacy Matters</h2>
           <p>
             Cansoria uses customer information to process orders, create custom
-            artwork, provide support, and send updates you request.
+            watches, provide support, and send updates you request.
           </p>
 
           <h2>Information We Collect</h2>
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
             <li>Name and contact details for order processing</li>
             <li>Delivery address</li>
             <li>Payment information handled by secure payment providers</li>
-            <li>Photos or references submitted for custom artwork</li>
+            <li>Engraving text and notes submitted with your order</li>
             <li>Email preferences for offers or studio updates</li>
           </ul>
 
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
           <p>We use your information to:</p>
           <ul>
             <li>Process and deliver orders</li>
-            <li>Create and review custom artwork</li>
+            <li>Produce and review your watch order</li>
             <li>Send order confirmations and shipping updates</li>
             <li>Provide customer support</li>
             <li>Send marketing communications only when permitted</li>

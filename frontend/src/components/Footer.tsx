@@ -4,7 +4,7 @@ import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 import Newsletter from "./Newsletter";
 import { COMPANY_INFO, FOOTER_LINKS } from "@/lib/constants";
-import { portraitStylesUrl } from "@/lib/portrait";
+import { collectionsUrl } from "@/lib/studio-content";
 import { useStoreStatus } from "@/lib/providers";
 
 export default function Footer() {
@@ -12,7 +12,7 @@ export default function Footer() {
   // (Turnstile site key + backend verification + Klaviyo list) is configured.
   const { newsletterEnabled, ordersOpen } = useStoreStatus();
   const columns = [
-    { title: "Pet Portraits", links: FOOTER_LINKS.shop },
+    { title: "Watches", links: FOOTER_LINKS.shop },
     { title: "Our Studio", links: FOOTER_LINKS.company },
     { title: "Help & Support", links: FOOTER_LINKS.support },
   ];
@@ -26,9 +26,9 @@ export default function Footer() {
             <Link href="/" className="cansoria-footer-logo">
               <BrandLogo />
             </Link>
-            <p>A home for pet portrait inspiration, celebrating the companions you love.</p>
+            <p>A home for watch inspiration — collections, care guides and the details of wearing time well.</p>
             {/* The default stays conservative while store status loads. */}
-            <p>{ordersOpen ? "Commissions are open — place your order today." : "Commissions are in preparation."}</p>
+            <p>{ordersOpen ? "Orders are open — place yours today." : "Orders are in preparation."}</p>
             <a href={`mailto:${COMPANY_INFO.supportEmail}`} className="cansoria-footer-contact">
               {COMPANY_INFO.supportEmail}
             </a>
@@ -39,7 +39,7 @@ export default function Footer() {
               <ul>
                 {column.links.map((link) => (
                   <li key={link.href}>
-                    {link.href === portraitStylesUrl ? (
+                    {link.href === collectionsUrl ? (
                       <a href={link.href}>{link.name}</a>
                     ) : (
                       <Link href={link.href}>{link.name}</Link>

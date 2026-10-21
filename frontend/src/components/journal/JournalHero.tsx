@@ -5,12 +5,12 @@ import { Article } from "@/lib/cms";
 
 // Fallback data when no featured article is set
 const FALLBACK_STORY = {
-    slug: "how-to-turn-a-photo-into-a-hand-painted-oil-painting",
-    category: "Photo to Painting",
-    title: "How to Turn a Photo Into a Hand-Painted Oil Painting",
+    slug: "automatic-vs-quartz-which-watch-movement-is-right-for-you",
+    category: "Watch Basics",
+    title: "Automatic vs Quartz: Which Watch Movement Is Right for You?",
     excerpt:
-        "Learn how a favorite portrait, wedding moment, family photo, or travel memory becomes a custom oil painting on canvas.",
-    image: "/products/portrait.svg",
+        "Learn how movements, case sizes, straps and engraving turn a watch into a keeper.",
+    image: "/products/watch.svg",
     readTime: "5 min read",
 };
 
@@ -65,7 +65,7 @@ export default function JournalHero({ featuredArticle, allowStaticFallback = fal
                     <p className="text-gray-200 lg:text-charcoal-light font-light text-base lg:text-lg leading-relaxed mb-10 max-w-md hidden md:block">
                         {story
                             ? story.excerpt
-                            : "Reference photo guides, portrait concepts and notes on living with custom art. New stories will appear here."}
+                            : "Watch guides, collection concepts and notes on wearing time well. New stories will appear here."}
                     </p>
                     {story && (
                         <Link

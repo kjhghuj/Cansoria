@@ -27,9 +27,9 @@ import {
 } from "@medusajs/medusa/core-flows";
 import { ApiKey } from "../../.medusa/types/query-entry-points";
 import {
-  artworkPrices, artworkSizes, artworkSku, artworkUsdPrice,
-  framingOptions, orientations, shippingPrice,
-} from "../lib/studio-prices";
+  watchPrices, watchSizes, watchSku, watchUsdPrice,
+  strapOptions, dialOptions, shippingPrice,
+} from "../lib/watch-prices";
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -59,25 +59,25 @@ const updateStoreCurrencies = createWorkflow(
   }
 );
 
-function createArtworkVariants(skuPrefix: string, priceOffset = 0) {
-  return artworkSizes.flatMap((size) =>
-    framingOptions.flatMap((framing) =>
-      orientations.map((orientation) => {
-        const amount = artworkUsdPrice(size, framing, orientation, priceOffset);
+function createWatchVariants(skuPrefix: string, priceOffset = 0) {
+  return watchSizes.flatMap((size) =>
+    strapOptions.flatMap((strap) =>
+      dialOptions.map((dial) => {
+        const amount = watchUsdPrice(size, strap, priceOffset);
 
         return {
-          title: `${size} / ${framing} / ${orientation}`,
-          sku: artworkSku(skuPrefix, size, framing, orientation),
+          title: `${size} / ${strap} / ${dial}`,
+          sku: watchSku(skuPrefix, size, strap, dial),
           options: {
             Size: size,
-            Framing: framing,
-            Orientation: orientation,
+            Strap: strap,
+            Dial: dial,
           },
-          prices: artworkPrices(amount),
+          prices: watchPrices(amount),
           metadata: {
             size,
-            framing,
-            orientation,
+            strap,
+            dial,
           },
         };
       })
@@ -85,23 +85,32 @@ function createArtworkVariants(skuPrefix: string, priceOffset = 0) {
   );
 }
 
-function storySections(subject: string, imageUrl: string) {
+function storySections(subject: string, imageUrl: string, engraveable: boolean) {
   return [
     {
-      id: "artist-interpretation",
-      title: "Painted From a Meaningful Reference",
-      content: `Every ${subject} begins with composition notes, color direction, and brushwork choices made by a real artist.`,
+      id: "movement-and-craft",
+      title: "Built Around a Movement Worth Keeping",
+      content: `Every ${subject} is assembled in-house, regulated by hand, and tested across five positions before the case is sealed.`,
       imageUrl,
-      imageAlt: `${subject} artwork in progress`,
+      imageAlt: `${subject} movement detail`,
     },
-    {
-      id: "preview-before-shipping",
-      title: "Previewed Before It Leaves the Studio",
-      content:
-        "Cansoria sends a digital preview so customers can review the direction before the finished canvas is packed for delivery.",
-      imageUrl,
-      imageAlt: `${subject} finished canvas detail`,
-    },
+    engraveable
+      ? {
+          id: "caseback-engraving",
+          title: "Engraved Casebacks, Finished by Hand",
+          content:
+            "Add up to twenty characters to the caseback. Each engraving is cut to order and inspected under magnification before the watch ships.",
+          imageUrl,
+          imageAlt: `${subject} engraved caseback detail`,
+        }
+      : {
+          id: "quality-control",
+          title: "Checked Before It Leaves the Studio",
+          content:
+            "Cansoria inspects every watch for timekeeping, water resistance, and finish before it is boxed with its warranty and strap tool.",
+          imageUrl,
+          imageAlt: `${subject} quality control detail`,
+        },
   ];
 }
 
@@ -124,7 +133,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
       ...store.metadata,
       brand: "Cansoria Studio",
       support_email: "hello@cansoria.com",
-      studio_note: "Hand-painted canvas art made to order by independent artists.",
+      studio_note: "Watches designed, assembled, and regulated in-house.",
     },
   });
 
@@ -140,7 +149,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         salesChannelsData: [
           {
             name: "Cansoria Studio Storefront",
-            description: "Custom oil paintings and canvas wall art",
+            description: "Watches and accessories",
           },
         ],
       },
@@ -256,7 +265,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         input: {
           data: [
             {
-              name: "Cansoria Artwork Shipping",
+              name: "Cansoria Watch Shipping",
               type: "default",
             },
           ],
@@ -291,23 +300,23 @@ export default async function seedDemoData({ container }: ExecArgs) {
   await createShippingOptionsWorkflow(container).run({
     input: [
       {
-        name: "Standard Art Delivery",
+        name: "Standard Watch Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
-          label: "Standard Art Delivery",
-          description: "Tracked delivery for finished canvas artwork.",
-          code: "standard-art-delivery",
+          label: "Standard Watch Delivery",
+          description: "Insured tracked delivery for watches and accessories.",
+          code: "standard-watch-delivery",
         },
         prices: [
-          { currency_code: "gbp", amount: shippingPrice("Standard Art Delivery", "gbp") },
-          { currency_code: "eur", amount: shippingPrice("Standard Art Delivery", "eur") },
-          { currency_code: "usd", amount: shippingPrice("Standard Art Delivery", "usd") },
-          { region_id: ukRegion.id, amount: shippingPrice("Standard Art Delivery", "gbp") },
-          { region_id: usRegion.id, amount: shippingPrice("Standard Art Delivery", "usd") },
-          { region_id: euRegion.id, amount: shippingPrice("Standard Art Delivery", "eur") },
+          { currency_code: "gbp", amount: shippingPrice("Standard Watch Delivery", "gbp") },
+          { currency_code: "eur", amount: shippingPrice("Standard Watch Delivery", "eur") },
+          { currency_code: "usd", amount: shippingPrice("Standard Watch Delivery", "usd") },
+          { region_id: ukRegion.id, amount: shippingPrice("Standard Watch Delivery", "gbp") },
+          { region_id: usRegion.id, amount: shippingPrice("Standard Watch Delivery", "usd") },
+          { region_id: euRegion.id, amount: shippingPrice("Standard Watch Delivery", "eur") },
         ],
         rules: [
           { attribute: "enabled_in_store", value: "true", operator: "eq" },
@@ -315,23 +324,23 @@ export default async function seedDemoData({ container }: ExecArgs) {
         ],
       },
       {
-        name: "Priority Art Delivery",
+        name: "Priority Watch Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
-          label: "Priority Art Delivery",
-          description: "Faster tracked delivery once the canvas is ready.",
-          code: "priority-art-delivery",
+          label: "Priority Watch Delivery",
+          description: "Faster insured tracked delivery with signature on arrival.",
+          code: "priority-watch-delivery",
         },
         prices: [
-          { currency_code: "gbp", amount: shippingPrice("Priority Art Delivery", "gbp") },
-          { currency_code: "eur", amount: shippingPrice("Priority Art Delivery", "eur") },
-          { currency_code: "usd", amount: shippingPrice("Priority Art Delivery", "usd") },
-          { region_id: ukRegion.id, amount: shippingPrice("Priority Art Delivery", "gbp") },
-          { region_id: usRegion.id, amount: shippingPrice("Priority Art Delivery", "usd") },
-          { region_id: euRegion.id, amount: shippingPrice("Priority Art Delivery", "eur") },
+          { currency_code: "gbp", amount: shippingPrice("Priority Watch Delivery", "gbp") },
+          { currency_code: "eur", amount: shippingPrice("Priority Watch Delivery", "eur") },
+          { currency_code: "usd", amount: shippingPrice("Priority Watch Delivery", "usd") },
+          { region_id: ukRegion.id, amount: shippingPrice("Priority Watch Delivery", "gbp") },
+          { region_id: usRegion.id, amount: shippingPrice("Priority Watch Delivery", "usd") },
+          { region_id: euRegion.id, amount: shippingPrice("Priority Watch Delivery", "eur") },
         ],
         rules: [
           { attribute: "enabled_in_store", value: "true", operator: "eq" },
@@ -339,15 +348,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
         ],
       },
       {
-        name: "Free Art Delivery",
+        name: "Free Watch Delivery",
         price_type: "flat",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
-          label: "Free Art Delivery",
-          description: "Complimentary tracked delivery for qualifying artwork orders.",
-          code: "free-art-delivery",
+          label: "Free Watch Delivery",
+          description: "Complimentary insured tracked delivery for qualifying watch orders.",
+          code: "free-watch-delivery",
         },
         prices: [
           { currency_code: "gbp", amount: 0 },
@@ -420,284 +429,306 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       product_categories: [
         {
-          name: "Custom Portraits",
-          handle: "custom-portraits",
-          description: "Photo-to-painting portraits created as hand-painted oil artwork.",
+          name: "Men's Watches",
+          handle: "mens-watches",
+          description: "Watches sized and styled for men's wrists.",
           is_active: true,
         },
         {
-          name: "Custom Painting",
-          handle: "custom-painting",
-          description: "Made-to-order canvas paintings from customer references.",
+          name: "Women's Watches",
+          handle: "womens-watches",
+          description: "Slimmer cases and refined dials for women's wrists.",
           is_active: true,
         },
         {
-          name: "Pet Portraits",
-          handle: "pet-portraits",
-          description: "Hand-painted canvas portraits of beloved companions.",
+          name: "Automatic",
+          handle: "automatic",
+          description: "Self-winding mechanical movements with exhibition casebacks.",
           is_active: true,
         },
         {
-          name: "Wedding Gifts",
-          handle: "wedding-gifts",
-          description: "Anniversary and wedding memory paintings on canvas.",
+          name: "Chronograph",
+          handle: "chronograph",
+          description: "Stopwatch complications for timing what matters.",
           is_active: true,
         },
         {
-          name: "Landscape",
-          handle: "landscape",
-          description: "Landscape oil paintings for calm, atmospheric rooms.",
+          name: "Dress Watches",
+          handle: "dress-watches",
+          description: "Understated watches for evenings and tailoring.",
           is_active: true,
         },
         {
-          name: "Abstract",
-          handle: "abstract",
-          description: "Abstract canvas wall art with layered brushwork.",
+          name: "Dive Watches",
+          handle: "dive-watches",
+          description: "Water-resistant sports watches with rotating bezels.",
           is_active: true,
         },
         {
-          name: "Classic Art",
-          handle: "classic-art",
-          description: "Classic art reproductions and traditional oil studies.",
+          name: "Everyday Watches",
+          handle: "everyday-watches",
+          description: "Versatile watches that earn their wrist time daily.",
           is_active: true,
         },
         {
-          name: "Home Decor",
-          handle: "home-decor",
-          description: "Canvas paintings chosen for living rooms, bedrooms, and offices.",
-          is_active: true,
-        },
-        {
-          name: "Wall Art",
-          handle: "wall-art",
-          description: "Display-ready oil paintings and decorative canvas art.",
+          name: "Watch Gifts",
+          handle: "watch-gifts",
+          description: "Gift-ready watches with complimentary caseback engraving.",
           is_active: true,
         },
       ],
     },
   });
 
-  const customPortraitsCategory = categoryResult.find((cat) => cat.handle === "custom-portraits")!;
-  const customPaintingCategory = categoryResult.find((cat) => cat.handle === "custom-painting")!;
-  const petPortraitsCategory = categoryResult.find((cat) => cat.handle === "pet-portraits")!;
-  const weddingGiftsCategory = categoryResult.find((cat) => cat.handle === "wedding-gifts")!;
-  const landscapeCategory = categoryResult.find((cat) => cat.handle === "landscape")!;
-  const abstractCategory = categoryResult.find((cat) => cat.handle === "abstract")!;
-  const classicArtCategory = categoryResult.find((cat) => cat.handle === "classic-art")!;
-  const homeDecorCategory = categoryResult.find((cat) => cat.handle === "home-decor")!;
-  const wallArtCategory = categoryResult.find((cat) => cat.handle === "wall-art")!;
+  const mensWatchesCategory = categoryResult.find((cat) => cat.handle === "mens-watches")!;
+  const womensWatchesCategory = categoryResult.find((cat) => cat.handle === "womens-watches")!;
+  const automaticCategory = categoryResult.find((cat) => cat.handle === "automatic")!;
+  const chronographCategory = categoryResult.find((cat) => cat.handle === "chronograph")!;
+  const dressWatchesCategory = categoryResult.find((cat) => cat.handle === "dress-watches")!;
+  const diveWatchesCategory = categoryResult.find((cat) => cat.handle === "dive-watches")!;
+  const everydayWatchesCategory = categoryResult.find((cat) => cat.handle === "everyday-watches")!;
+  const watchGiftsCategory = categoryResult.find((cat) => cat.handle === "watch-gifts")!;
 
   logger.info("Seeding Cansoria Studio products...");
 
   const commonOptions = [
-    { title: "Size", values: [...artworkSizes] },
-    { title: "Framing", values: [...framingOptions] },
-    { title: "Orientation", values: [...orientations] },
+    { title: "Size", values: [...watchSizes] },
+    { title: "Strap", values: [...strapOptions] },
+    { title: "Dial", values: [...dialOptions] },
   ];
 
   await createProductsWorkflow(container).run({
     input: {
       products: [
         {
-          title: "Custom Portrait From Photo",
-          handle: "custom-portrait-from-photo",
-          subtitle: "A hand-painted oil portrait created from your favorite photo.",
+          title: "Heritage Classic 40",
+          handle: "heritage-classic-40",
+          subtitle: "A slim dress watch with a domed dial and applied indices.",
           description:
-            "Send a cherished photo and Cansoria artists will translate it into a timeless oil painting on premium canvas.",
-          category_ids: [customPortraitsCategory.id, customPaintingCategory.id],
-          material: "Artist-grade oil paint on premium cotton canvas",
-          weight: 900,
+            "The Heritage Classic pairs a double-domed dial with polished applied indices and a hand-assembled quartz movement, sized to slip under a cuff.",
+          category_ids: [dressWatchesCategory.id, mensWatchesCategory.id],
+          material: "316L stainless steel case with sapphire crystal",
+          weight: 220,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-PORTRAIT"),
+          variants: createWatchVariants("CAN-HERITAGE"),
           metadata: {
-            customizable: true,
-            upload_required: true,
-            free_preview: true,
+            engraveable: true,
+            movement: "Swiss quartz, 4-year battery",
+            water_resistance: "5 ATM",
+            warranty: "2-year international warranty",
             rating: 4.9,
             review_count: 214,
-            production_time: "2-3 weeks",
-            story_sections: storySections("custom portrait", "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Heritage Classic", "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Pet Portrait Oil Painting",
-          handle: "pet-portrait-oil-painting",
-          subtitle: "A museum-quality canvas tribute to a beloved companion.",
+          title: "Meridian Automatic",
+          handle: "meridian-automatic",
+          subtitle: "A self-winding movement behind an exhibition caseback.",
           description:
-            "Capture the expression, texture, and spirit of a pet in a hand-painted canvas artwork.",
-          category_ids: [petPortraitsCategory.id, customPaintingCategory.id],
-          material: "Layered oil paint on stretched cotton canvas",
-          weight: 900,
+            "The Meridian Automatic keeps a 42-hour power reserve Miyota 9039 movement on display through a sapphire caseback, with a quick-release strap system.",
+          category_ids: [automaticCategory.id, mensWatchesCategory.id],
+          material: "316L stainless steel case with sapphire crystal",
+          weight: 260,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-PET", -20),
+          variants: createWatchVariants("CAN-MERIDIAN", 120),
           metadata: {
-            customizable: true,
-            upload_required: true,
-            free_preview: true,
+            engraveable: true,
+            movement: "Miyota 9039 automatic, 42-hour power reserve",
+            water_resistance: "10 ATM",
+            warranty: "2-year international warranty",
             rating: 4.8,
             review_count: 156,
-            production_time: "2-3 weeks",
-            story_sections: storySections("pet portrait", "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Meridian Automatic", "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Wedding Anniversary Oil Portrait",
-          handle: "wedding-anniversary-oil-portrait",
-          subtitle: "A romantic hand-painted canvas made from a wedding memory.",
+          title: "Regent Chronograph",
+          handle: "regent-chronograph",
+          subtitle: "A three-register chronograph with a brushed steel case.",
           description:
-            "Transform a ceremony, first dance, proposal, or anniversary photo into a lasting oil portrait.",
-          category_ids: [weddingGiftsCategory.id, customPortraitsCategory.id],
-          material: "Artist-grade oil paint on premium stretched canvas",
-          weight: 1000,
+            "The Regent Chronograph times laps, kitchens, and connections with a three-register meca-quartz movement and a fixed tachymeter chapter ring.",
+          category_ids: [chronographCategory.id, mensWatchesCategory.id],
+          material: "Brushed 316L stainless steel with sapphire crystal",
+          weight: 280,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-WEDDING", 15),
+          variants: createWatchVariants("CAN-REGENT", 90),
           metadata: {
-            customizable: true,
-            upload_required: true,
-            free_preview: true,
+            engraveable: true,
+            movement: "Seiko VK64 meca-quartz chronograph",
+            water_resistance: "10 ATM",
+            warranty: "2-year international warranty",
             rating: 4.9,
             review_count: 98,
-            production_time: "2-4 weeks",
-            story_sections: storySections("wedding portrait", "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Regent Chronograph", "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Landscape Oil Painting",
-          handle: "landscape-oil-painting",
-          subtitle: "Atmospheric scenery painted in layered oils.",
+          title: "Averly Dress Watch",
+          handle: "averly-dress-watch",
+          subtitle: "A jewelry-grade dress watch with a mother-of-pearl dial.",
           description:
-            "A hand-painted landscape canvas for calm rooms, reading corners, and statement walls.",
-          category_ids: [landscapeCategory.id, wallArtCategory.id],
-          material: "Oil paint on stretched cotton canvas",
-          weight: 1100,
+            "The Averly sets a blue mother-of-pearl dial between slim polished lugs, finished with a quick-release leather strap and a scratch-resistant sapphire crystal.",
+          category_ids: [dressWatchesCategory.id, womensWatchesCategory.id],
+          material: "Polished stainless steel with sapphire crystal",
+          weight: 180,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-LANDSCAPE", -10),
+          variants: createWatchVariants("CAN-AVERLY", -30),
           metadata: {
-            customizable: false,
-            upload_required: false,
-            free_preview: true,
-            rating: 4.7,
+            engraveable: true,
+            movement: "Swiss quartz, 4-year battery",
+            water_resistance: "3 ATM",
+            warranty: "2-year international warranty",
+            rating: 4.9,
             review_count: 82,
-            production_time: "1-2 weeks",
-            story_sections: storySections("landscape painting", "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Averly Dress Watch", "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Abstract Canvas Wall Art",
-          handle: "abstract-canvas-wall-art",
-          subtitle: "Modern abstract oil painting with tactile brushwork.",
+          title: "Northsea Diver",
+          handle: "northsea-diver",
+          subtitle: "A 20 ATM dive watch with a ceramic rotating bezel.",
           description:
-            "Layered abstract wall art created for living rooms, bedrooms, offices, and gallery walls.",
-          category_ids: [abstractCategory.id, wallArtCategory.id, homeDecorCategory.id],
-          material: "Textured oil paint on stretched canvas",
-          weight: 1100,
+            "The Northsea Diver pairs a unidirectional ceramic bezel with a screw-down crown and 20 ATM water resistance, rated for real diving and hard weekends.",
+          category_ids: [diveWatchesCategory.id, mensWatchesCategory.id],
+          material: "316L stainless steel with ceramic bezel and sapphire crystal",
+          weight: 300,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-ABSTRACT", -5),
+          variants: createWatchVariants("CAN-NORTHSEA", 60),
           metadata: {
-            customizable: false,
-            upload_required: false,
-            free_preview: true,
-            rating: 4.8,
+            engraveable: true,
+            movement: "Seiko NH35 automatic, 41-hour power reserve",
+            water_resistance: "20 ATM",
+            warranty: "2-year international warranty",
+            rating: 4.7,
             review_count: 121,
-            production_time: "1-2 weeks",
-            story_sections: storySections("abstract canvas wall art", "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Northsea Diver", "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Classic Art Reproduction",
-          handle: "classic-art-reproduction",
-          subtitle: "A traditional oil study inspired by classic painting techniques.",
+          title: "Lucienne Slim 32",
+          handle: "lucienne-slim-32",
+          subtitle: "An ultra-thin case with a sunray-brushed dial.",
           description:
-            "A hand-painted classic reproduction for customers who want old-world composition and brushwork.",
-          category_ids: [classicArtCategory.id, wallArtCategory.id],
-          material: "Oil paint on premium cotton canvas",
-          weight: 1000,
+            "The Lucienne Slim measures just 7.2mm thick, with a sunray-brushed dial and Milanese mesh option that dresses up or down without effort.",
+          category_ids: [womensWatchesCategory.id, dressWatchesCategory.id],
+          material: "Polished stainless steel with sapphire crystal",
+          weight: 160,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1579783901586-d88db74b4fe4?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-CLASSIC", 25),
+          variants: createWatchVariants("CAN-LUCIENNE", -10),
           metadata: {
-            customizable: false,
-            upload_required: false,
-            free_preview: true,
+            engraveable: true,
+            movement: "Swiss quartz, 4-year battery",
+            water_resistance: "3 ATM",
+            warranty: "2-year international warranty",
             rating: 4.8,
             review_count: 64,
-            production_time: "2-4 weeks",
-            story_sections: storySections("classic art reproduction", "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Lucienne Slim", "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200", true),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "Home Decor Canvas Painting",
-          handle: "home-decor-canvas-painting",
-          subtitle: "Display-ready oil painting selected for everyday rooms.",
+          title: "Ellery Everyday",
+          handle: "ellery-everyday",
+          subtitle: "A grab-and-go watch with a soft iron dial.",
           description:
-            "A versatile canvas painting designed to add warmth, texture, and a finished feeling to your home.",
-          category_ids: [homeDecorCategory.id, wallArtCategory.id],
-          material: "Oil paint on stretched canvas with optional frame",
-          weight: 1000,
+            "The Ellery Everyday is the watch you reach for without thinking: luminous hands, a readable dial, and a strap system that swaps in seconds.",
+          category_ids: [everydayWatchesCategory.id, womensWatchesCategory.id],
+          material: "Brushed stainless steel with hardened mineral crystal",
+          weight: 200,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          thumbnail: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200",
+          thumbnail: "https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&q=80&w=1200",
           images: [
-            { url: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200" },
-            { url: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
           ],
           options: commonOptions,
-          variants: createArtworkVariants("CAN-HOME", -15),
+          variants: createWatchVariants("CAN-ELLERY", -40),
           metadata: {
-            customizable: false,
-            upload_required: false,
-            free_preview: true,
+            engraveable: false,
+            movement: "Japanese quartz, 3-year battery",
+            water_resistance: "5 ATM",
+            warranty: "2-year international warranty",
             rating: 4.7,
             review_count: 73,
-            production_time: "1-2 weeks",
-            story_sections: storySections("home decor canvas painting", "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200"),
+            story_sections: storySections("Ellery Everyday", "https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&q=80&w=1200", false),
+          },
+          sales_channels: [{ id: defaultSalesChannel[0].id }],
+        },
+        {
+          title: "Field & Pine Safari",
+          handle: "field-pine-safari",
+          subtitle: "A field watch with a canvas strap and 24-hour dial.",
+          description:
+            "The Field & Pine Safari reads like proper kit: a matte steel case, 24-hour chapter ring, and a washed canvas strap that earns its wear marks.",
+          category_ids: [watchGiftsCategory.id, everydayWatchesCategory.id],
+          material: "Matte stainless steel with sapphire crystal",
+          weight: 240,
+          status: ProductStatus.PUBLISHED,
+          shipping_profile_id: shippingProfile.id,
+          thumbnail: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200",
+          images: [
+            { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
+            { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
+          ],
+          options: commonOptions,
+          variants: createWatchVariants("CAN-FIELD", -20),
+          metadata: {
+            engraveable: false,
+            movement: "Seiko NH35 automatic, 41-hour power reserve",
+            water_resistance: "10 ATM",
+            warranty: "2-year international warranty",
+            rating: 4.8,
+            review_count: 57,
+            story_sections: storySections("Field & Pine Safari", "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200", false),
           },
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },

@@ -21,9 +21,9 @@ describe("Cansoria runtime branding", () => {
     "data/templates/order_placed/text.hbs",
   ]
 
-  it("keeps old Lumiera intimate-wellness language out of runtime files", () => {
+  it("keeps retired oil-painting language out of runtime files", () => {
     const oldBrandPattern =
-      /LUMIERA|Lumiera|lumiera|lumierawellness\.com|Premium Intimate Wellness|intimate wellness|discreet|The Rose|The Wand|Kegel|Couples|Solo Play|toy cleaner|toy materials/i
+      /LUMIERA|Lumiera|lumiera|lumierawellness\.com|Premium Intimate Wellness|intimate wellness|discreet|The Rose|The Wand|Kegel|Couples|Solo Play|toy cleaner|toy materials|pet portrait|oil painting|hand-painted|canvas artwork|wall art|Explore Paintings|your first painting|art studio serving homes/i
 
     const offenders = runtimeFiles
       .map((relativePath) => ({
@@ -36,7 +36,7 @@ describe("Cansoria runtime branding", () => {
     expect(offenders).toEqual([])
   })
 
-  it("seeds Cansoria oil-painting products and storefront taxonomy", () => {
+  it("seeds Cansoria watch products and storefront taxonomy", () => {
     const seed = readProjectFile("src/scripts/seed.ts")
 
     expect(seed).toContain("Cansoria Studio")
@@ -44,41 +44,42 @@ describe("Cansoria runtime branding", () => {
     expect(seed).toContain("pp_stripe_stripe")
 
     for (const handle of [
-      "custom-portraits",
-      "custom-painting",
-      "pet-portraits",
-      "wedding-gifts",
-      "landscape",
-      "abstract",
-      "classic-art",
-      "home-decor",
-      "wall-art",
+      "mens-watches",
+      "womens-watches",
+      "automatic",
+      "chronograph",
+      "dress-watches",
+      "dive-watches",
+      "everyday-watches",
+      "watch-gifts",
     ]) {
       expect(seed).toContain(handle)
     }
 
     for (const title of [
-      "Custom Portrait From Photo",
-      "Pet Portrait Oil Painting",
-      "Wedding Anniversary Oil Portrait",
-      "Landscape Oil Painting",
-      "Abstract Canvas Wall Art",
-      "Classic Art Reproduction",
-      "Home Decor Canvas Painting",
+      "Heritage Classic 40",
+      "Meridian Automatic",
+      "Regent Chronograph",
+      "Averly Dress Watch",
+      "Northsea Diver",
+      "Lucienne Slim 32",
+      "Ellery Everyday",
+      "Field & Pine Safari",
     ]) {
       expect(seed).toContain(title)
     }
 
-    for (const optionTitle of ["Size", "Framing", "Orientation"]) {
+    for (const optionTitle of ["Size", "Strap", "Dial"]) {
       expect(seed).toContain(`title: "${optionTitle}"`)
     }
 
     for (const metadataKey of [
-      "customizable",
-      "free_preview",
+      "engraveable",
+      "movement",
+      "water_resistance",
+      "warranty",
       "rating",
       "review_count",
-      "production_time",
       "story_sections",
     ]) {
       expect(seed).toContain(metadataKey)

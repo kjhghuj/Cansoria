@@ -1,18 +1,19 @@
 ﻿import { formatPrice, lowestProductPrice } from "@/lib/money";
 import { STUDIO } from "@/lib/studio-content";
 import { StoreProduct } from "@/lib/types";
+import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import ImageWithFallback from "@/components/ImageWithFallback";
 import Link from "next/link";
 import { getProductImage } from "@/lib/medusa";
 
 const InlineProductBlock = ({ product }: { product: StoreProduct }) => {
   const imageUrl =
-    product.handle === "pet-portrait-oil-painting"
-      ? "/images/pet-oil/classic-oil.webp"
+    product.handle === "heritage-classic-40"
+      ? "/images/watches/heritage-classic-40.svg"
       : getProductImage(product) || "/products/generic.svg";
   const currency =
     product.variants?.find((variant) => variant.calculated_price?.currency_code)
-      ?.calculated_price?.currency_code || "GBP";
+      ?.calculated_price?.currency_code || DEFAULT_CURRENCY_CODE;
   const price = lowestProductPrice(product, currency);
 
   return (

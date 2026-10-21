@@ -42,7 +42,7 @@ function renderWelcomeEmail(data: Record<string, any>, frontendUrl: string) {
                 <tr>
                     <td style="background-color: #f7f2ec; border: 1px solid #eadfd3; padding: 26px; text-align: center;">
                         <p style="margin: 0 0 8px; font-size: 12px; letter-spacing: 2px; color: #8c6b54; text-transform: uppercase;">Your Studio Welcome Gift</p>
-                        <p style="margin: 0 0 16px; font-size: 15px; color: #3b332d;">Enjoy 15% off your first Cansoria painting.</p>
+                        <p style="margin: 0 0 16px; font-size: 15px; color: #3b332d;">Enjoy 15% off your first Cansoria watch.</p>
                         <div style="display: inline-block; border: 2px dashed #bca083; background: #ffffff; padding: 14px 22px; font-size: 22px; letter-spacing: 3px; color: #2d2926; font-weight: 700;">${discountCode}</div>
                         ${validUntil ? `<p style="margin: 14px 0 0; font-size: 12px; color: #8a8178;">Valid until ${validUntil}</p>` : ""}
                     </td>
@@ -65,17 +65,17 @@ function renderWelcomeEmail(data: Record<string, any>, frontendUrl: string) {
                     <tr>
                         <td style="padding: 42px 44px 24px; text-align: center;">
                             <h1 style="margin: 0; font-size: 28px; font-weight: 500; letter-spacing: 4px; color: #2d2926; text-transform: uppercase;">Cansoria Studio</h1>
-                            <p style="margin: 10px 0 0; font-size: 12px; letter-spacing: 2px; color: #9a7c62; text-transform: uppercase;">Hand-painted oil art</p>
+                            <p style="margin: 10px 0 0; font-size: 12px; letter-spacing: 2px; color: #9a7c62; text-transform: uppercase;">Watches made in-house</p>
                         </td>
                     </tr>
                     <tr>
                         <td style="padding: 24px 44px 42px;">
                             <h2 style="margin: 0 0 18px; font-size: 26px; font-weight: 500; color: #332d28;">Welcome, ${firstName}.</h2>
-                            <p style="margin: 0 0 16px; font-size: 16px; line-height: 26px; color: #5d534b;">Thank you for joining Cansoria Studio. We create hand-painted oil portraits, custom canvas artwork, and meaningful wall art made to order.</p>
-                            <p style="margin: 0 0 18px; font-size: 16px; line-height: 26px; color: #5d534b;">You will receive studio notes, custom painting ideas, and private offers for artwork that feels personal in your home.</p>
+                            <p style="margin: 0 0 16px; font-size: 16px; line-height: 26px; color: #5d534b;">Thank you for joining Cansoria Studio. We design, assemble, and regulate every watch in-house, with complimentary caseback engraving on engravable models.</p>
+                            <p style="margin: 0 0 18px; font-size: 16px; line-height: 26px; color: #5d534b;">You will receive studio notes, collecting guides, and private offers for watches that feel personal on the wrist.</p>
                             ${discountHtml}
                             <p style="margin: 28px 0 0; text-align: center;">
-                                <a href="${frontendUrl}/shop" style="display: inline-block; background-color: #2d2926; color: #ffffff; text-decoration: none; padding: 14px 34px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">Explore Paintings</a>
+                                <a href="${frontendUrl}/shop" style="display: inline-block; background-color: #2d2926; color: #ffffff; text-decoration: none; padding: 14px 34px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">Explore Watches</a>
                             </p>
                         </td>
                     </tr>
@@ -103,10 +103,10 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
     let itemsHtml = ""
     if (Array.isArray(data.items)) {
         for (const item of data.items) {
-            const itemName = escapeHtml(item.title || item.product_title || "Artwork")
+            const itemName = escapeHtml(item.title || item.product_title || "Watch")
             const itemVariant = item.variant_title ? escapeHtml(item.variant_title) : ""
             const itemQty = Number(item.quantity ?? 1)
-            const itemImage = escapeHtml(item.thumbnail || "https://placehold.co/90x110/f7f2ec/8a8178?text=Art")
+            const itemImage = escapeHtml(item.thumbnail || "https://placehold.co/90x110/f7f2ec/8a8178?text=Watch")
             const itemPrice = formatMoney(item.unit_price ?? 0, currencyCode)
             const itemTotal = formatMoney(item.total ?? MathBN.mult(moneyAmount(item.unit_price), itemQty), currencyCode)
             const hasAdjustments = !moneyAmount(item.discount_total).isZero() || !moneyAmount(item.tax_total).isZero()
@@ -174,8 +174,8 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
         <tr>
             <td style="padding: 0 42px 28px; text-align: center;">
                 <p style="margin: 0 0 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8a8178;">Order #${escapeHtml(orderId)}</p>
-                <h2 style="margin: 0 0 18px; font-size: 30px; line-height: 1.2; color: #332d28; font-weight: 500;">Your artwork order is confirmed.</h2>
-                <p style="margin: 0; font-size: 15px; line-height: 26px; color: #5d534b;">Hi ${firstName}, thank you for choosing Cansoria Studio. We are preparing your order and will keep you updated as it moves through the studio.</p>
+                <h2 style="margin: 0 0 18px; font-size: 30px; line-height: 1.2; color: #332d28; font-weight: 500;">Your watch order is confirmed.</h2>
+                <p style="margin: 0; font-size: 15px; line-height: 26px; color: #5d534b;">Hi ${firstName}, thank you for choosing Cansoria Studio. We are preparing your order and will keep you updated as it moves through final checks.</p>
             </td>
         </tr>
         ${itemsHtml ? `<tr><td style="padding: 0 42px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${itemsHtml}</table></td></tr>` : ""}
@@ -198,13 +198,13 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
         <tr>
             <td style="background-color: #fbfaf8; padding: 30px 42px;">
                 <h3 style="margin: 0 0 14px; font-size: 18px; color: #332d28; font-weight: 500;">What happens next?</h3>
-                <p style="margin: 0 0 10px; font-size: 14px; line-height: 22px; color: #5d534b;"><strong>Studio review:</strong> We review your order details and reference notes before production begins.</p>
-                <p style="margin: 0; font-size: 14px; line-height: 22px; color: #5d534b;"><strong>Shipping updates:</strong> You will receive tracking details once your canvas is ready to leave the studio.</p>
+                <p style="margin: 0 0 10px; font-size: 14px; line-height: 22px; color: #5d534b;"><strong>Studio checks:</strong> We verify timekeeping, water resistance, and any caseback engraving before your watch is boxed.</p>
+                <p style="margin: 0; font-size: 14px; line-height: 22px; color: #5d534b;"><strong>Shipping updates:</strong> You will receive tracking details once your watch is ready to leave the studio.</p>
             </td>
         </tr>
         <tr>
             <td align="center" style="padding: 30px 42px; background-color: #f7f4ef;">
-                <p style="margin: 0; font-size: 12px; color: #8a8178;">Cansoria Studio - Online art studio serving homes worldwide</p>
+                <p style="margin: 0; font-size: 12px; color: #8a8178;">Cansoria Studio - Independent watch studio serving collectors worldwide</p>
             </td>
         </tr>
     </table>

@@ -1,3 +1,4 @@
+import { PAYMENT_PROVIDER_ID } from './payment-provider';
 import type { StoreCart } from "./types";
 
 export interface DeliveryDetails {
@@ -151,7 +152,7 @@ export function hasAuthorizedStripePayment(cart: StoreCart | null) {
   return (
     cart?.payment_collection?.payment_sessions?.some(
       (session) =>
-        session.provider_id === "pp_stripe_stripe" &&
+        session.provider_id === PAYMENT_PROVIDER_ID &&
         // Medusa marks a captured session "captured"; "authorized" precedes capture.
         (session.status === "authorized" || session.status === "captured"),
     ) ?? false

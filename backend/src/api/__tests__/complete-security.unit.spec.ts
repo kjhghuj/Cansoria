@@ -1,6 +1,5 @@
 import { POST } from "../store/carts/[id]/complete/route";
 import { completionWorkflowFixture } from "../../__tests__/workflows/completion-workflow-fixture";
-import { Readable } from "stream";
 import { deferred } from "../../__tests__/workflows/cart-wrapper-fixture";
 jest.mock("@medusajs/medusa/api/store/carts/helpers", () => ({
   refetchCart: jest.fn(async () => ({ id: "cart_a" })),
@@ -25,10 +24,10 @@ describe("welcome completion through the real shared native hook", () => {
     welcome(h);
     const entered = deferred(),
       finish = deferred();
-    h.files.getDownloadStream.mockImplementationOnce(async () => {
+    h.store.listStores.mockImplementationOnce(async () => {
       entered.resolve();
       await finish.promise;
-      return Readable.from([Buffer.from([137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,0,0,0,1,0,0,0,1,8,2,0,0,0,144,119,83,222,0,0,0,9,112,72,89,115,0,0,3,232,0,0,3,232,1,181,123,82,107,0,0,0,12,73,68,65,84,8,153,99,104,104,104,0,0,3,4,1,129,30,206,255,166,0,0,0,0,73,69,78,68,174,66,96,130])]);
+      return [{ id: "store_a", metadata: { orders_open: true } }];
     });
     const first = POST(h.req, h.res);
     await entered.promise;
@@ -70,7 +69,7 @@ describe("welcome completion through the real shared native hook", () => {
     const canonical = await h.promotion.listPromotions();
     canonical[0].campaign.budget.used = 1;
     h.promotion.listPromotions.mockResolvedValue(canonical);
-    h.cart.metadata = {};
+    h.cart.items[0].metadata.engraving.font = "invalid";
     await POST(h.req, h.res);
     expect(h.order.createOrders).toHaveBeenCalledTimes(1);
     expect(h.promotion.registerUsage).toHaveBeenCalledTimes(1);
@@ -84,23 +83,26 @@ describe("welcome completion through the real shared native hook", () => {
     expect(h.res.status).toHaveBeenCalledWith(403);
     expect(h.order.createOrders).not.toHaveBeenCalled();
   });
-  it.each([false, true])(
-    "rejects incomplete or forged portrait references through the native hook (%s)",
-    async (forged) => {
+  it.each(["text", "font", "source_cart_id"])(
+    "rejects unsafe engraving %s through the native hook",
+    async (mutation) => {
       const h = completionWorkflowFixture();
-      if (forged) h.cart.metadata.portrait_photos[0].file_id = "victim.png";
-      else h.cart.items[0].metadata = {};
+      if (mutation === "text")
+        h.cart.items[0].metadata.engraving.text = "unsafe <script>";
+      if (mutation === "font")
+        h.cart.items[0].metadata.engraving.font = "invalid";
+      if (mutation === "source_cart_id")
+        h.cart.items[0].metadata.engraving.source_cart_id = "cart_b";
       await POST(h.req, h.res);
       expect(h.res.status).toHaveBeenCalledWith(400);
       expect(h.order.createOrders).not.toHaveBeenCalled();
-      expect(h.files.getDownloadStream).not.toHaveBeenCalled();
     },
   );
-  it("accepts a valid styled reference after actually reading its signed file", async () => {
+  it("accepts a valid engraving through the shared native hook", async () => {
     const h = completionWorkflowFixture();
     await POST(h.req, h.res);
     expect(h.order.createOrders).toHaveBeenCalledTimes(1);
-    expect(h.files.getDownloadStream).toHaveBeenCalledWith("file_a");
     expect(h.res.status).toHaveBeenCalledWith(200);
   });
 });
+

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750" viewBox="0 0 600 750" role="img" aria-label="DRESS">
+  <rect width="600" height="750" fill="#f2ece3"/>
+  <rect x="8" y="8" width="584" height="734" fill="none" stroke="#e3d9c9" stroke-width="2"/>
+  <rect x="266" y="0" width="68" height="185" rx="12" fill="#8a6f4d"/>
+  <rect x="266" y="565" width="68" height="185" rx="12" fill="#8a6f4d"/>
+  <circle cx="300" cy="375" r="170" fill="#c9b995" stroke="#3a332c" stroke-width="6"/>
+  <circle cx="300" cy="375" r="152" fill="#f8f4ea"/>
+  <circle cx="300" cy="375" r="4" fill="#3a332c"/>
+  <line x1="300" y1="375" x2="300" y2="255" stroke="#3a332c" stroke-width="7" stroke-linecap="round"/>
+  <line x1="300" y1="375" x2="420" y2="365" stroke="#8a6f4d" stroke-width="5" stroke-linecap="round"/>
+  <text x="300" y="722" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#5d534b" letter-spacing="3">WATCH</text>
+</svg>

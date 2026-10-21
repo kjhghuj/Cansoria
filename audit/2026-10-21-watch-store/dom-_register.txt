@@ -1,0 +1,70 @@
+Browser tab: 1, Title: "Cansoria | Watch Concepts", URL: "http://localhost:3030/register".
+1 AXWebArea Cansoria | Watch Concepts, URL: localhost:3030/register
+	2 container Main navigation
+		3 button (collapsed) Description: Open menu, Secondary Actions: Expand
+			4 image
+		5 link Description: Cansoria, Value: localhost:3030/
+		6 button Search
+			7 image
+		8 link Description: Cart, Value: localhost:3030/cart
+	9 container
+		10 heading Create Account, Value: 1
+			11 text Create Account
+		12 text Join Cansoria for exclusive offers, order tracking, and faster checkout.
+		13 text FULL NAME
+		14 text field (settable)
+		15 text EMAIL
+		16 text field (settable)
+		17 text PASSWORD
+		18 text field (settable)
+		19 text Must be at least 8 characters
+		20 text CONFIRM PASSWORD
+		21 text field (settable)
+		22 button CREATE ACCOUNT
+		23 text By creating an account, you agree to our
+		24 link Description: Terms of Service, Value: localhost:3030/terms
+		25 text and
+		26 link Description: Privacy Policy, Value: localhost:3030/privacy
+		27 text .
+		28 text Already have an account?
+		29 link Description: SIGN IN, Value: localhost:3030/account
+	30 container
+		31 link Description: Cansoria, Value: localhost:3030/
+		32 text A home for watch inspiration — collections, care guides and the details of wearing time well. Orders are in preparation.
+		33 link Description: hello@cansoria.com, Value: mailto:hello@cansoria.com
+		34 container Watches
+			35 heading Watches, Value: 2
+				36 text Watches
+			37 content list
+				38 link Description: Explore Watches, Value: localhost:3030/#collections
+				39 link Description: Collections, Value: localhost:3030/gallery
+				40 link Description: How It Works, Value: localhost:3030/how-it-works
+				41 link Description: Engraving Guide, Value: localhost:3030/how-it-works
+		42 container Our Studio
+			43 heading Our Studio, Value: 2
+				44 text Our Studio
+			45 content list
+				46 link Description: Our Story, Value: localhost:3030/about
+				47 link Description: Our Studio, Value: localhost:3030/our-studio
+				48 link Description: Contact Us, Value: localhost:3030/contact
+		49 container Help & Support
+			50 heading Help & Support, Value: 2
+				51 text Help & Support
+			52 content list
+				53 link Description: Track Your Order, Value: localhost:3030/order/lookup
+				54 link Description: Shipping & Delivery, Value: localhost:3030/shipping
+				55 link Description: Returns & Refunds, Value: localhost:3030/returns
+				56 link Description: FAQs, Value: localhost:3030/faq
+		57 text ©  2026  Cansoria. All rights reserved.
+		58 container Legal
+			59 link Description: Privacy Policy, Value: localhost:3030/privacy
+			60 link Description: Terms & Conditions, Value: localhost:3030/terms
+	61 container
+		62 button Open issues overlay
+			63 image
+			64 text 1
+			65 text Issue
+		66 button Collapse issues badge
+			67 image
+
+The focused UI element is 1 AXWebArea Cansoria | Watch Concepts, URL: localhost:3030/register
