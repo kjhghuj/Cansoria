@@ -10,7 +10,7 @@ const InlineProductBlock = ({ product }: { product: StoreProduct }) => {
   const imageUrl =
     product.handle === "heritage-classic-40"
       ? "/images/watches/heritage-classic-40.svg"
-      : getProductImage(product) || "/products/generic.svg";
+      : getProductImage(product) || "/products/watch.svg";
   const currency =
     product.variants?.find((variant) => variant.calculated_price?.currency_code)
       ?.calculated_price?.currency_code || DEFAULT_CURRENCY_CODE;

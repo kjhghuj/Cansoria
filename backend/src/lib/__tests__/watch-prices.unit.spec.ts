@@ -3,6 +3,7 @@ import {
   watchUsdPrice,
   sampleUsdPrice,
   shippingPrice,
+  modelOptionSets,
 } from "../watch-prices"
 
 describe("approved studio prices in Medusa v2 major currency units", () => {
@@ -16,6 +17,8 @@ describe("approved studio prices in Medusa v2 major currency units", () => {
     expect(watchUsdPrice("40mm", "Steel Bracelet")).toBe(369)
     expect(watchUsdPrice("38mm", "Mesh Bracelet")).toBe(319)
     expect(watchUsdPrice("36mm", "Leather Strap", -30)).toBe(219)
+    expect(watchUsdPrice("32mm", "Canvas Strap")).toBe(229)
+    expect(watchUsdPrice("42mm", "Canvas Strap")).toBe(339)
     expect(watchPrices(109)).toEqual([
       { currency_code: "gbp", amount: 85.02 },
       { currency_code: "eur", amount: 100.28 },
@@ -47,5 +50,12 @@ describe("approved studio prices in Medusa v2 major currency units", () => {
     expect(() => watchUsdPrice("44mm", "Leather Strap")).toThrow()
     expect(() => watchUsdPrice("36mm", "Rubber Strap")).toThrow()
     expect(() => watchPrices(NaN)).toThrow()
+  })
+
+  it("scopes per-model option sets so no model sells every permutation", () => {
+    expect(modelOptionSets["lucienne-slim-32"].sizes).toEqual(["32mm", "36mm"])
+    expect(modelOptionSets["field-pine-safari"].straps).toContain("Canvas Strap")
+    expect(modelOptionSets["regent-chronograph"].sizes).toEqual(["40mm", "42mm"])
+    expect(modelOptionSets["northsea-diver"].straps).not.toContain("Mesh Bracelet")
   })
 })

@@ -1,15 +1,15 @@
-import Image from "next/image";
-
-export default function BrandLogo({ priority = false }: { priority?: boolean }) {
+/**
+ * Text wordmark in the site's own font stack. Rendered as HTML rather than an
+ * image so it always uses the locally loaded DM Sans and stays crisp at every
+ * size; the standalone SVG copy lives at /brand/cansoria-wordmark.svg for
+ * structured data.
+ */
+export default function BrandLogo() {
   return (
-    <Image
-      src="/brand/cansoria-wordmark.png"
-      alt="Cansoria"
-      width={1375}
-      height={529}
-      className="brand-logo-image"
-      priority={priority}
-      unoptimized
-    />
+    <span className="brand-wordmark">
+      <span className="brand-wordmark-name">Cansoria</span>
+      <span className="brand-wordmark-rule" aria-hidden="true" />
+      <span className="brand-wordmark-tag">Fine Watches</span>
+    </span>
   );
 }

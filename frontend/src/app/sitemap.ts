@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 1. Static Routes
   const staticRoutes = [
     "",
+    "/shop",
     "/journal",
     "/about",
     "/gallery",
@@ -35,8 +36,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route === "" ? 1.0 : 0.8,
   }));
 
-  // 2. Products
-  const { products } = await getProducts(region?.id, 1000); // Fetch up to 1000 products
+  // 2. Products — an outage must not fail the whole sitemap; the static and
+  // journal routes still emit.
+  let products: Awaited<ReturnType<typeof getProducts>>["products"] = [];
+  try {
+    products = (await getProducts(region?.id, 1000)).products;
+  } catch {
+    products = [];
+  }
   const productRoutes = products.map((product) => ({
     url: `${baseUrl}/product/${product.handle}`,
     lastModified: new Date(product.updated_at || new Date()),

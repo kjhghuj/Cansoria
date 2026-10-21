@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StudioPage, StudioCTA } from "@/components/StudioPage";
+import { getStoreOrdersOpen } from "@/lib/medusa";
 export const metadata: Metadata = {
   title: "Watch Reviews | Cansoria",
   robots: { index: false, follow: true },
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
   description:
     "No authorised customer reviews are currently available. Cansoria orders are in preparation.",
 };
-export default function ReviewsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ReviewsPage() {
+  const ordersOpen = await getStoreOrdersOpen();
   return (
     <StudioPage
       eyebrow="Stories from watch owners"
@@ -26,7 +30,7 @@ export default function ReviewsPage() {
           Contact Us →
         </Link>
       </section>
-      <StudioCTA />
+      <StudioCTA ordersOpen={ordersOpen} />
     </StudioPage>
   );
 }

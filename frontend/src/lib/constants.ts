@@ -300,7 +300,7 @@ export const FOOTER_LINKS = {
     { name: "Explore Watches", href: collectionsUrl },
     { name: "Collections", href: "/gallery" },
     { name: "How It Works", href: "/how-it-works" },
-    { name: "Engraving Guide", href: "/how-it-works" },
+    { name: "Journal", href: "/journal" },
   ],
   company: [
     { name: "Our Story", href: "/about" },

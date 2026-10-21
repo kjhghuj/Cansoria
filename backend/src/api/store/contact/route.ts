@@ -22,7 +22,7 @@ export async function POST(
     message.trim().length < 10 ||
     message.length > 5000 ||
     typeof topic !== "string" ||
-    !["photo", "commission", "order", "feedback"].includes(topic)
+    !["sizing", "engraving", "order", "commission", "feedback"].includes(topic)
   )
     return res
       .status(400)

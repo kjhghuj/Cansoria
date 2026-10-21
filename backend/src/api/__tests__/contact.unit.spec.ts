@@ -25,7 +25,7 @@ describe("studio contact delivery", () => {
         body: {
           name: "Pet Parent",
           email: "parent@example.com",
-          topic: "photo",
+          topic: "sizing",
           message: "Can you help me choose a photo?",
           turnstile_token: "test-token",
         },

@@ -95,8 +95,8 @@ describe("preparation-stage public facts", () => {
       /chronometer-certified|unlimited servicing|the studio reviews your reference/i,
     );
   });
-  it("renders a complete studio page with labelled concepts and useful destinations", () => {
-    const html = renderToStaticMarkup(createElement(OurStudioPage));
+  it("renders a complete studio page with labelled concepts and useful destinations", async () => {
+    const html = renderToStaticMarkup((await OurStudioPage()) as React.ReactElement);
     expect(metadata.alternates?.canonical).toBe("/our-studio");
     for (const section of [
       "Our Approach",

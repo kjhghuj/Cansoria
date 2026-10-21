@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { StudioPage, StudioCTA, StudioImage } from "@/components/StudioPage";
 import { STUDIO } from "@/lib/studio-content";
+import { getStoreOrdersOpen } from "@/lib/medusa";
 
 export const metadata: Metadata = {
   title: "Our Studio | Cansoria",
@@ -37,7 +38,10 @@ const collections = [
   },
 ];
 
-export default function OurStudioPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OurStudioPage() {
+  const ordersOpen = await getStoreOrdersOpen();
   return (
     <StudioPage
       eyebrow="Our Studio"
@@ -151,7 +155,7 @@ export default function OurStudioPage() {
           and tell us what you have in mind.
         </p>
       </section>
-      <StudioCTA />
+      <StudioCTA ordersOpen={ordersOpen} />
     </StudioPage>
   );
 }

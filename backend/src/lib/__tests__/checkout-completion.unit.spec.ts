@@ -62,7 +62,7 @@ function fixture() {
       entity === "order_cart"
         ? []
         : entity === "product"
-          ? [{ id: "prod_a", handle: "meridian-automatic" }]
+          ? [{ id: "prod_a", handle: "meridian-automatic", metadata: { engraveable: true } }]
           : (() => {
               throw new Error("Never replace the native cart snapshot");
             })(),
@@ -149,7 +149,7 @@ describe("native checkout snapshot policy", () => {
       data:
         entity === "order_cart"
           ? []
-          : [{ id: "prod_a", handle: "ellery-everyday" }],
+          : [{ id: "prod_a", handle: "ellery-everyday", metadata: { engraveable: false } }],
     }));
     await expect(f.run()).rejects.toBeInstanceOf(CheckoutCompletionError);
   });

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { collectionsUrl } from "@/lib/studio-content";
 import ProductCard from "@/components/ProductCard";
-import { getRegion, searchProducts } from "@/lib/medusa";
+import { getRegion, searchProducts, MedusaUnavailableError } from "@/lib/medusa";
 import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 
 export const metadata: Metadata = {
@@ -16,8 +16,16 @@ export default async function SearchPage({
 }) {
   const query = (await searchParams).q?.trim().slice(0, 200) ?? "";
   const region = await getRegion();
-  const products =
-    query.length >= 2 && region ? await searchProducts(query, region.id) : [];
+  let products: Awaited<ReturnType<typeof searchProducts>> = [];
+  let searchUnavailable = false;
+  if (query.length >= 2 && region) {
+    try {
+      products = await searchProducts(query, region.id);
+    } catch (error) {
+      if (!(error instanceof MedusaUnavailableError)) throw error;
+      searchUnavailable = true;
+    }
+  }
   return (
     <div className="min-h-screen bg-cream px-4 pb-16 pt-28 sm:px-6">
       <div className="mx-auto max-w-[1200px]">
@@ -43,7 +51,20 @@ export default async function SearchPage({
             Search
           </button>
         </form>
-        {products.length > 0 ? (
+        {searchUnavailable ? (
+          <div className="rounded-2xl border border-border bg-cream-card p-8">
+            <p className="mb-2 font-medium text-charcoal">
+              Search is temporarily unavailable
+            </p>
+            <p className="mb-4 text-charcoal-light">
+              We could not reach the store service. This is not an empty
+              result — please try again in a moment.
+            </p>
+            <a href={`/search?q=${encodeURIComponent(query)}`} className="text-charcoal underline">
+              Retry search →
+            </a>
+          </div>
+        ) : products.length > 0 ? (
           <>
             <p className="mb-6 text-sm text-charcoal-light">
               {products.length} results for “{query}”

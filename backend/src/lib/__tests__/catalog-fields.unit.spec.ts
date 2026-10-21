@@ -99,12 +99,12 @@ describe("public catalog metadata projection", () => {
   it("keeps only storefront-consumed product and variant metadata keys", () => {
     const body = {
       products: [{
-        metadata: { story_sections: [{ id: "s1", title: "Story" }], rating: 4.9, reviews_verified: true, internal_cost: 42, supplier_contact: "secret@vendor.test" },
+        metadata: { story_sections: [{ id: "s1", title: "Story" }], rating: 4.9, reviews_verified: true, engraveable: true, movement: "Miyota 9039 automatic", water_resistance: "10 ATM", warranty: "2-year international warranty", internal_cost: 42, supplier_contact: "secret@vendor.test" },
         variants: [{ metadata: { images: [{ url: "https://cdn.test/a.jpg" }], internal_cost: 7 } }],
       }],
     }
     projectCatalogMetadata(body)
-    expect(body.products[0].metadata).toEqual({ story_sections: [{ id: "s1", title: "Story" }], rating: 4.9, reviews_verified: true })
+    expect(body.products[0].metadata).toEqual({ story_sections: [{ id: "s1", title: "Story" }], rating: 4.9, reviews_verified: true, engraveable: true, movement: "Miyota 9039 automatic", water_resistance: "10 ATM", warranty: "2-year international warranty" })
     expect(body.products[0].variants[0].metadata).toEqual({ images: [{ url: "https://cdn.test/a.jpg" }] })
   })
   it("projects single-product and product-variant list responses", () => {

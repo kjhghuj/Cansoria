@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { StoreProduct } from "@/lib/types";
 import { STUDIO, STUDIO_OPEN } from "@/lib/studio-content";
-import { isEngraveableHandle } from "@/lib/engraving";
+import { isEngraveableProduct } from "@/lib/engraving";
 export default function ProductInfo({
   product,
   ordersOpen = false,
@@ -9,7 +9,28 @@ export default function ProductInfo({
   product: StoreProduct;
   ordersOpen?: boolean;
 }) {
-  const engraveable = isEngraveableHandle(product.handle);
+  const engraveable = isEngraveableProduct(product);
+  // Spec rows come from the public whitelist (engraveable/movement/
+  // water_resistance/warranty) plus the reviewed material field. The
+  // preparation-state projection nulls the spec keys, so the table only
+  // renders once orders are open.
+  const metadata = (product.metadata ?? {}) as Record<string, unknown>;
+  const text = (value: unknown) =>
+    typeof value === "string" && value.trim() ? value.trim() : null;
+  const specs = (
+    [
+      ["Movement", text(metadata.movement)],
+      ["Water resistance", text(metadata.water_resistance)],
+      ["Case & crystal", text(product.material)],
+      ["Warranty", text(metadata.warranty)],
+      [
+        "Caseback engraving",
+        metadata.engraveable === true
+          ? "Complimentary, up to 20 characters"
+          : null,
+      ],
+    ] as [string, string | null][]
+  ).filter((row): row is [string, string] => Boolean(row[1]));
   const questions = ordersOpen
     ? [
         {
@@ -97,6 +118,21 @@ export default function ProductInfo({
           </Link>
         </p>
       </div>
+      {specs.length > 0 && (
+        <section className="mt-10 border border-border bg-white" aria-labelledby="spec-title">
+          <p id="spec-title" className="border-b border-border px-5 py-4 text-[11px] font-bold uppercase tracking-[0.22em] text-charcoal">
+            Specifications
+          </p>
+          <dl className="divide-y divide-border-subtle">
+            {specs.map(([label, value]) => (
+              <div key={label} className="flex gap-6 px-5 py-3 text-sm">
+                <dt className="w-40 shrink-0 text-charcoal-light">{label}</dt>
+                <dd className="min-w-0 flex-1 text-charcoal">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
     </section>
   );
 }

@@ -27,9 +27,13 @@ import {
 } from "@medusajs/medusa/core-flows";
 import { ApiKey } from "../../.medusa/types/query-entry-points";
 import {
-  watchPrices, watchSizes, watchSku, watchUsdPrice,
-  strapOptions, dialOptions, shippingPrice,
+  watchPrices, watchSku, watchUsdPrice,
+  dialOptions, modelOptionSets, shippingPrice,
 } from "../lib/watch-prices";
+
+// Seeds a fresh watch catalog. Run against a clean database (medusa db:setup);
+// this is not a migration for existing painting data — old products, orders
+// and uploads must be handled by a separately reviewed migration.
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -59,9 +63,14 @@ const updateStoreCurrencies = createWorkflow(
   }
 );
 
-function createWatchVariants(skuPrefix: string, priceOffset = 0) {
-  return watchSizes.flatMap((size) =>
-    strapOptions.flatMap((strap) =>
+function createWatchVariants(
+  skuPrefix: string,
+  priceOffset = 0,
+  sizes: readonly string[] = ["38mm", "40mm", "42mm"],
+  straps: readonly string[] = ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"],
+) {
+  return sizes.flatMap((size) =>
+    straps.flatMap((strap) =>
       dialOptions.map((dial) => {
         const amount = watchUsdPrice(size, strap, priceOffset);
 
@@ -123,8 +132,28 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const storeModuleService = container.resolve(Modules.STORE);
 
   const countries = ["gb", "us", "de", "fr", "dk", "se", "es", "it", "nl", "be"];
+  const regionModule = container.resolve(Modules.REGION);
+  const taxModule = container.resolve(Modules.TAX);
 
   logger.info("Seeding Cansoria Studio store data...");
+  // `medusa db:setup` provisions default regions/tax regions that already
+  // claim every country. This seed targets a fresh watch database, so clear
+  // those defaults first; existing business data belongs to a separately
+  // reviewed migration.
+  {
+    const defaultRegions = await regionModule.listRegions();
+    if (defaultRegions.length) {
+      logger.info(`Removing ${defaultRegions.length} default region(s) before seeding.`);
+      await regionModule.deleteRegions(defaultRegions.map((region: { id: string }) => region.id));
+    }
+    const defaultTaxRegions = await taxModule.listTaxRegions();
+    if (defaultTaxRegions.length) {
+      logger.info(`Removing ${defaultTaxRegions.length} default tax region(s) before seeding.`);
+      await taxModule.softDeleteTaxRegions(
+        defaultTaxRegions.map((taxRegion: { id: string }) => taxRegion.id),
+      );
+    }
+  }
   const [store] = await storeModuleService.listStores();
 
   await storeModuleService.updateStores(store.id, {
@@ -217,23 +246,30 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Finished seeding tax regions.");
 
   logger.info("Seeding stock location data...");
-  const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
-  ).run({
-    input: {
-      locations: [
-        {
-          name: "Cansoria Studio Fulfillment",
-          address: {
-            city: "London",
-            country_code: "GB",
-            address_1: "Cansoria Studio Fulfillment",
-          },
-        },
-      ],
-    },
+  const stockLocationModule = container.resolve(Modules.STOCK_LOCATION);
+  const existingLocations = await stockLocationModule.listStockLocations({
+    name: "Cansoria Studio Fulfillment",
   });
-  const stockLocation = stockLocationResult[0];
+  let stockLocation = existingLocations[0];
+  if (!stockLocation) {
+    const { result: stockLocationResult } = await createStockLocationsWorkflow(
+      container
+    ).run({
+      input: {
+        locations: [
+          {
+            name: "Cansoria Studio Fulfillment",
+            address: {
+              city: "London",
+              country_code: "GB",
+              address_1: "Cansoria Studio Fulfillment",
+            },
+          },
+        ],
+      },
+    });
+    stockLocation = stockLocationResult[0];
+  }
 
   await updateStoresWorkflow(container).run({
     input: {
@@ -274,19 +310,24 @@ export default async function seedDemoData({ container }: ExecArgs) {
     shippingProfile = shippingProfileResult[0];
   }
 
-  const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+  const existingSets = await fulfillmentModuleService.listFulfillmentSets({
     name: "Cansoria Delivery",
-    type: "shipping",
-    service_zones: [
-      {
-        name: "Cansoria Global Delivery",
-        geo_zones: countries.map((code) => ({
-          country_code: code,
-          type: "country" as const,
-        })),
-      },
-    ],
   });
+  const fulfillmentSet = existingSets.length
+    ? existingSets[0]
+    : await fulfillmentModuleService.createFulfillmentSets({
+        name: "Cansoria Delivery",
+        type: "shipping",
+        service_zones: [
+          {
+            name: "Cansoria Global Delivery",
+            geo_zones: countries.map((code) => ({
+              country_code: code,
+              type: "country" as const,
+            })),
+          },
+        ],
+      });
 
   await link.create({
     [Modules.STOCK_LOCATION]: {
@@ -297,11 +338,24 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
-  await createShippingOptionsWorkflow(container).run({
-    input: [
+  const { data: existingShippingOptions } = await query.graph({
+    entity: "shipping_option",
+    fields: ["id", "type.code"],
+  });
+  const existingCodes = new Set(
+    existingShippingOptions
+      .map((option: { type?: { code?: string } }) => option.type?.code)
+      .filter((code: string | undefined): code is string => Boolean(code)),
+  );
+  const watchDeliveryCodes = ["standard-watch-delivery", "priority-watch-delivery", "free-watch-delivery"];
+  if (watchDeliveryCodes.some((code) => existingCodes.has(code))) {
+    logger.info("Watch delivery options already seeded; skipping shipping options.");
+  } else {
+    await createShippingOptionsWorkflow(container).run({
+      input: [
       {
-        name: "Standard Watch Delivery",
         price_type: "flat",
+        name: "Standard Watch Delivery",
         provider_id: "manual_manual",
         service_zone_id: fulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
@@ -355,7 +409,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
         shipping_profile_id: shippingProfile.id,
         type: {
           label: "Free Watch Delivery",
-          description: "Complimentary insured tracked delivery for qualifying watch orders.",
+          description: "Complimentary insured tracked delivery on every watch order.",
           code: "free-watch-delivery",
         },
         prices: [
@@ -371,8 +425,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
           { attribute: "is_return", value: "false", operator: "eq" },
         ],
       },
-    ],
-  });
+  ],
+    });
+  }
   logger.info("Finished seeding fulfillment data.");
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
@@ -419,6 +474,30 @@ export default async function seedDemoData({ container }: ExecArgs) {
       add: [defaultSalesChannel[0].id],
     },
   });
+  // db:setup's default key is linked to its own "Default Sales Channel".
+  // A publishable key spanning multiple channels makes cart creation fail,
+  // so retire that link — our storefront channel stays.
+  {
+    const { data: keyChannels } = await query.graph({
+      entity: "api_key_sales_channel",
+      fields: ["sales_channel_id", "sales_channel.name"],
+      filters: { api_key_id: publishableApiKey.id },
+    });
+    const stale = keyChannels.filter(
+      (entry: { sales_channel?: { name?: string } }) =>
+        entry.sales_channel?.name === "Default Sales Channel",
+    );
+    if (stale.length) {
+      await linkSalesChannelsToApiKeyWorkflow(container).run({
+        input: {
+          id: publishableApiKey.id,
+          remove: stale.map(
+            (entry: { sales_channel_id: string }) => entry.sales_channel_id,
+          ),
+        },
+      });
+    }
+  }
   logger.info(`Publishable API Key: ${(publishableApiKey as any).token || publishableApiKey.id}`);
   logger.info("Finished seeding publishable API key data.");
 
@@ -491,13 +570,22 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding Cansoria Studio products...");
 
-  const commonOptions = [
-    { title: "Size", values: [...watchSizes] },
-    { title: "Strap", values: [...strapOptions] },
-    { title: "Dial", values: [...dialOptions] },
-  ];
+  const optionsFor = (handle: string) => {
+    const set = modelOptionSets[handle] ?? { sizes: ["38mm", "40mm", "42mm"], straps: ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"] };
+    return [
+      { title: "Size", values: [...set.sizes] },
+      { title: "Strap", values: [...set.straps] },
+      { title: "Dial", values: [...dialOptions] },
+    ];
+  };
+  const variantsFor = (handle: string, skuPrefix: string, offset = 0) => {
+    const set = modelOptionSets[handle] ?? { sizes: ["38mm", "40mm", "42mm"], straps: ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"] };
+    return createWatchVariants(skuPrefix, offset, set.sizes, set.straps);
+  };
 
-  await createProductsWorkflow(container).run({
+  const { result: createdWatchProducts } = await createProductsWorkflow(
+    container
+  ).run({
     input: {
       products: [
         {
@@ -516,8 +604,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-HERITAGE"),
+          options: optionsFor("heritage-classic-40"),
+          variants: variantsFor("heritage-classic-40", "CAN-HERITAGE"),
           metadata: {
             engraveable: true,
             movement: "Swiss quartz, 4-year battery",
@@ -545,8 +633,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-MERIDIAN", 120),
+          options: optionsFor("meridian-automatic"),
+          variants: variantsFor("meridian-automatic", "CAN-MERIDIAN", 120),
           metadata: {
             engraveable: true,
             movement: "Miyota 9039 automatic, 42-hour power reserve",
@@ -574,8 +662,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-REGENT", 90),
+          options: optionsFor("regent-chronograph"),
+          variants: variantsFor("regent-chronograph", "CAN-REGENT", 90),
           metadata: {
             engraveable: true,
             movement: "Seiko VK64 meca-quartz chronograph",
@@ -603,8 +691,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-AVERLY", -30),
+          options: optionsFor("averly-dress-watch"),
+          variants: variantsFor("averly-dress-watch", "CAN-AVERLY", -30),
           metadata: {
             engraveable: true,
             movement: "Swiss quartz, 4-year battery",
@@ -632,8 +720,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-NORTHSEA", 60),
+          options: optionsFor("northsea-diver"),
+          variants: variantsFor("northsea-diver", "CAN-NORTHSEA", 60),
           metadata: {
             engraveable: true,
             movement: "Seiko NH35 automatic, 41-hour power reserve",
@@ -661,8 +749,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-LUCIENNE", -10),
+          options: optionsFor("lucienne-slim-32"),
+          variants: variantsFor("lucienne-slim-32", "CAN-LUCIENNE", -10),
           metadata: {
             engraveable: true,
             movement: "Swiss quartz, 4-year battery",
@@ -690,8 +778,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-ELLERY", -40),
+          options: optionsFor("ellery-everyday"),
+          variants: variantsFor("ellery-everyday", "CAN-ELLERY", -40),
           metadata: {
             engraveable: false,
             movement: "Japanese quartz, 3-year battery",
@@ -719,8 +807,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
             { url: "https://images.unsplash.com/photo-1587836374828-4dbafa94cf0b?auto=format&fit=crop&q=80&w=1200" },
             { url: "https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&q=80&w=1200" },
           ],
-          options: commonOptions,
-          variants: createWatchVariants("CAN-FIELD", -20),
+          options: optionsFor("field-pine-safari"),
+          variants: variantsFor("field-pine-safari", "CAN-FIELD", -20),
           metadata: {
             engraveable: false,
             movement: "Seiko NH35 automatic, 41-hour power reserve",
@@ -739,18 +827,27 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding inventory levels.");
 
-  const { data: inventoryItems } = await query.graph({
-    entity: "inventory_item",
-    fields: ["id"],
+  // Scope stock to the variants this seed just created: pre-existing
+  // inventory items (legacy catalog or admin-managed stock) are never touched.
+  const createdVariantIds = createdWatchProducts.flatMap((product) =>
+    (product.variants || []).map((variant: { id: string }) => variant.id),
+  );
+  const { data: linkedVariants } = await query.graph({
+    entity: "product_variant",
+    fields: ["id", "inventory_items.inventory_item_id"],
+    filters: { id: createdVariantIds },
   });
-
   const inventoryLevels: CreateInventoryLevelInput[] = [];
-  for (const inventoryItem of inventoryItems) {
-    inventoryLevels.push({
-      location_id: stockLocation.id,
-      stocked_quantity: 1000,
-      inventory_item_id: inventoryItem.id,
-    });
+  for (const variant of linkedVariants) {
+    for (const link of (variant as { inventory_items?: { inventory_item_id?: string }[] }).inventory_items || []) {
+      if (typeof link.inventory_item_id === "string") {
+        inventoryLevels.push({
+          location_id: stockLocation.id,
+          stocked_quantity: 1000,
+          inventory_item_id: link.inventory_item_id,
+        });
+      }
+    }
   }
 
   await createInventoryLevelsWorkflow(container).run({

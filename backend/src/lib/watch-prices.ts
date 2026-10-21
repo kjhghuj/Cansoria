@@ -1,11 +1,23 @@
 // Medusa v2 stores amounts in major currency units. These are the owner's
 // approved prices and the seed's fixed conversion rates, not live FX.
-export const watchSizes = ["36mm", "38mm", "40mm", "42mm"] as const
-export const strapOptions = ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"] as const
+export const watchSizes = ["32mm", "36mm", "38mm", "40mm", "42mm"] as const
+export const strapOptions = ["Leather Strap", "Canvas Strap", "Steel Bracelet", "Mesh Bracelet"] as const
 export const dialOptions = ["Black", "White", "Blue"] as const
 
 export const sizeBasePrices: Record<string, number> = {
-  "36mm": 249, "38mm": 279, "40mm": 309, "42mm": 339,
+  "32mm": 229, "36mm": 249, "38mm": 279, "40mm": 309, "42mm": 339,
+}
+
+/** Per-model option sets: not every permutation is a sellable SKU. */
+export const modelOptionSets: Record<string, { sizes: readonly string[]; straps: readonly string[] }> = {
+  "heritage-classic-40": { sizes: ["38mm", "40mm", "42mm"], straps: ["Leather Strap", "Mesh Bracelet"] },
+  "meridian-automatic": { sizes: ["38mm", "40mm", "42mm"], straps: ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"] },
+  "regent-chronograph": { sizes: ["40mm", "42mm"], straps: ["Leather Strap", "Steel Bracelet"] },
+  "averly-dress-watch": { sizes: ["32mm", "36mm", "38mm"], straps: ["Leather Strap", "Mesh Bracelet"] },
+  "northsea-diver": { sizes: ["40mm", "42mm"], straps: ["Steel Bracelet", "Leather Strap"] },
+  "lucienne-slim-32": { sizes: ["32mm", "36mm"], straps: ["Leather Strap", "Mesh Bracelet"] },
+  "ellery-everyday": { sizes: ["36mm", "38mm", "40mm"], straps: ["Leather Strap", "Steel Bracelet", "Mesh Bracelet"] },
+  "field-pine-safari": { sizes: ["38mm", "40mm", "42mm"], straps: ["Canvas Strap", "Leather Strap"] },
 }
 
 export const seededWatches = {
@@ -18,12 +30,6 @@ export const seededWatches = {
   "ellery-everyday": { skuPrefix: "CAN-ELLERY", offset: -40, engraveable: false },
   "field-pine-safari": { skuPrefix: "CAN-FIELD", offset: -20, engraveable: false },
 } as const
-
-export const engraveableWatchHandles = new Set(
-  Object.entries(seededWatches)
-    .filter(([, watch]) => watch.engraveable)
-    .map(([handle]) => handle),
-)
 
 export const deliveryPrices: Record<string, Record<string, number>> = {
   "Standard Watch Delivery": { gbp: 9, eur: 11, usd: 14 },

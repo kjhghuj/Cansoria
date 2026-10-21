@@ -8,7 +8,7 @@ import {
   Modules,
 } from "@medusajs/framework/utils";
 import {
-  isEngraveableHandle,
+  engraveableProduct,
   validEngravingFont,
   validEngravingText,
 } from "./engraving";
@@ -143,28 +143,27 @@ async function validateSnapshot(
   const { data: products } = await bounded(
     query.graph({
       entity: "product",
-      fields: ["id", "handle"],
+      fields: ["id", "handle", "metadata"],
       filters: { id: [...productIds] },
     }),
     signal,
   );
   aborted(signal);
-  const handles = new Map(
-    products.map((product) => [product.id, product.handle]),
+  const productsById = new Map(
+    products.map((product) => [product.id, product]),
   );
   for (const item of cart.items) {
-    const handle = handles.get(item.variant?.product?.id || item.product_id!);
-    if (typeof handle !== "string" || !handle)
+    const product = productsById.get(
+      item.variant?.product?.id || item.product_id!,
+    );
+    if (!product || typeof product.handle !== "string" || !product.handle)
       deny("Missing product relationship");
     const engraving = item.metadata?.engraving as
       | Record<string, unknown>
       | null
       | undefined;
     if (!engraving) continue;
-    if (
-      !isEngraveableHandle(handle) &&
-      !isEngraveableHandle(item.product_handle)
-    )
+    if (!engraveableProduct(product))
       deny(
         "Engraving is only available on engravable watches. Please customize it again.",
       );

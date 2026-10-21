@@ -10,18 +10,10 @@ import { formatPrice } from "@/lib/medusa";
 import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import { useStoreStatus } from "@/lib/providers";
 
-const FALLBACK_IMAGES = [
-  "/products/generic.svg",
-  "/products/watch.svg",
-  "/products/canvas.svg",
-];
+const FALLBACK_IMAGE = "/products/watch.svg";
 
-function getFallbackImage(productId?: string): string {
-  if (!productId) return FALLBACK_IMAGES[0];
-  const hash = productId
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return FALLBACK_IMAGES[hash % FALLBACK_IMAGES.length];
+function getFallbackImage(): string {
+  return FALLBACK_IMAGE;
 }
 
 type ProductMetadata = Record<string, unknown>;
@@ -74,27 +66,6 @@ function getMetadataNumber(metadata: ProductMetadata, keys: string[]) {
   return undefined;
 }
 
-function getSearchableProductText(product: StoreProduct) {
-  const tags = product.tags?.map((tag) => tag.value) ?? [];
-  const categories =
-    product.categories?.flatMap((category) => [
-      category.name,
-      category.handle,
-    ]) ?? [];
-
-  return [
-    product.title,
-    product.subtitle,
-    product.description,
-    product.handle,
-    ...tags,
-    ...categories,
-  ]
-    .filter(isPresentString)
-    .join(" ")
-    .toLowerCase();
-}
-
 function getVariantPrices(product: StoreProduct) {
   return (
     product.variants
@@ -122,7 +93,7 @@ export default function ProductCard({
   const [imageError, setImageError] = useState(false);
 
   const images = product.images || [];
-  const fallbackImage = getFallbackImage(product.id);
+  const fallbackImage = getFallbackImage();
   const mainImage =
     imageError || !isPresentString(product.thumbnail || images[0]?.url)
       ? fallbackImage
@@ -163,17 +134,13 @@ export default function ProductCard({
   })?.calculated_price?.original_amount;
 
   const metadata = getMetadata(product);
-  const productText = getSearchableProductText(product);
   const tagValues = product.tags?.map((tag) => tag.value?.toLowerCase()) ?? [];
   const isBestSeller =
     tagValues.some((tag) => tag === "best seller" || tag === "bestseller") ||
     metadata.best_seller === true ||
     metadata.bestseller === true;
-  const isEngraveable =
-    metadata.engraveable === true ||
-    ["engrav", "automatic", "chronograph", "dive", "dress"].some((keyword) =>
-      productText.includes(keyword),
-    );
+  // The catalog's engraveable flag is the single authority; no keyword guessing.
+  const isEngraveable = metadata.engraveable === true;
   // Service promises require an explicit opt-in from reviewed admin metadata;
   // a missing key never implies the promise.
   const badges = [

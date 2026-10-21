@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCart, useRegion, useAuth } from "@/lib/providers";
 import { StoreProduct } from "@/lib/types";
@@ -22,7 +21,7 @@ type CartPromotion = { code?: string | null };
 
 const cartTrustItems: TrustBadgeItem[] = [
   { kind: "secure", title: "Secure checkout" },
-  { kind: "preview", title: "Commissions in preparation" },
+  { kind: "preview", title: "Orders in preparation" },
   { kind: "guarantee", title: "Service details to be confirmed" },
   { kind: "shipping", title: "Delivery details to be confirmed" },
 ];
@@ -271,46 +270,24 @@ function CartContent() {
 
   return (
     <div className="pb-16 min-h-screen bg-cream">
-      {/* Photo banner header */}
-      <div className="relative w-full overflow-hidden">
-        <div className="relative h-[240px] sm:h-[280px] lg:h-[320px] w-full">
-          <Image
-            src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&q=80&w=2000"
-            alt="Cream studio scene with Cansoria watches on a wooden bench"
-            fill
-            priority
-            className="object-cover object-[70%_center] lg:object-center"
-            sizes="100vw"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(250,248,245,0.97) 0%, rgba(250,248,245,0.92) 34%, rgba(250,248,245,0.55) 52%, rgba(250,248,245,0) 72%)",
-            }}
-          />
-          <div className="absolute inset-0 flex items-center">
-            <div className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8">
-              <div className="max-w-xl">
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-toffee">
-                  Cansoria Order
-                </p>
-                <h1 className="font-serif text-4xl lg:text-5xl text-charcoal">
-                  Your Cart
-                </h1>
-                <p className="text-charcoal-light mt-3 max-w-md">
-                  {STUDIO.readiness}
-                </p>
-                {cartCount > 0 && !cartLoading && (
-                  <p className="text-charcoal-light mt-3 text-sm">
-                    {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your
-                    cart
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+      {/* Simple branded header */}
+      <div className="border-b border-border">
+        <div className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 pt-28 pb-8">
+          <p className="mb-3 text-[12px] font-medium uppercase tracking-[0.32em] text-charcoal-light">
+            Cansoria Order
+          </p>
+          <h1 className="font-serif text-4xl lg:text-5xl text-charcoal">
+            Your Cart
+          </h1>
+          <p className="text-charcoal-light mt-3 max-w-md">
+            {STUDIO.readiness}
+          </p>
+          {cartCount > 0 && !cartLoading && (
+            <p className="text-charcoal-light mt-3 text-sm">
+              {cartCount} {cartCount === 1 ? "piece" : "pieces"} in your
+              cart
+            </p>
+          )}
         </div>
       </div>
 

@@ -23,7 +23,7 @@ function setup() {
         ? [
             {
               id: "variant_a",
-              product: { handle: "meridian-automatic" },
+              product: { handle: "meridian-automatic", metadata: { engraveable: true } },
             },
           ]
         : [cart],
@@ -62,18 +62,18 @@ describe("engraving items and order association", () => {
   });
   it("allows an engravable watch without engraving at payment time", () => {
     expect(engravingCartReady({
-      items: [{ variant: { product: { handle: "meridian-automatic" } }, metadata: {} }],
+      items: [{ variant: { product: { metadata: { engraveable: true } } }, metadata: {} }],
     } as any, "cart_a")).toBe(true);
     expect(engravingCartReady({
-      items: [{ variant: { product: { handle: "ellery-everyday" } }, metadata: {} }],
+      items: [{ variant: { product: { metadata: { engraveable: false } } }, metadata: {} }],
     } as any, "cart_a")).toBe(true);
   });
   it("rejects engraving metadata bound to another cart or a non-engraveable product", () => {
     expect(engravingCartReady({
-      items: [{ variant: { product: { handle: "meridian-automatic" } }, metadata: { engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_b" } } }],
+      items: [{ variant: { product: { metadata: { engraveable: true } } }, metadata: { engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_b" } } }],
     } as any, "cart_a")).toBe(false);
     expect(engravingCartReady({
-      items: [{ variant: { product: { handle: "ellery-everyday" } }, metadata: { engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_a" } } }],
+      items: [{ variant: { product: { metadata: { engraveable: false } } }, metadata: { engraving: { text: "For Dad", font: "serif", source_cart_id: "cart_a" } } }],
     } as any, "cart_a")).toBe(false);
   });
   it("keeps engravings separate and prices under the standard workflow", async () => {
@@ -127,7 +127,7 @@ describe("engraving items and order association", () => {
   it("rejects an engraving on a product that is not engravable", async () => {
     const { req, res, graph } = setup();
     graph.mockImplementation(async () => ({
-      data: [{ id: "variant_a", product: { handle: "ellery-everyday" } }],
+      data: [{ id: "variant_a", product: { handle: "ellery-everyday", metadata: { engraveable: false } } }],
     }));
     req.body = {
       variant_id: "variant_a",

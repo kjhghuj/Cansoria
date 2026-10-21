@@ -24,26 +24,25 @@ export type EngravingFont = (typeof engravingFonts)[number]["id"];
 /** Uppercase/lowercase letters, digits, spaces, and safe engraver punctuation. */
 export const ENGRAVING_TEXT_PATTERN = /^[A-Za-z0-9 .,:'"&\-()/]+$/;
 
-export const engraveableWatchHandles = [
-  "heritage-classic-40",
-  "meridian-automatic",
-  "regent-chronograph",
-  "averly-dress-watch",
-  "northsea-diver",
-  "lucienne-slim-32",
-] as const;
-
 export type EngravingCustomization = {
   text: string;
   font: EngravingFont;
   notes?: string;
 };
 
-export function isEngraveableHandle(handle: string | null | undefined): boolean {
-  return (
-    typeof handle === "string" &&
-    (engraveableWatchHandles as readonly string[]).includes(handle)
-  );
+/**
+ * The engraving capability is owned by the product record's
+ * `metadata.engraveable` flag (mirrored from the backend catalog). Handle
+ * lists are deliberately not consulted: renaming or adding a model must not
+ * desync the card, detail page, and API.
+ */
+export function isEngraveableProduct(
+  product:
+    | { handle?: string | null; metadata?: Record<string, unknown> | null }
+    | null
+    | undefined,
+): boolean {
+  return Boolean(product && product.metadata?.engraveable === true);
 }
 
 export function validEngravingText(text: unknown): text is string {

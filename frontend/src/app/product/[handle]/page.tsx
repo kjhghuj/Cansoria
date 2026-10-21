@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { serializeJsonLd } from "@/lib/security-json";
-import { getProductByHandle, getRegion, getStoreOrdersOpen } from "@/lib/medusa";
+import { getProductByHandle, getRegion, getStoreOrdersOpen, MedusaUnavailableError } from "@/lib/medusa";
 import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import ProductClient from "./components/ProductClient";
 import { studioProduct, studioProductSeo, collectionsUrl } from "@/lib/studio-content";
@@ -47,27 +47,64 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params;
-  const [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
-  const rawProduct = await getProductByHandle(handle, region?.id);
-  const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
+  try {
+    const [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
+    const rawProduct = await getProductByHandle(handle, region?.id);
+    const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
 
-  if (!product) {
-    return {
-      title: "Product Not Found | Cansoria",
-      description: "The product you are looking for could not be found.",
-    };
+    if (!product) {
+      return {
+        title: "Product Not Found | Cansoria",
+        description: "The product you are looking for could not be found.",
+      };
+    }
+
+    return studioProductSeo(product, { ordersOpen });
+  } catch (error) {
+    if (error instanceof MedusaUnavailableError) {
+      return {
+        title: "Store Temporarily Unavailable | Cansoria",
+        description: "The store service is temporarily unavailable. Please try again shortly.",
+      };
+    }
+    throw error;
   }
+}
 
-  return studioProductSeo(product, { ordersOpen });
+function ServiceUnavailable() {
+  return (
+    <div className="studio-page min-h-screen bg-cream pt-24 pb-16">
+      <div className="mx-auto max-w-xl px-6 text-center">
+        <h1 className="font-serif text-3xl text-charcoal mb-4">
+          The store is temporarily unavailable
+        </h1>
+        <p className="text-charcoal-light leading-relaxed mb-8">
+          We could not reach the store service. This is temporary — please
+          refresh the page or try again in a moment.
+        </p>
+        <a href="/shop" className="studio-button">
+          Try again
+        </a>
+      </div>
+    </div>
+  );
 }
 
 export default async function ProductPage({
   params,
 }: ProductPageProps) {
   const { handle } = await params;
-  const [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
-  const rawProduct = await getProductByHandle(handle, region?.id);
-  const product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
+  let region: Awaited<ReturnType<typeof getRegion>> = null;
+  let ordersOpen = false;
+  let product: ReturnType<typeof studioProduct> | null = null;
+  try {
+    [region, ordersOpen] = await Promise.all([getRegion(), getStoreOrdersOpen()]);
+    const rawProduct = await getProductByHandle(handle, region?.id);
+    product = rawProduct ? studioProduct(rawProduct, { ordersOpen }) : null;
+  } catch (error) {
+    if (error instanceof MedusaUnavailableError) return <ServiceUnavailable />;
+    throw error;
+  }
 
   if (!product) {
     notFound();

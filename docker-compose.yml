@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: cansoria
       POSTGRES_DB: cansoria_medusa_v2
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:5434:5432"
     volumes:
       - cansoria_postgres_data:/var/lib/postgresql/data
     healthcheck:

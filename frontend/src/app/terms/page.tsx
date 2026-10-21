@@ -24,8 +24,8 @@ export default function TermsPage() {
           <h2>2. Products</h2>
           <p>
             Product images, dimensions, colors, and descriptions are provided
-            for guidance. Engraved watches are personalised to the text you approve, and
-            brushwork, tone, and texture.
+            for guidance. Engraved watches are personalised to the engraving
+            text you approve before purchase.
           </p>
 
           <h2>3. Custom Orders</h2>

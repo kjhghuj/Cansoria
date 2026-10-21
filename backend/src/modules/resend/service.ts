@@ -93,6 +93,20 @@ function renderWelcomeEmail(data: Record<string, any>, frontendUrl: string) {
 </html>`
 }
 
+/** Customer-facing engraving facts for one order line, or null. */
+function engravingLines(metadata: unknown): { text: string; font: string; notes: string | null } | null {
+    const engraving = (metadata as { engraving?: Record<string, unknown> } | null)?.engraving
+    if (!engraving || typeof engraving.text !== "string" || !engraving.text) return null
+    if (engraving.text.length > 20 || !/^[A-Za-z0-9 .,:'"&\-()/]+$/.test(engraving.text)) return null
+    const fonts: Record<string, string> = { script: "Classic Script", serif: "Roman Serif", sans: "Modern Sans" }
+    const font = typeof engraving.font === "string" && fonts[engraving.font] ? fonts[engraving.font] : null
+    return {
+        text: engraving.text,
+        font: font || "Selected font",
+        notes: typeof engraving.notes === "string" && engraving.notes.trim() ? engraving.notes.trim().slice(0, 1000) : null,
+    }
+}
+
 function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
     const firstName = escapeHtml(data.first_name || data.firstName || "there")
     const fullOrderId = String(data.id || data.display_id || "N/A")
@@ -110,6 +124,11 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
             const itemPrice = formatMoney(item.unit_price ?? 0, currencyCode)
             const itemTotal = formatMoney(item.total ?? MathBN.mult(moneyAmount(item.unit_price), itemQty), currencyCode)
             const hasAdjustments = !moneyAmount(item.discount_total).isZero() || !moneyAmount(item.tax_total).isZero()
+            const engraving = engravingLines(item.metadata)
+            const engravingHtml = engraving
+                ? `<p style="margin: 6px 0 0; font-size: 13px; color: #332d28;">Engraving: &ldquo;${escapeHtml(engraving.text)}&rdquo; &middot; ${escapeHtml(engraving.font)}</p>` +
+                  (engraving.notes ? `<p style="margin: 4px 0 0; font-size: 12px; color: #8a8178;">Notes: ${escapeHtml(engraving.notes)}</p>` : "")
+                : ""
 
             itemsHtml += `
                 <tr>
@@ -123,6 +142,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
                                     <p style="margin: 0 0 6px; font-size: 16px; color: #332d28;">${itemName}</p>
                                     ${itemVariant ? `<p style="margin: 0 0 6px; font-size: 13px; color: #8a8178;">${itemVariant}</p>` : ""}
                                     <p style="margin: 0; font-size: 13px; color: #8a8178;">Qty: ${itemQty} x ${itemPrice}</p>
+                                    ${engravingHtml}
                                     ${hasAdjustments ? `<p style="margin: 6px 0 0; font-size: 12px; color: #8a8178;">After discounts and tax</p>` : ""}
                                 </td>
                                 <td valign="top" align="right" style="white-space: nowrap; font-size: 14px; color: #332d28;">${itemTotal}</td>
@@ -136,7 +156,7 @@ function renderOrderEmail(data: Record<string, any>, frontendUrl: string) {
     // Medusa's subtotal includes shipping. Use pre-tax components together so
     // shipping discounts and taxes are each counted once in this breakdown.
     const summaryRows: [string, unknown][] = [
-        ["Artwork subtotal (before tax)", data.item_subtotal ?? 0],
+        ["Order subtotal (before tax)", data.item_subtotal ?? 0],
         [`${shippingName} (before tax)`, data.shipping_subtotal ?? 0],
     ]
     const discount = moneyAmount(data.discount_subtotal)

@@ -110,7 +110,7 @@ describe("actual product route presentation", () => {
     ]);
   });
   it("handles a missing catalog product without fabricating product metadata", async () => {
-    jest.mocked(getProductByHandle).mockResolvedValue(null);
+    jest.mocked(getProductByHandle).mockResolvedValue(null as unknown as never);
     const metadata = await generateMetadata(props());
     expect(metadata.title).toBe("Product Not Found | Cansoria");
     expect(metadata.description).not.toBe(STUDIO.productDescription);

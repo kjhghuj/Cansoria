@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Search, ShoppingBag, FileText } from "lucide-react";
-import { formatPrice, searchProducts } from "@/lib/medusa";
+import { formatPrice, searchProducts, MedusaUnavailableError } from "@/lib/medusa";
 import { lowestProductPrice } from "@/lib/money";
 import { DEFAULT_CURRENCY_CODE } from "@/lib/market";
 import { ARTICLES } from "@/lib/constants";
@@ -26,6 +26,7 @@ type JournalIndex = { articles: Article[]; fetchedAt: number };
 export default function SearchOverlay({ isOpen, onClose, regionId }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
   const [productResults, setProductResults] = useState<StoreProduct[]>([]);
+  const [productSearchFailed, setProductSearchFailed] = useState(false);
   const [articleResults, setArticleResults] = useState<Article[]>([]);
   // null while the final journal set is still being resolved — the built-in
   // list must not surface as a guess during that wait; it is only the fallback
@@ -88,6 +89,7 @@ const collections = [
     }
 
     setIsSearching(true);
+    setProductSearchFailed(false);
 
     try {
       // Search products from Medusa
@@ -109,7 +111,11 @@ const collections = [
         setArticleResults(filteredArticles);
       }
     } catch (error) {
-      console.error("Search error:", error);
+      if (error instanceof MedusaUnavailableError) {
+        if (generation === searchGeneration.current) setProductSearchFailed(true);
+      } else {
+        console.error("Search error:", error);
+      }
     } finally {
       if (generation === searchGeneration.current) setIsSearching(false);
     }
@@ -291,6 +297,16 @@ const collections = [
                     >
                       View all results
                     </button>
+                  </div>
+                ) : productSearchFailed ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-charcoal font-medium">
+                      Product search is temporarily unavailable.
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      This is a service hiccup, not an empty result — try again
+                      in a moment.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">

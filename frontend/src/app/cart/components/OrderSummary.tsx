@@ -99,7 +99,7 @@ export default function OrderSummary({
         </p>
         <p className="flex items-center gap-2">
           <Check className="h-4 w-4 text-toffee" aria-hidden="true" />
-          {ordersOpen ? "Commissions open — order today" : "Commissions in preparation"}
+          {ordersOpen ? "Orders open — order today" : "Orders in preparation"}
         </p>
         <p className="flex items-center gap-2">
           <Truck className="h-4 w-4 text-toffee" aria-hidden="true" />

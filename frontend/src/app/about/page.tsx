@@ -2,14 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { StudioPage, StudioCTA, StudioImage } from "@/components/StudioPage";
 import { COMPANY_INFO } from "@/lib/constants";
-import { STUDIO } from "@/lib/studio-content";
+import { STUDIO, STUDIO_OPEN } from "@/lib/studio-content";
+import { getStoreOrdersOpen } from "@/lib/medusa";
 export const metadata: Metadata = {
   title: "Our Story | Cansoria",
   description:
     "The idea behind Cansoria: a personal studio for watches designed, assembled and regulated in-house.",
   alternates: { canonical: "/about" },
 };
-export default function AboutPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AboutPage() {
+  const ordersOpen = await getStoreOrdersOpen();
   return (
     <StudioPage
       eyebrow="Our story"
@@ -70,9 +74,9 @@ export default function AboutPage() {
         </section>
       </div>
       <p className="mt-10 text-center text-sm leading-6 text-charcoal-light">
-        {STUDIO.readiness}
+        {ordersOpen ? STUDIO_OPEN.readiness : STUDIO.readiness}
       </p>
-      <StudioCTA />
+      <StudioCTA ordersOpen={ordersOpen} />
     </StudioPage>
   );
 }

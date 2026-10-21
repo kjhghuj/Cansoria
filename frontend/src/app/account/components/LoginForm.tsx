@@ -48,11 +48,13 @@ export function LoginForm({ justRegistered }: { justRegistered: boolean }) {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">
+              <label htmlFor="login-email" className="block text-xs uppercase tracking-widest text-charcoal mb-2">
                 Email
               </label>
               <input
+                id="login-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-gray-200 px-4 py-3 focus:outline-none focus:border-charcoal"
@@ -60,11 +62,13 @@ export function LoginForm({ justRegistered }: { justRegistered: boolean }) {
               />
             </div>
             <div>
-              <label className="block text-xs uppercase tracking-widest text-charcoal mb-2">
+              <label htmlFor="login-password" className="block text-xs uppercase tracking-widest text-charcoal mb-2">
                 Password
               </label>
               <input
+                id="login-password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-gray-200 px-4 py-3 focus:outline-none focus:border-charcoal"

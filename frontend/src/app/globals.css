@@ -1,48 +1,55 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Cansoria Brand Colors & Theme — 治愈静奢奶油风 (Healing Quiet-Luxury Cream) */
+/*
+ * Cansoria design tokens — black & white business style.
+ * Token NAMES are kept stable so existing Tailwind classes re-skin the whole
+ * storefront; only the values change. Interface stays monochrome (white
+ * background, #111111 primary); product photography keeps its real colors.
+ */
 @theme inline {
-  /* Cream Color System */
-  --color-cream: #FAF8F5;              /* Global base: mascarpone warm white */
-  --color-cream-light: #FFFDF9;        /* Bright cards: vanilla milk white */
-  --color-cream-card: #F4EFE6;         /* Soft containers: oat warm tone */
-  --color-cream-dark: #ECE3D4;         /* Deep cream: butter biscuit tone */
+  /* Surfaces */
+  --color-cream: #ffffff;             /* Global base background */
+  --color-cream-light: #ffffff;       /* Cards */
+  --color-cream-card: #f5f5f5;        /* Soft containers / sections */
+  --color-cream-dark: #ebebeb;        /* Deeper neutral */
 
-  /* Text System: warm coffee-grey instead of cold black */
-  --color-charcoal: #26221E;
-  --color-charcoal-light: #6E6357;
-  --color-charcoal-muted: #9C8E7F;
+  /* Text */
+  --color-charcoal: #111111;          /* Primary text and buttons */
+  --color-charcoal-light: #525252;    /* Secondary text */
+  --color-charcoal-muted: #666666;    /* Tertiary text */
 
-  /* Core Conversion & Accent Colors (Antique Gold per design mockups) */
-  --color-toffee: #B08D4F;             /* Primary CTA: antique gold */
-  --color-toffee-dark: #8F6F35;        /* Hover state: deep antique gold */
-  --color-champagne-gold: #C5A059;     /* Hand-painted seal: brushed champagne gold */
+  /* Primary action: black. Legacy accent names map to the same ink so every
+     existing button/border/link becomes monochrome. */
+  --color-toffee: #111111;
+  --color-toffee-dark: #000000;
+  --color-champagne-gold: #111111;
 
-  /* Borders & Soft Dividers */
-  --color-border: #E8DFCF;
-  --color-border-subtle: #F0E8DC;
+  /* Borders */
+  --color-border: #e5e5e5;
+  --color-border-subtle: #efefef;
 
-  /* Semantic Colors */
+  /* Semantic */
   --color-background: var(--color-cream);
   --color-foreground: var(--color-charcoal);
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-serif: 'Playfair Display', 'Cormorant Garamond', 'Georgia', serif;
+  /* Single type family: DM Sans (loaded locally). font-serif aliases to the
+     same family so headings stop mixing typefaces. */
+  --font-sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Legacy token aliases → new cream palette (keep existing pages in sync) */
+  /* Legacy token aliases */
   --color-terracotta: var(--color-toffee);
   --color-terracotta-dark: var(--color-toffee-dark);
-  --color-sage: #8A7658;
+  --color-sage: #1f7a4d;              /* Success status only */
   --color-canvas: var(--color-cream-card);
   --color-gold: var(--color-champagne-gold);
-  --color-oil-brown: #5B3923;
+  --color-oil-brown: #111111;
 }
 
 :root {
-  --background: #FAF8F5;
-  --foreground: #26221E;
+  --background: #ffffff;
+  --foreground: #111111;
 }
 
 html {
@@ -57,23 +64,24 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Article Content Typography - Explicitly defined for elegance */
+/* Article content typography */
 .article-content {
-  @apply font-sans text-charcoal-light text-lg md:text-xl font-light leading-[1.8];
+  @apply font-sans text-charcoal-light text-lg md:text-xl font-normal leading-[1.8];
 }
 
-/* Headings */
 .article-content h1,
 .article-content h2,
 .article-content h3,
 .article-content h4,
 .article-content h5,
 .article-content h6 {
-  @apply font-serif text-charcoal mt-10 mb-6 font-normal;
+  @apply font-sans text-charcoal mt-10 mb-6 font-medium tracking-tight;
 }
 
 .article-content h2 {
@@ -84,28 +92,24 @@ body {
   @apply text-xl md:text-2xl;
 }
 
-/* Paragraphs - Enforce spacing */
 .article-content p {
   @apply mb-8;
 }
 
-/* Drop Cap for first paragraph */
 .article-content>p:first-of-type::first-letter {
-  @apply float-left mr-3 text-6xl font-serif text-terracotta leading-[0.8] pt-2;
+  @apply float-left mr-3 text-6xl font-sans font-medium text-charcoal leading-[0.8] pt-2;
 }
 
-/* Blockquotes */
 .article-content blockquote {
-  @apply my-10 p-8 bg-[#F9F8F6] border-l-4 border-terracotta rounded-r-sm not-italic;
+  @apply my-10 p-8 bg-cream-card border-l-4 border-charcoal not-italic;
 }
 
 .article-content blockquote p {
-  @apply font-serif text-2xl md:text-3xl italic text-charcoal leading-snug mb-0;
+  @apply font-sans text-2xl md:text-3xl italic text-charcoal leading-snug mb-0;
 }
 
-/* Images */
 .article-content img {
-  @apply w-full my-8 rounded-sm shadow-sm;
+  @apply w-full my-8;
 }
 
 .article-content figure {
@@ -117,19 +121,17 @@ body {
 }
 
 .article-content figcaption {
-  @apply text-sm text-center text-charcoal-light mt-2 italic font-serif;
+  @apply text-sm text-center text-charcoal-light mt-2;
 }
 
-/* Links */
 .article-content a {
-  @apply text-terracotta no-underline border-b border-transparent transition-colors;
+  @apply text-charcoal no-underline border-b border-charcoal transition-colors;
 }
 
 .article-content a:hover {
-  @apply border-terracotta;
+  @apply border-charcoal bg-cream-card;
 }
 
-/* Lists */
 .article-content ul {
   @apply list-disc list-inside space-y-2 mb-8 ml-4;
 }
@@ -139,13 +141,18 @@ body {
 }
 
 .article-content li {
-  @apply text-lg text-charcoal-light font-light;
+  @apply text-lg text-charcoal-light font-normal;
 }
 
-/* Strong/Bold */
 .article-content strong,
 .article-content b {
   @apply font-semibold text-charcoal;
+}
+
+/* Tabular figures for money: prices and order amounts align by digit */
+.tabular-nums,
+.price {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Custom scrollbar */
@@ -154,16 +161,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-cream);
+  background: #ffffff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
+  background: #d4d4d4;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-charcoal-light);
+  background: #111111;
 }
 
 /* Hide scrollbar for horizontal scroll areas */
@@ -209,6 +216,13 @@ body {
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-up {
+    animation: none;
+  }
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -225,7 +239,12 @@ body {
   animation: marquee 20s linear infinite;
 }
 
-/* Pause animation on hover for better readability */
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
 }

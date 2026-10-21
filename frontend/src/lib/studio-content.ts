@@ -13,7 +13,7 @@ import type { StoreProduct } from "./types";
 //   second env var, no code change.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const collectionsUrl = "/#collections";
+export const collectionsUrl = "/shop";
 
 // Confirmed public facts. Presentation rules do not change commerce records.
 export const STUDIO = {
@@ -249,6 +249,12 @@ export function studioProduct(
     metadata: {
       ...product.metadata,
       story_sections: [],
+      // Spec claims are reviewed admin content; they surface only when orders
+      // are open. The engraveable capability flag stays public in both states
+      // so the customizer keeps working while the store prepares.
+      movement: null,
+      water_resistance: null,
+      warranty: null,
       reviews_verified: false,
       rating: null,
       average_rating: null,

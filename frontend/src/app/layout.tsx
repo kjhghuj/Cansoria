@@ -63,7 +63,7 @@ export default async function RootLayout({
                   name: "Cansoria",
                   url:
                     process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com",
-                  logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/brand/cansoria-wordmark.png`,
+                  logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/brand/cansoria-wordmark.svg`,
                   sameAs: [
                     "https://facebook.com/cansoria",
                     "https://instagram.com/cansoria",

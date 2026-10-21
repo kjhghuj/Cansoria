@@ -64,7 +64,7 @@ interface CompleteCartResponse {
 
 const checkoutTrustItems: TrustBadgeItem[] = [
   { kind: "secure", title: "Secure checkout" },
-  { kind: "preview", title: "Commissions in preparation" },
+  { kind: "preview", title: "Orders in preparation" },
   { kind: "guarantee", title: "Service details to be confirmed" },
   { kind: "shipping", title: "Delivery details to be confirmed" },
 ];
@@ -196,7 +196,7 @@ function CheckoutForm() {
       if (!paymentConfirmed) {
         if (ordersBlocked) {
           throw new Error(
-            "Commissions are not open yet. Your cart has been saved — please contact the studio to be notified when orders open.",
+            "Orders are not open yet. Your cart has been saved — please contact the studio to be notified when orders open.",
           );
         }
         if (!addressReady || deliveryOptions.length === 0) {
@@ -415,10 +415,10 @@ function CheckoutForm() {
         )}
         {ordersBlocked && (
           <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-            <p className="font-medium">Commissions are not open yet.</p>
+            <p className="font-medium">Orders are not open yet.</p>
             <p className="mt-1 text-sm leading-6">
-              The studio is still preparing production, previews and delivery
-              arrangements. Your cart has been saved and checkout will be
+              The studio is still preparing engraving, quality checks and
+              delivery arrangements. Your cart has been saved and checkout will be
               available as soon as orders open.
             </p>
           </div>
@@ -640,7 +640,7 @@ export default function CheckoutPage() {
             Checkout
           </h1>
           <p className="mt-4 leading-7 text-charcoal-light">
-            Our service is in preparation. Production, previews, revisions and
+            Our service is in preparation. Engraving, quality checks and
             delivery arrangements will be confirmed before orders open.
           </p>
         </div>

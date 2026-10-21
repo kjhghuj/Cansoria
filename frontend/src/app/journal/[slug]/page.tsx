@@ -79,7 +79,7 @@ const StickySidebar = ({
   const imageUrl =
     product.handle === "heritage-classic-40"
       ? "/images/watches/heritage-classic-40.svg"
-      : getProductImage(product) || "/products/generic.svg";
+      : getProductImage(product) || "/products/watch.svg";
   const currency =
     product.variants?.find((variant) => variant.calculated_price?.currency_code)
       ?.calculated_price?.currency_code || DEFAULT_CURRENCY_CODE;
@@ -500,7 +500,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               name: "Cansoria",
               logo: {
                 "@type": "ImageObject",
-                url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/brand/cansoria-wordmark.png`,
+                url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"}/brand/cansoria-wordmark.svg`,
               },
             },
             description: article.excerpt,

@@ -8,7 +8,7 @@ import {
   sensitiveResponse,
 } from "../../../../../lib/resource-access";
 import {
-  isEngraveableHandle,
+  engraveableProduct,
   validEngravingFont,
   validEngravingText,
 } from "../../../../../lib/engraving";
@@ -54,10 +54,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             .json({ message: "This cart is no longer active" });
         const { data: variants } = await query.graph({
           entity: "product_variant",
-          fields: ["id", "product.handle"],
+          fields: ["id", "product.metadata"],
           filters: { id: body.variant_id as string },
         });
-        if (!isEngraveableHandle(variants[0]?.product?.handle))
+        if (!engraveableProduct(variants[0]?.product))
           return res
             .status(400)
             .json({ message: "Choose an engravable watch product." });

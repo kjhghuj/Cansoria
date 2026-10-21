@@ -7,7 +7,6 @@ import {
   RulerIcon,
   ShieldCheckIcon,
   PencilLineIcon,
-  DropIcon,
 } from "@phosphor-icons/react/ssr";
 import { STUDIO, studioSteps, collectionsUrl } from "@/lib/studio-content";
 import { WatchCollections } from "./WatchCollections";

@@ -57,7 +57,7 @@ export default function Navbar({
           {mobileOpen ? <XIcon weight="light" /> : <ListIcon weight="light" />}
         </button>
         <Link href="/" className="portrait-wordmark" onClick={closeMenus}>
-          <BrandLogo priority />
+          <BrandLogo />
         </Link>
         <div className="portrait-desktop-navigation">
           {navigationLinks.map((link) => (
@@ -117,6 +117,9 @@ export default function Navbar({
               <Link key={link.name} href={link.href} onClick={closeMenus}>{link.name}</Link>
             )
           ))}
+          {/* The account icon is hidden on mobile widths; the menu is the
+              account entry point there. */}
+          <Link href="/account" onClick={closeMenus}>Account &amp; Orders</Link>
         </nav>
       )}
     </header>

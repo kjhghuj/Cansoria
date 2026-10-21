@@ -80,7 +80,7 @@ export function completionWorkflowFixture() {
       return { data: [snapshot] };
     }
     if (entity === "product")
-      return { data: [{ id: "prod_a", handle: "meridian-automatic" }] };
+      return { data: [{ id: "prod_a", handle: "meridian-automatic", metadata: { engraveable: true } }] };
     if (entity === "order_cart")
       return { data: linked ? [{ order_id: linked }] : [] };
     if (entity === "order")

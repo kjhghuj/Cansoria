@@ -1,5 +1,3 @@
-import { engraveableWatchHandles } from "./watch-prices";
-
 export const MAX_ENGRAVING_CHARS = 20;
 export const ENGRAVING_FONTS = ["script", "serif", "sans"] as const;
 /** Uppercase/lowercase letters, digits, spaces, and safe engraver punctuation. */
@@ -13,8 +11,20 @@ export type EngravingCustomization = {
   notes?: string;
 };
 
-export function isEngraveableHandle(handle: unknown): boolean {
-  return typeof handle === "string" && engraveableWatchHandles.has(handle);
+/**
+ * The engraving capability is owned by the product record's
+ * `metadata.engraveable` flag (set per model in the catalog). Handle lists are
+ * deliberately not consulted here: renaming or adding a model must not require
+ * synchronising hardcoded lists across services.
+ */
+export function engraveableProduct(
+  product: { metadata?: Record<string, unknown> | null } | null | undefined,
+): boolean {
+  return (
+    !!product &&
+    typeof product.metadata === "object" &&
+    (product.metadata as Record<string, unknown>).engraveable === true
+  );
 }
 
 export function validEngravingText(text: unknown): text is string {
@@ -36,14 +46,13 @@ export function validEngravingFont(font: unknown): font is (typeof ENGRAVING_FON
  * Engraveable products without an engraving payload are fine: engraving is
  * optional at add-to-cart time.
  */
-export const ENGRAVING_CART_FIELDS = ["id", "items.metadata", "items.variant.product.handle"];
-type EngravingCart = { items?: ({ variant?: { product?: { handle?: string | null } | null } | null; metadata?: Record<string, unknown> | null } | null)[] | null };
+export const ENGRAVING_CART_FIELDS = ["id", "items.metadata", "items.variant.product.metadata"];
+type EngravingCart = { items?: ({ variant?: { product?: { metadata?: Record<string, unknown> | null } | null } | null; metadata?: Record<string, unknown> | null } | null)[] | null };
 export function engravingCartReady(cart: EngravingCart, cartId: string): boolean {
   return (cart.items || []).every((item) => {
-    if (!item) return true;
-    const engraving = item.metadata?.engraving as Record<string, unknown> | undefined;
+    const engraving = item?.metadata?.engraving as Record<string, unknown> | undefined;
     if (!engraving) return true;
-    if (!isEngraveableHandle(item.variant?.product?.handle)) return false;
+    if (!engraveableProduct(item?.variant?.product)) return false;
     return (
       validEngravingText(engraving.text) &&
       validEngravingFont(engraving.font) &&

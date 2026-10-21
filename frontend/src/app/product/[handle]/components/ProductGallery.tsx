@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { StoreProductVariant } from "@/lib/types";
 
-const FALLBACK_IMAGE = "/products/canvas.svg";
+const FALLBACK_IMAGE = "/products/watch.svg";
 
 interface ProductImage {
   id?: string;

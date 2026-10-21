@@ -5,13 +5,6 @@ import OrderSummary from "@/app/cart/components/OrderSummary";
 import ProductCard from "@/components/ProductCard";
 import type { StoreCart, StoreCartLineItem, StoreProduct } from "../types";
 
-function imageSources(html: string) {
-  return [...html.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => {
-    const url = new URL(match[1].replace(/&amp;/g, "&"), "http://localhost");
-    return url.searchParams.get("url") ?? url.pathname;
-  });
-}
-
 describe("customer-facing cart and catalog", () => {
   const item = {
     id: "item_test",
@@ -19,7 +12,7 @@ describe("customer-facing cart and catalog", () => {
     unit_price: 334.62,
     quantity: 1,
     total: 334.62,
-    thumbnail: "/products/generic.svg",
+    thumbnail: "/products/watch.svg",
     metadata: {
       engraving: { text: "For Dad, 2026", font: "serif" },
     },

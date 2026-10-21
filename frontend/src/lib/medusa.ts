@@ -84,6 +84,19 @@ export async function getRegion(countryCode: string = DEFAULT_COUNTRY_CODE) {
 }
 
 // Products
+
+/**
+ * Thrown when the Medusa backend cannot be reached or answers with a server
+ * error. "Product not found" is expressed as a null/empty result; this error
+ * exists so callers never present an outage as "no products" or a 404.
+ */
+export class MedusaUnavailableError extends Error {
+  constructor(message = "The store service is temporarily unavailable.") {
+    super(message);
+    this.name = "MedusaUnavailableError";
+  }
+}
+
 export async function getProducts(regionId?: string, limit: number = 100) {
   try {
     const { products, count } = await sdk.store.product.list({
@@ -94,8 +107,7 @@ export async function getProducts(regionId?: string, limit: number = 100) {
     });
     return { products, count };
   } catch {
-
-    return { products: [], count: 0 };
+    throw new MedusaUnavailableError();
   }
 }
 
@@ -149,8 +161,8 @@ export async function getProductByHandle(handle: string, regionId?: string) {
     });
     return products?.[0] || null;
   } catch {
-
-    return null;
+    // Backend down or 5xx: not the same as an unknown handle.
+    throw new MedusaUnavailableError();
   }
 }
 
@@ -550,8 +562,7 @@ export async function searchProducts(query: string, regionId?: string) {
     });
     return products || [];
   } catch {
-
-    return [];
+    throw new MedusaUnavailableError();
   }
 }
 

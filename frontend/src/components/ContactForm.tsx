@@ -73,7 +73,8 @@ export default function ContactForm() {
       <label>
         How can we help?
         <select name="topic" disabled={busy}>
-          <option value="photo">Choosing a photo</option>
+          <option value="sizing">Choosing a size or strap</option>
+          <option value="engraving">Engraving question</option>
           <option value="commission">Planning a watch order</option>
           <option value="order">An existing order</option>
           <option value="feedback">Sharing feedback</option>

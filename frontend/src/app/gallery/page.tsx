@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { StudioPage, StudioCTA, StudioImage } from "@/components/StudioPage";
 import { STUDIO } from "@/lib/studio-content";
+import { getStoreOrdersOpen } from "@/lib/medusa";
 export const metadata: Metadata = {
   title: "Watch Collections Gallery | Cansoria",
   description:
@@ -16,7 +17,10 @@ const models = [
   { name: "Northsea Diver", handle: "northsea-diver", tag: "20 ATM dive watch" },
   { name: "Lucienne Slim 32", handle: "lucienne-slim-32", tag: "Ultra-thin" },
 ];
-export default function GalleryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function GalleryPage() {
+  const ordersOpen = await getStoreOrdersOpen();
   return (
     <StudioPage
       eyebrow="Collection inspiration"
@@ -42,7 +46,7 @@ export default function GalleryPage() {
           </figure>
         ))}
       </div>
-      <StudioCTA />
+      <StudioCTA ordersOpen={ordersOpen} />
     </StudioPage>
   );
 }

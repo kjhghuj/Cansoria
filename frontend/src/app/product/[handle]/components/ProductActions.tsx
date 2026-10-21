@@ -16,7 +16,7 @@ import {
 import {
   engravingFonts,
   type EngravingFont,
-  isEngraveableHandle,
+  isEngraveableProduct,
   MAX_ENGRAVING_CHARS,
   validEngravingText,
 } from "@/lib/engraving";
@@ -42,11 +42,16 @@ function isVariantInStock(variant: StoreProductVariant | null) {
   return (variant.inventory_quantity ?? 0) > 0;
 }
 
-const panelTrustPoints = [
-  { icon: <Check size={16} />, label: "Regulated In-House" },
-  { icon: <Eye size={16} />, label: "Free Engraving" },
-  { icon: <Globe size={16} />, label: "In Preparation" },
-];
+function panelTrustPoints(ordersOpen: boolean) {
+  return [
+    { icon: <Check size={16} />, label: "Regulated In-House" },
+    { icon: <Eye size={16} />, label: "Free Engraving" },
+    {
+      icon: <Globe size={16} />,
+      label: ordersOpen ? "Orders Open" : "In Preparation",
+    },
+  ];
+}
 
 export default function ProductActions({
   product,
@@ -66,7 +71,7 @@ export default function ProductActions({
   const [font, setFont] = useState<EngravingFont>("serif");
   const [notes, setNotes] = useState("");
   const [actionError, setActionError] = useState("");
-  const isEngraveable = isEngraveableHandle(product.handle);
+  const isEngraveable = isEngraveableProduct(product);
   const engravingProvided = engravingText.trim().length > 0;
   const engravingValid = !engravingProvided || validEngravingText(engravingText.trim());
   // While the store status is still loading, ordering stays possible; the backend
@@ -257,18 +262,25 @@ export default function ProductActions({
               Engraving text uses letters, numbers, spaces and basic punctuation only.
             </p>
           )}
-          <label className="mt-5 block text-sm">
-            Notes for the studio (optional)
-            <textarea
-              value={notes}
-              maxLength={1000}
-              disabled={isProcessing}
-              onChange={(event) => setNotes(event.target.value)}
-              rows={3}
-              className="mt-2 w-full rounded-xl border border-border bg-cream-light p-3"
-              placeholder="Anything we should know about this order."
-            />
-          </label>
+          {engravingProvided ? (
+            <label className="mt-5 block text-sm">
+              Notes for the studio (sent with your engraving)
+              <textarea
+                value={notes}
+                maxLength={1000}
+                disabled={isProcessing}
+                onChange={(event) => setNotes(event.target.value)}
+                rows={3}
+                className="mt-2 w-full rounded-xl border border-border bg-cream-light p-3"
+                placeholder="Anything we should know about this engraving."
+              />
+            </label>
+          ) : (
+            <p className="mt-5 text-xs leading-5 text-charcoal-light">
+              Enter engraving text above to add studio notes. Without an
+              engraving, there is nothing to attach notes to.
+            </p>
+          )}
         </div>
       )}
       {actionError && (
@@ -356,7 +368,7 @@ export default function ProductActions({
 
       {/* Panel trust row */}
       <div className="flex flex-wrap items-center justify-start gap-3 rounded-2xl border border-border-subtle bg-cream-light px-5 py-4">
-        {panelTrustPoints.map((point, index) => (
+        {panelTrustPoints(ordersOpen).map((point, index) => (
           <div key={point.label} className="flex items-center gap-3">
             {index > 0 && (
               <span className="h-6 w-px bg-border" aria-hidden="true" />
@@ -425,7 +437,7 @@ export default function ProductActions({
                 : "Ready to configure"}
             </p>
             <p className="truncate text-[11px] text-charcoal-light">
-              Orders in preparation
+              {ordersBlocked ? "Orders in preparation" : "Orders open"}
             </p>
           </div>
           <button

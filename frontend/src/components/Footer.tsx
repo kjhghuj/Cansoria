@@ -38,7 +38,7 @@ export default function Footer() {
               <h2>{column.title}</h2>
               <ul>
                 {column.links.map((link) => (
-                  <li key={link.href}>
+                  <li key={column.title + ":" + link.name}>
                     {link.href === collectionsUrl ? (
                       <a href={link.href}>{link.name}</a>
                     ) : (

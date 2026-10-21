@@ -25,7 +25,8 @@ describe("watch storefront sitemap routes", () => {
       baseUrl + "/gallery",
       baseUrl + "/our-studio",
     ]));
-    expect(urls.some((url) => /\/shop|category=|#styles|#collections|\/upload-photo/.test(url))).toBe(false);
+    expect(urls).toContain(baseUrl + "/shop");
+    expect(urls.some((url) => /category=|#styles|#collections|\/upload-photo/.test(url))).toBe(false);
     expect(getCategories).not.toHaveBeenCalled();
     expect(getProducts).toHaveBeenCalledWith("reg_test", 1000);
   });
@@ -45,8 +46,8 @@ describe("watch storefront sitemap routes", () => {
     expect(lastModified.getTime()).toBeLessThan(buildTime.getTime());
   });
 
-  it("permanently redirects the legacy shop to the home collections anchor", async () => {
-    const redirects = await nextConfig.redirects?.();
-    expect(redirects).toContainEqual({ source: "/shop", destination: "/#collections", permanent: true });
+  it("no longer redirects /shop now that it is a real listing page", async () => {
+    const redirects = (await nextConfig.redirects?.()) ?? [];
+    expect(redirects.some((entry) => entry.source === "/shop")).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 // Placeholder images
 export const PLACEHOLDER_IMAGE = "/placeholder.svg";
-export const FALLBACK_IMAGE = "/products/generic.svg";
+export const FALLBACK_IMAGE = "/products/watch.svg";
 
 // Cache for product images to avoid repeated API calls
 export const productImageCache: Record<string, string> = {};

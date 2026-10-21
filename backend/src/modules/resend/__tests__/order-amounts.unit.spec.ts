@@ -15,7 +15,7 @@ async function orderHtml(data: Record<string, unknown>) {
 }
 
 function summaryAmount(html: string, label: string) {
-  const summary = html.slice(html.indexOf("Artwork subtotal") - 1)
+  const summary = html.slice(html.indexOf("Order subtotal") - 1)
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   const match = summary.match(new RegExp(`>${escaped}</td>\\s*<td[^>]*>([^<]+)</td>`))
   expect(match).not.toBeNull()
@@ -43,7 +43,7 @@ describe("order email amounts in Medusa v2 major currency units", () => {
     "keeps %s amount %s in major units", async (currency_code, price, expected) => {
       const html = await orderHtml({ currency_code, item_subtotal: price, shipping_subtotal: 0, total: price, items: [{ quantity: 1, unit_price: price, total: price }] })
       expect(html).toContain(`Qty: 1 x ${expected}`)
-      expect(summaryAmount(html, "Artwork subtotal (before tax)")).toBe(expected)
+      expect(summaryAmount(html, "Order subtotal (before tax)")).toBe(expected)
       expect(summaryAmount(html, "Total")).toBe(expected)
     }
   )
@@ -62,7 +62,7 @@ describe("order email amounts in Medusa v2 major currency units", () => {
     expect(html).toContain("Qty: 2 x USD 129.00")
     expect(html).toContain(">USD 278.64</td>")
     expect(html).toContain("After discounts and tax")
-    expect(summaryAmount(html, "Artwork subtotal (before tax)")).toBe("USD 258.00")
+    expect(summaryAmount(html, "Order subtotal (before tax)")).toBe("USD 258.00")
     expect(summaryAmount(html, "Shipping (before tax)")).toBe("USD 14.00")
     expect(summaryAmount(html, "Discounts (before tax)")).toBe("USD -29.80")
     expect(summaryAmount(html, "Tax")).toBe("USD 48.44")
@@ -82,7 +82,7 @@ describe("order email amounts in Medusa v2 major currency units", () => {
     const html = await orderHtml(totals)
     expect(html).toContain("Qty: 2 x GBP 120.00")
     expect(html).toContain(">GBP 216.00</td>")
-    expect(summaryAmount(html, "Artwork subtotal (before tax)")).toBe("GBP 200.00")
+    expect(summaryAmount(html, "Order subtotal (before tax)")).toBe("GBP 200.00")
     expect(summaryAmount(html, "Shipping (before tax)")).toBe("GBP 10.00")
     expect(summaryAmount(html, "Discounts (before tax)")).toBe("GBP -20.00")
     expect(summaryAmount(html, "Tax")).toBe("GBP 38.00")
