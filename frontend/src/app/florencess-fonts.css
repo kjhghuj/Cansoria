@@ -1,0 +1,58 @@
+/* FLORENCESS local fonts (self-hosted, latin subset) */
+@font-face{
+  font-family:'Jost';
+  font-style:normal;
+  font-weight:300 600;
+  font-display:swap;
+  src:url('/florencess/fonts/jost-300.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Jost';
+  font-style:normal;
+  font-weight:300 600;
+  font-display:swap;
+  src:url('/florencess/fonts/jost-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Jost';
+  font-style:normal;
+  font-weight:300 600;
+  font-display:swap;
+  src:url('/florencess/fonts/jost-500.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Jost';
+  font-style:normal;
+  font-weight:300 600;
+  font-display:swap;
+  src:url('/florencess/fonts/jost-600.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Montserrat';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('/florencess/fonts/montserrat-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Montserrat';
+  font-style:normal;
+  font-weight:600;
+  font-display:swap;
+  src:url('/florencess/fonts/montserrat-600.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Homemade Apple';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('/florencess/fonts/homemade-apple-400.woff2') format('woff2');
+}
+
+@font-face{
+  font-family:'Alata';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('/florencess/fonts/alata-400.woff2') format('woff2');
+}

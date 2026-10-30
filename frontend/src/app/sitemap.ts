@@ -29,6 +29,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/terms",
     "/shipping",
     "/returns",
+    // FLORENCESS storefront content pages (reference slugs)
+    "/about-us",
+    "/shipping-policy",
+    "/terms-conditions",
+    "/privacy-policy",
+    "/cookie-policy",
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(STATIC_CONTENT_LAST_MODIFIED),

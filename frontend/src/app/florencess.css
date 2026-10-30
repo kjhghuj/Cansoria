@@ -1,0 +1,1328 @@
+/* ==========================================================================
+   FLORENCESS storefront theme — replication of entntnt.com
+   Palette + type scale extracted from the live Journal3 theme
+   (brand sand #E3DFDA, ink #031021, coral #F27763, line #E1E1E1).
+   Every class is prefixed `fl-` so it never collides with Cansoria tokens.
+   ========================================================================== */
+
+:root {
+  --fl-bg: #ffffff;
+  --fl-ink: #111111;
+  --fl-ink-soft: #29292b;
+  --fl-muted: #6e7275;
+  --fl-line: #e1e1e1;
+  --fl-line-soft: #efefef;
+  --fl-sand: #e3dfda;
+  --fl-sand-deep: #d5cfc8;
+  --fl-coral: #f27763;
+  --fl-crimson: #b42127;
+  --fl-container: 1200px;
+  --fl-gutter: 24px;
+  --fl-shelf: 923px;
+}
+
+.fl-root,
+.fl-root * {
+  box-sizing: border-box;
+}
+
+/* Accessible-only text (the reference storefront has no visible h1). */
+.fl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fl-root {
+  background: var(--fl-bg);
+  color: #333333;
+  font-family: "Jost", "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fl-root a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fl-root img {
+  display: block;
+  max-width: 100%;
+}
+
+.fl-container {
+  width: 100%;
+  max-width: var(--fl-container);
+  margin: 0 auto;
+  padding-inline: var(--fl-gutter);
+}
+
+.fl-serif {
+  font-family: "Montserrat", "Jost", sans-serif;
+}
+
+.fl-script {
+  font-family: "Homemade Apple", "Jost", cursive;
+  font-weight: 400;
+}
+
+/* ---------------------------------------------------------------- top bar */
+
+/* Reference notice strip: 45px tall, solid black, no border, messages at 14px
+   in white with 44px of empty space between them (no separator glyphs) and a
+   75px/s leftward scroll. */
+.fl-topbar {
+  display: flex;
+  align-items: center;
+  height: 45px;
+  overflow: hidden;
+  background: #000000;
+}
+
+.fl-topbar__track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: fl-marquee 150s linear infinite;
+}
+
+.fl-topbar__group,
+.fl-topbar__set {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.fl-topbar__item {
+  display: inline-block;
+  margin-right: 44px;
+  font-size: 14px;
+  line-height: 18.2px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+@keyframes fl-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-topbar__track { animation: none; }
+}
+
+/* ----------------------------------------------------------------- header */
+
+.fl-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: var(--fl-bg);
+  border-bottom: 1px solid var(--fl-line-soft);
+}
+
+.fl-header__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  height: 80px;
+}
+
+.fl-header__left,
+.fl-header__right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.fl-header__right {
+  justify-content: flex-end;
+}
+
+.fl-logo {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+  font-size: 23px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  text-indent: 0.34em;
+}
+
+.fl-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--fl-ink);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fl-iconbtn:hover { opacity: 0.6; }
+
+.fl-iconbtn__count {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.fl-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fl-account a:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------------- nav */
+
+.fl-nav {
+  border-top: 1px solid var(--fl-line-soft);
+}
+
+.fl-nav__list {
+  display: flex;
+  justify-content: center;
+  gap: 46px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fl-nav__item {
+  position: relative;
+}
+
+.fl-nav__link {
+  display: inline-flex;
+  align-items: center;
+  height: 39px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fl-ink);
+  border-bottom: 1px solid transparent;
+}
+
+.fl-nav__link:hover,
+.fl-nav__item:hover .fl-nav__link {
+  border-bottom-color: var(--fl-ink);
+}
+
+.fl-nav__panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  min-width: 232px;
+  padding: 22px 26px;
+  background: #fff;
+  border: 1px solid var(--fl-line-soft);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.07);
+  display: grid;
+  gap: 9px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  z-index: 70;
+}
+
+.fl-nav__item:hover .fl-nav__panel,
+.fl-nav__item:focus-within .fl-nav__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fl-nav__panel a {
+  font-size: 13px;
+  color: var(--fl-muted);
+  letter-spacing: 0.02em;
+}
+
+.fl-nav__panel a:hover { color: var(--fl-ink); }
+
+.fl-nav__panel-title {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fl-ink);
+  padding-bottom: 4px;
+}
+
+/* mobile nav trigger */
+.fl-nav__mobile-toggle { display: none; }
+
+/* ------------------------------------------------------------------ hero */
+/* Measured against the reference at a 1425px-wide slider: two slides that
+   cross-fade, image at its native 2080x600 ratio, copy block starting at 32.1%
+   of the slider height, and no arrows or dots. All sizes are expressed in vw of
+   the slider width so they scale exactly like the original layers. */
+
+.fl-hero {
+  position: relative;
+  margin-top: 49px;
+  background: var(--fl-sand);
+  overflow: hidden;
+}
+
+.fl-hero__stage {
+  position: relative;
+  aspect-ratio: 2080 / 600;
+}
+
+.fl-hero__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.72s ease;
+}
+
+.fl-hero__slide.is-active { opacity: 1; }
+
+.fl-hero__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fl-hero__copy {
+  position: absolute;
+  left: 50%;
+  top: 32.1%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 94%;
+  text-align: center;
+  color: #fff;
+  pointer-events: none;
+}
+
+.fl-hero__copy a { pointer-events: auto; }
+
+/* --- slide "collections": SPRING/SUMMER 26 over NEW COLLECTIONS --------- */
+
+.fl-hero__line {
+  width: max-content;
+  margin-inline: auto;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(16px, 2.404vw, 40px);
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.fl-hero__line--bold {
+  font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  margin-top: -0.728vw;
+}
+
+.fl-hero__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fl-hero__slide--collections .fl-hero__cta {
+  margin-top: 5.15vw;
+  gap: 1.263vw;
+}
+
+.fl-hero__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.877vw;
+  padding: 0.842vw 4.912vw;
+  background: rgba(255, 117, 117, 0.18);
+  color: #fff;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(11px, 1.053vw, 16px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  transition: background 0.25s ease;
+}
+
+.fl-hero__pill:hover { background: rgba(255, 117, 117, 0.34); }
+
+/* --- slide "warehouse": oversized pale headline + pipe-separated links --- */
+
+.fl-hero__headline {
+  width: max-content;
+  margin-inline: auto;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(22px, 3.605vw, 62px);
+  line-height: 1.4933;
+  letter-spacing: normal;
+  color: #cbebea;
+}
+
+.fl-hero__sub {
+  width: max-content;
+  margin-inline: auto;
+  margin-top: -0.332vw;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 300;
+  font-size: clamp(11px, 1.346vw, 22px);
+  line-height: 1.5;
+  color: #fff;
+}
+
+.fl-hero__slide--warehouse .fl-hero__cta {
+  margin-top: 7.66vw;
+  gap: 0;
+}
+
+.fl-hero__pipe {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fl-hero__sep {
+  padding: 0 0.3vw;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 300;
+  font-size: clamp(11px, 1.346vw, 22px);
+  line-height: 1;
+  color: #fff;
+}
+
+.fl-hero__textlink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.842vw 1.053vw;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(12px, 1.544vw, 24px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: uppercase;
+  color: #fff;
+  transition: opacity 0.25s ease;
+}
+
+.fl-hero__textlink:hover { opacity: 0.72; }
+
+/* The reference slider renders the image alone on mobile. */
+@media (max-width: 900px) {
+  .fl-hero__copy { display: none; }
+}
+
+/* ------------------------------------------------------------------- usp */
+
+/* Reference USP row (grid-row-top-22): a single 43px line of centred inline
+   links, 12px/18px in the theme's default link blue, 30px apart, no rules. */
+.fl-usp__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 13px 0;
+}
+
+.fl-usp__item {
+  display: inline-block;
+  padding: 0 30px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: rgb(51, 122, 183);
+}
+
+/* --------------------------------------------------------------- sections */
+
+/* Reference shelves are two stacked rows: a 77px title row and the product
+   row below it. The title is an 18px/24px left-aligned line, not a centred
+   banner, and it carries no extra letter-spacing or case transform. */
+.fl-section {
+  padding: 0 0 40px;
+}
+
+.fl-section--tight { padding-top: 0; }
+
+.fl-section__head {
+  text-align: left;
+  margin: 0;
+  padding: 26px 0 27px;
+}
+
+.fl-section__title {
+  margin: 0;
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: #333;
+}
+
+.fl-section__sub {
+  margin: 8px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--fl-muted);
+}
+
+/* ------------------------------------------------------------ product grid */
+
+/* The reference storefront renders each product shelf as a 4-up horizontal
+   carousel inside a narrow (~960px) centred column. */
+.fl-shelf {
+  margin: 0;
+}
+
+.fl-rail {
+  display: flex;
+  gap: 20px;
+  padding-top: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+
+.fl-rail::-webkit-scrollbar { display: none; }
+
+.fl-rail > .fl-card {
+  /* The reference shows six 216px slots per 1425px row with a 20px gutter. */
+  flex: 0 0 calc((100% - 100px) / 6);
+  scroll-snap-align: start;
+}
+
+.fl-rail__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: 0;
+}
+
+.fl-rail__arrows {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.fl-rail__arrow {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--fl-line);
+  background: #fff;
+  color: var(--fl-ink);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.fl-rail__arrow:hover { background: #f5f5f3; }
+
+.fl-rail__arrow:disabled { opacity: 0.35; cursor: default; }
+
+.fl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 34px 20px;
+}
+
+/* Reference tile geometry: a 204px-tall image column (136px wide for the
+   catalogue's 2:3 shots) centred in the 216px carousel slot, with the caption
+   matching that same column width. */
+.fl-card {
+  --fl-card-media-h: 204px;
+  --fl-card-media-w: calc(var(--fl-card-media-h) * 2 / 3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.fl-card__media {
+  position: relative;
+  display: block;
+  width: var(--fl-card-media-w);
+  height: var(--fl-card-media-h);
+  margin-top: 20px;
+  overflow: hidden;
+  background: #f7f7f5;
+}
+
+.fl-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.35s ease;
+}
+
+.fl-card__img--alt { opacity: 0; }
+
+.fl-card:hover .fl-card__img--alt { opacity: 1; }
+
+.fl-card__body {
+  width: var(--fl-card-media-w);
+  padding: 48px 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.fl-card__name {
+  font-size: 13px;
+  line-height: 16.9px;
+  margin-bottom: 0;
+  color: var(--fl-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fl-card__name:hover { text-decoration: underline; }
+
+/* Struck-through original price sits under the current price, which is what
+   makes the reference price block 35px tall. */
+.fl-card__price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 9px;
+  min-height: 35px;
+  font-size: 14px;
+  line-height: 14px;
+  color: var(--fl-ink);
+}
+
+.fl-card__price-old {
+  font-size: 14px;
+  color: var(--fl-muted);
+  text-decoration: line-through;
+}
+
+/* The reference homepage tiles carry no action buttons or quickview overlay:
+   the card is image + name + price only. `.fl-btn` is kept for other surfaces. */
+.fl-root .fl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 28px;
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: #5a5e60;
+  transition: color 0.2s ease;
+}
+
+.fl-root .fl-btn:hover { color: #000000; }
+
+.fl-root .fl-btn--ghost {
+  background: transparent;
+  color: #5a5e60;
+}
+
+.fl-root .fl-btn--ghost:hover {
+  background: transparent;
+  color: #000000;
+}
+
+.fl-root .fl-card__name {
+  color: #000000;
+}
+
+/* --------------------------------------------------------- category mosaic */
+
+/* Reference mosaic (grid-row-top-28): gapless 4-column grid, 1165px wide and
+   centred, with the wide tile spanning two cells. Every row is 257px tall. */
+.fl-mosaic {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  max-width: 1165px;
+  margin: 0 auto;
+}
+
+.fl-tile {
+  position: relative;
+  overflow: hidden;
+  height: 257px;
+  padding: 5px;
+  background: var(--fl-sand);
+}
+
+.fl-tile--wide { grid-column: span 2; }
+
+.fl-tile--wide { grid-column: span 2; }
+
+.fl-tile__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.fl-tile:hover .fl-tile__img { transform: scale(1.04); }
+
+.fl-tile__inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 22px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0) 62%);
+  color: #fff;
+}
+
+.fl-tile__kicker {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.fl-tile__title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+  font-size: 19px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.fl-tile__meta {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------- social + newsletter */
+
+/* Reference grid-row-top-34: one row, two 713x337 halves, both backed by the
+   same photograph, white copy centred over it. */
+.fl-sn {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fl-sn__half {
+  position: relative;
+  height: 337px;
+  overflow: hidden;
+}
+
+.fl-sn__bg {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  object-fit: cover;
+}
+
+.fl-sn__copy {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 30px;
+  color: #fff;
+}
+
+.fl-sn__script {
+  margin: 0;
+  font-family: "Homemade Apple", cursive;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 36px;
+  color: #fff;
+}
+
+.fl-sn__title {
+  margin: 6px 0 0;
+  font-family: "Alata", "Jost", sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 22px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.fl-sn__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 6px;
+  margin: 86px 0 0;
+  font-family: "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 16.5px;
+  color: #fff;
+}
+
+.fl-sn__line a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.fl-sn__line a:hover { text-decoration: underline; }
+
+.fl-sn__form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px 0 0;
+  width: 100%;
+  max-width: 340px;
+}
+
+.fl-sn__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 26px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  font-family: "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  color: #fff;
+  outline: none;
+}
+
+.fl-sn__input::placeholder { color: rgba(255, 255, 255, 0.75); }
+
+.fl-sn__submit {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: "Jost", sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 16.5px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.fl-sn__submit:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------- footer */
+
+.fl-footer {
+  border-top: 1px solid var(--fl-line);
+  font-size: 13px;
+}
+
+.fl-footer__cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 30px;
+  padding: 40px 0;
+}
+
+.fl-footer__col-title {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+  color: var(--fl-ink);
+}
+
+.fl-footer__links {
+  display: grid;
+  gap: 9px;
+}
+
+.fl-footer__links a {
+  color: var(--fl-muted);
+  font-size: 13px;
+}
+
+.fl-footer__links a:hover { color: var(--fl-ink); }
+
+/* Reference: the country/currency selector sits under the columns as a 90px
+   band (20px padding + 50px control + 20px margins). */
+.fl-footer__locale {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 90px;
+  padding: 20px 0;
+  margin: 20px 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.fl-footer__flag { font-size: 15px; line-height: 1; }
+
+/* Empty 25px row the reference keeps between the selector and the copyright. */
+.fl-footer__spacer {
+  height: 25px;
+  margin: 0 0 10px;
+}
+
+.fl-footer__legal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  height: 43px;
+  margin: -10px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--fl-muted);
+}
+
+.fl-footer__socials {
+  display: flex;
+  gap: 18px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fl-footer__company {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 43px;
+  margin: -10px 0 40px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--fl-muted);
+}
+
+/* ------------------------------------------------------- recent purchase */
+
+.fl-recent {
+  position: fixed;
+  left: 20px;
+  bottom: 22px;
+  z-index: 80;
+  width: 316px;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--fl-line-soft);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.13);
+  transform: translateX(calc(-100% - 30px));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.fl-recent.is-open { transform: translateX(0); }
+
+.fl-recent__img {
+  width: 52px;
+  height: 68px;
+  object-fit: cover;
+  flex: none;
+  background: #f5f5f3;
+}
+
+.fl-recent__text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fl-muted);
+  min-width: 0;
+}
+
+.fl-recent__text b {
+  color: var(--fl-ink);
+  font-weight: 500;
+}
+
+.fl-recent__time {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  color: #a3a3a3;
+  letter-spacing: 0.04em;
+}
+
+.fl-recent__close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  line-height: 1;
+  color: #b0b0b0;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1200px) {
+  .fl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fl-rail > .fl-card { flex: 0 0 calc((100% - 40px) / 3); }
+  .fl-nav__list { gap: 30px; }
+  .fl-mosaic { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fl-tile--wide { grid-column: span 2; }
+}
+
+@media (max-width: 900px) {
+  :root { --fl-gutter: 20px; }
+  .fl-header__bar { grid-template-columns: auto 1fr auto; height: 56px; }
+  .fl-logo { font-size: 17px; letter-spacing: 0.26em; }
+  .fl-account { display: none; }
+  .fl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 12px; }
+  .fl-rail { gap: 12px; }
+  .fl-rail > .fl-card { flex: 0 0 calc((100% - 12px) / 2); }
+  .fl-rail__arrows { display: none; }
+  .fl-usp__row { padding: 10px 0; }
+  .fl-sn { grid-template-columns: minmax(0, 1fr); }
+  .fl-sn__half { height: 300px; }
+  .fl-sn__line { margin-top: 46px; }
+  .fl-mosaic { max-width: none; }
+  .fl-tile { height: 220px; }
+  .fl-usp__item { padding: 0 12px; font-size: 11px; }
+  .fl-nav { display: none; }
+  .fl-nav__mobile-toggle { display: inline-flex; }
+  .fl-mosaic { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fl-footer__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 12px 0; gap: 20px; }
+  .fl-footer__col-title { margin-bottom: 8px; }
+  .fl-footer__links { gap: 6px; }
+  .fl-footer__locale { height: 74px; margin: 20px 0; }
+  .fl-footer__spacer { height: 10px; }
+  .fl-hero__copy { gap: 10px; }
+  .fl-recent { left: 10px; right: 10px; width: auto; }
+}
+
+@media (max-width: 620px) {
+  .fl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fl-tile--wide { grid-column: span 2; }
+  .fl-tile { min-height: 200px; }
+  .fl-section { padding-top: 36px; }
+  .fl-recent { display: none; }
+}
+
+/* --------------------------------------------------------- mobile drawer */
+
+.fl-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 84vw;
+  max-width: 380px;
+  background: #fff;
+  z-index: 120;
+  transform: translateX(-100%);
+  transition: transform 0.28s ease;
+  overflow-y: auto;
+  padding: 20px 22px 40px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
+}
+
+.fl-drawer.is-open { transform: translateX(0); }
+
+.fl-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--fl-line-soft);
+}
+
+.fl-drawer__close {
+  border: 0;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--fl-ink);
+}
+
+.fl-drawer__group { border-bottom: 1px solid var(--fl-line-soft); }
+
+.fl-drawer__group > a,
+.fl-drawer__group > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fl-drawer__sub {
+  padding: 0 0 14px 12px;
+  display: grid;
+  gap: 9px;
+}
+
+.fl-drawer__sub a { color: var(--fl-muted); font-size: 13px; }
+
+.fl-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 110;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+}
+
+.fl-scrim.is-open { opacity: 1; visibility: visible; }
+
+/* --------------------------------------------------- mobile search strip */
+
+/* The reference storefront keeps a permanent search row under the compact
+   mobile bar: 56px bar + 54px strip, so the header measures 110px on phones. */
+.fl-header__msearch {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .fl-header__msearch {
+    display: block;
+    background: var(--fl-bg);
+  }
+
+  .fl-header__msearch form {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 54px;
+    padding: 10px 15px;
+    margin: 0;
+  }
+
+  .fl-header__msearch input {
+    flex: 1 1 auto;
+    height: 32px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 0;
+    background: var(--fl-bg);
+    font-family: inherit;
+    font-size: 14px;
+    color: #1c2021;
+    outline: none;
+  }
+
+  .fl-header__msearch input::placeholder {
+    color: #8a8a8a;
+  }
+
+  .fl-header__msearch button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: none;
+    color: #1c2021;
+    cursor: pointer;
+  }
+}
+
+/* ------------------------------------------------------------ search bar */
+
+.fl-search {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  z-index: 130;
+  border-bottom: 1px solid var(--fl-line-soft);
+  transform: translateY(-100%);
+  transition: transform 0.28s ease;
+}
+
+.fl-search.is-open { transform: translateY(0); }
+
+.fl-search__inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 74px;
+}
+
+.fl-search__input {
+  flex: 1;
+  border: 0;
+  border-bottom: 1px solid var(--fl-line);
+  padding: 8px 2px;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  background: transparent;
+}
+
+.fl-search__close {
+  border: 0;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--fl-ink);
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------ static pages */
+
+/* Reference "page-title" band: 80px top / 40px bottom padding, 32px uppercase
+   heading with -1px tracking, centred over the full storefront width. */
+.fl-page__head {
+  padding: 80px 0 40px;
+  text-align: center;
+}
+
+.fl-page__title {
+  margin: 0;
+  border: 0;
+  font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  color: #000000;
+}
+
+/* 475px reading column: the meta line spans the full column while the prose is
+   inset 64px, exactly as the reference theme nests .post-stats / .bagers-pad.
+   The 40px top padding reproduces the gap the reference leaves between the
+   title band and the first paragraph, where its hidden meta block sits. */
+/* The reference leaves 475px free on each side of the article and caps the
+   text wrapper at 900px, so the column grows with the viewport: 475px wide at
+   1440 (347px of text) and 900px once the viewport passes ~1850 (772px of
+   text). The 475px floor keeps it readable on mid-size screens. */
+.fl-page__col {
+  width: clamp(475px, calc(100% - 950px), 900px);
+  margin: 0 auto;
+  padding-top: 40px;
+  padding-bottom: 30px;
+}
+
+.fl-page__meta {
+  margin: 0 0 -12px;
+  padding: 0 0 12px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 18px;
+  color: #333333;
+}
+
+.fl-page__prose {
+  padding: 0 64px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 24px;
+  color: #333333;
+}
+
+.fl-page__prose p {
+  margin: 0 0 10px;
+}
+
+/* About Us uses bare <div>s with no margins; the spacing comes entirely from
+   its <div><br></div> spacer blocks. */
+.fl-page__prose--div > div {
+  margin: 0;
+}
+
+/* Policy pages use empty <p> spacers that collapse to zero height. */
+.fl-page__prose--p > .fl-page__spacer {
+  height: 0;
+}
+
+.fl-page__display {
+  margin: 0 0 20px;
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.1;
+  text-align: center;
+  color: #333333;
+}
+
+/* Spacers inherit the block margin above: zero for About Us divs, 10px for the
+   policy paragraphs, matching how the reference lets them collapse. */
+
+@media (max-width: 900px) {
+  .fl-page__head {
+    padding: 20px 0 30px;
+  }
+
+  .fl-page__col {
+    width: auto;
+    margin: 0 16px;
+  }
+
+  .fl-page__prose {
+    padding: 0 16px;
+  }
+}
+

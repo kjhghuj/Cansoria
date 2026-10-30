@@ -1,87 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
-import ExitIntentPopup from "./ExitIntentPopup";
-import {
-  Navbar,
-  Footer,
-  SearchOverlay,
-  ChatWidget,
-  AnnouncementBar,
-} from "@/components";
-import { useCart, useRegion, useStoreStatus } from "@/lib/providers";
+import { useCart } from "@/lib/providers";
+import Header from "./florencess/Header";
+import RecentPurchase from "./florencess/RecentPurchase";
+import SiteFooter from "./florencess/SiteFooter";
+import TopMarquee from "./florencess/TopMarquee";
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
-  /** Chat concierge is rendered only when the API route has a model key. */
+  /** Kept for API compatibility with the root layout. */
   chatEnabled?: boolean;
 }
 
-// Transactional flows stay free of marketing interruptions and chat overlays.
-const TRANSACTIONAL_PREFIXES = ["/checkout", "/account", "/order", "/register"];
-
-function isTransactionalPath(pathname: string) {
-  return TRANSACTIONAL_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
-  );
-}
-
-export default function LayoutWrapper({
-  children,
-  chatEnabled = false,
-}: LayoutWrapperProps) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [navOffset, setNavOffset] = useState(0);
+/**
+ * FLORENCESS storefront shell: marquee → sticky header/nav → page → footer.
+ * The shell is intentionally theme-agnostic so inner pages keep working.
+ */
+export default function LayoutWrapper({ children }: LayoutWrapperProps) {
   const { cartCount } = useCart();
-  const { region } = useRegion();
-  // The popup completes a newsletter subscription; it must not appear when the
-  // delivery chain (backend capability + captcha) is not fully configured.
-  const { newsletterEnabled } = useStoreStatus();
-  const pathname = usePathname();
-  const isHome = pathname === "/";
-  const isEditorial =
-    isHome ||
-    [
-      "/gallery",
-      "/how-it-works",
-      "/our-studio",
-      "/reviews",
-      "/about",
-      "/upload-photo",
-      "/faq",
-      "/contact",
-    ].includes(pathname) ||
-    pathname.startsWith("/product/");
-  const isTransactional = isTransactionalPath(pathname);
-  const offset = isEditorial ? 0 : navOffset;
 
   return (
-    <>
-      {!isEditorial && <AnnouncementBar onHeightChange={setNavOffset} />}
-      <Navbar
-        cartCount={cartCount}
-        onSearchClick={() => setIsSearchOpen(true)}
-        topOffset={offset}
-      />
-      <SearchOverlay
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        regionId={region?.id}
-      />
-      <main
-        className="flex-grow transition-[padding]"
-        style={{
-          paddingTop: `${offset}px`,
-          // @ts-expect-error - Custom CSS variable
-          "--announcement-height": `${offset}px`,
-        }}
-      >
-        {children}
-      </main>
-      {!isEditorial && !isTransactional && chatEnabled && <ChatWidget />}
-      {!isEditorial && !isTransactional && newsletterEnabled && <ExitIntentPopup />}
-      <Footer />
-    </>
+    <div className="fl-root flex min-h-screen flex-col">
+      <TopMarquee />
+      <Header cartCount={cartCount} />
+      <main className="flex-grow">{children}</main>
+      <SiteFooter />
+      <RecentPurchase />
+    </div>
   );
 }

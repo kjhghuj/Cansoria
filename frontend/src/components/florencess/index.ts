@@ -1,0 +1,12 @@
+export { default as FlorencessHome } from "./FlorencessHome";
+export { default as Header } from "./Header";
+export { default as TopMarquee } from "./TopMarquee";
+export { default as HeroSlider } from "./HeroSlider";
+export { default as UspStrip } from "./UspStrip";
+export { default as ProductCard } from "./ProductCard";
+export { default as ProductSection } from "./ProductSection";
+export { default as CategoryMosaic } from "./CategoryMosaic";
+export { default as SocialNewsletter } from "./SocialNewsletter";
+export { default as SiteFooter } from "./SiteFooter";
+export { default as RecentPurchase } from "./RecentPurchase";
+export { default as StaticPage } from "./StaticPage";

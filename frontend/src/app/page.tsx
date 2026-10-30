@@ -1,28 +1,21 @@
-import { WatchHome } from "./components/home/WatchHome";
+﻿import { FlorencessHome } from "@/components/florencess";
 import type { Metadata } from "next";
-import { getStoreOrdersOpen } from "@/lib/medusa";
-import { STUDIO, STUDIO_OPEN, studioHomeTitle } from "@/lib/studio-content";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+  description:
+    "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+    description:
+      "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+    url: "/",
+    images: [{ url: "/florencess/img/hero-936.webp", alt: "FLORENCESS warehouse sale" }],
+    type: "website",
+  },
+};
 
-export async function generateMetadata(): Promise<Metadata> {
-  const ordersOpen = await getStoreOrdersOpen();
-  const description = ordersOpen ? STUDIO_OPEN.description : STUDIO.description;
-  return {
-    title: studioHomeTitle(ordersOpen),
-    description,
-    alternates: { canonical: "/" },
-    openGraph: {
-      title: studioHomeTitle(ordersOpen),
-      description,
-      url: "/",
-      images: [{ url: "/images/watches/hero.svg", alt: STUDIO.scene }],
-      type: "website",
-    },
-  };
-}
-
-export default async function HomePage() {
-  const ordersOpen = await getStoreOrdersOpen();
-  return <WatchHome ordersOpen={ordersOpen} />;
+export default function HomePage() {
+  return <FlorencessHome />;
 }
