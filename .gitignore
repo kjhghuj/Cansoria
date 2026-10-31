@@ -71,3 +71,20 @@ Thumbs.db
 **/.idea/
 **/.DS_Store
 **/Thumbs.db
+
+# FLORENCESS replication scratch workspace: scraped HTML, Chrome profile,
+# downloaded asset tree. The reproducible tooling lives in tools/florencess-ref/.
+frontend_ref/
+
+# One-off scrape dumps and local scripts kept out of version control
+/cat*.html
+/florensce/
+/florensce_data/
+/florensce_home.html
+/florensce_recon.md
+/search_all.html
+/sitemap.html
+/p1035.html
+oc_scraper.py
+portscan.py
+jailbreak-lab/
