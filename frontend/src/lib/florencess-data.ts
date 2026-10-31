@@ -20,47 +20,47 @@ export interface FlNavGroup {
 }
 
 export const FL_NAV: FlNavGroup[] = [
-  { label: "NEW", href: "/shop" },
+  { label: "NEW", href: "/new" },
   {
     label: "BAGS",
-    href: "/shop",
+    href: "/bags-all",
     children: [
-      { label: "Crossbody Bags", href: "/shop" },
-      { label: "Totes", href: "/shop" },
-      { label: "Shoulder Bags", href: "/shop" },
-      { label: "Belt Bags", href: "/shop" },
-      { label: "Bucket Bags", href: "/shop" },
-      { label: "Clutches", href: "/shop" },
-      { label: "Evening Bags", href: "/shop" },
-      { label: "Mini Bags", href: "/shop" },
-      { label: "Phone Crossbody", href: "/shop" },
+      { label: "Crossbody Bags", href: "/leather-crossbody-bags" },
+      { label: "Totes", href: "/leather-totes" },
+      { label: "Shoulder Bags", href: "/leather-shoulder-bags" },
+      { label: "Belt Bags", href: "/leather-belt-bags" },
+      { label: "Bucket Bags", href: "/leather-bucket-bags" },
+      { label: "Clutches", href: "/leather-clutches" },
+      { label: "Evening Bags", href: "/leather-evening-bags" },
+      { label: "Mini Bags", href: "/leather-mini-micro-bags" },
+      { label: "Phone Crossbody", href: "/leather-phone-crossbody" },
     ],
   },
   {
     label: "SHOES",
-    href: "/shop",
+    href: "/shoes",
     children: [
-      { label: "Ballet Flats", href: "/shop" },
-      { label: "Sandals", href: "/shop" },
-      { label: "Loafers", href: "/shop" },
-      { label: "Heels", href: "/shop" },
-      { label: "Boots", href: "/shop" },
-      { label: "Final Few", href: "/shop" },
+      { label: "Ballet Flats", href: "/ballet-flats" },
+      { label: "Sandals", href: "/sandals" },
+      { label: "Loafers", href: "/loafers" },
+      { label: "Heels", href: "/heels" },
+      { label: "Boots", href: "/boots" },
+      { label: "Final Few", href: "/final-few" },
     ],
   },
   {
     label: "CLOTHING",
-    href: "/shop",
+    href: "/clothing",
     children: [
-      { label: "Denim", href: "/shop" },
-      { label: "Tops", href: "/shop" },
-      { label: "Pants & Leggings", href: "/shop" },
-      { label: "Dresses", href: "/shop" },
-      { label: "Sweatshirts & Sweatpants", href: "/shop" },
-      { label: "Tanks & Tees", href: "/shop" },
+      { label: "Denim", href: "/denim" },
+      { label: "Tops", href: "/tops" },
+      { label: "Pants & Leggings", href: "/pants-leggings" },
+      { label: "Dresses", href: "/dresses" },
+      { label: "Sweatshirts & Sweatpants", href: "/sweatshirts-sweatpants" },
+      { label: "Tanks & Tees", href: "/tanks-tees" },
     ],
   },
-  { label: "SALE", href: "/shop" },
+  { label: "SALE", href: "/special" },
 ];
 
 export type FlHeroLink = { label: string; href: string };
@@ -92,8 +92,8 @@ export const FL_HERO_SLIDES: FlHeroSlide[] = [
     variant: "collections",
     lines: ["SPRING/SUMMER 26", "NEW COLLECTIONS"],
     links: [
-      { label: "Women", href: "/shop" },
-      { label: "Men", href: "/shop" },
+      { label: "Women", href: "/new" },
+      { label: "Men", href: "/new" },
     ],
   },
   {
@@ -103,9 +103,9 @@ export const FL_HERO_SLIDES: FlHeroSlide[] = [
     lines: ["THE WAREHOUSE SALE"],
     subline: "UP TO 60% OFF | NEW ADDITIONS | FINAL REDUCTIONS",
     links: [
-      { label: "Women", href: "/shop" },
-      { label: "Men", href: "/shop" },
-      { label: "Sale", href: "/shop" },
+      { label: "Women", href: "/new" },
+      { label: "Men", href: "/new" },
+      { label: "Sale", href: "/special" },
     ],
   },
 ];
@@ -132,15 +132,15 @@ export interface FlTile {
  * tiles span two cells. The reference cycles the wide cell through the row —? * first, middle, last —?which the order below reproduces.
  */
 export const FL_TILES: FlTile[] = [
-  { kicker: "SF26", title: "BAGS", image: "/florencess/img/hero-1.webp", href: "/shop", wide: true },
-  { kicker: "WE LOVE", title: "SHOES", image: "/florencess/img/cat-8.webp", href: "/shop" },
-  { kicker: "WOMEN | SALE", title: "DRESSES", image: "/florencess/img/cat-7.webp", href: "/shop" },
-  { kicker: "WOMEN | SALE", title: "EVENING BAGS", image: "/florencess/img/cat-4.webp", href: "/shop" },
-  { title: "WEAR WHAT SPEAKS TO YOU", image: "/florencess/img/wide-1.webp", href: "/shop", wide: true },
-  { title: "CROSSBODY", image: "/florencess/img/cat-1.webp", href: "/shop" },
-  { title: "SHOP THE JOURNEY", image: "/florencess/img/cat-2.webp", href: "/shop" },
-  { kicker: "WOMEN | SALE", title: "TOPS", image: "/florencess/img/cat-3.webp", href: "/shop" },
-  { kicker: "WOMEN | SALE", title: "WORLD OF HEELS", image: "/florencess/img/cat-5.webp", href: "/shop", wide: true },
+  { kicker: "SF26", title: "BAGS", image: "/florencess/img/hero-1.webp", href: "/bags-all", wide: true },
+  { kicker: "WE LOVE", title: "SHOES", image: "/florencess/img/cat-8.webp", href: "/shoes" },
+  { kicker: "WOMEN | SALE", title: "DRESSES", image: "/florencess/img/cat-7.webp", href: "/dresses" },
+  { kicker: "WOMEN | SALE", title: "EVENING BAGS", image: "/florencess/img/cat-4.webp", href: "/leather-evening-bags" },
+  { title: "WEAR WHAT SPEAKS TO YOU", image: "/florencess/img/wide-1.webp", href: "/new", wide: true },
+  { title: "CROSSBODY", image: "/florencess/img/cat-1.webp", href: "/leather-crossbody-bags" },
+  { title: "SHOP THE JOURNEY", image: "/florencess/img/cat-2.webp", href: "/new" },
+  { kicker: "WOMEN | SALE", title: "TOPS", image: "/florencess/img/cat-3.webp", href: "/tops" },
+  { kicker: "WOMEN | SALE", title: "WORLD OF HEELS", image: "/florencess/img/cat-5.webp", href: "/heels", wide: true },
 ];
 
 /** Reference order from the homepage social row: FACEBOOK | INSTAGRAM | TWITTER | PINTEREST. */
@@ -155,39 +155,42 @@ export const FL_FOOTER_COLUMNS = [
   {
     title: "Categories",
     links: [
-      { label: "New", href: "/shop" },
-      { label: "Bags", href: "/shop" },
-      { label: "Shoes", href: "/shop" },
-      { label: "Clothing", href: "/shop" },
-      { label: "Sale", href: "/shop" },
+      { label: "New", href: "/new" },
+      { label: "Bags", href: "/bags-all" },
+      { label: "Shoes", href: "/shoes" },
+      { label: "Clothing", href: "/clothing" },
+      { label: "Sale", href: "/special" },
     ],
   },
   {
     title: "Account",
     links: [
       { label: "My Account", href: "/account" },
-      { label: "My Orders", href: "/account" },
-      { label: "Gift Vouchers", href: "/account" },
-      { label: "Address Book", href: "/account" },
-      { label: "Login For More Functions", href: "/account" },
+      { label: "My Orders", href: "/order-history.html" },
+      { label: "Gift Vouchers", href: "/account-voucher.html" },
+      { label: "Address Book", href: "/address-book.html" },
+      { label: "Login", href: "/account/login" },
     ],
   },
   {
     title: "Help",
     links: [
       { label: "Shipping Policy", href: "/shipping-policy" },
-      { label: "Returns", href: "/returns" },
+      { label: "Returns & Exchanges", href: "/returns-exchanges" },
+      { label: "Payment Options", href: "/payment-options" },
+      { label: "Order Tracking", href: "/order-tracking" },
       { label: "FAQ", href: "/faq" },
       { label: "Contact Us", href: "/contact" },
-      { label: "Track Order", href: "/order/lookup" },
     ],
   },
   {
     title: "About",
     links: [
       { label: "About Us", href: "/about-us" },
+      { label: "Careers", href: "/careers" },
+      { label: "Affiliate Program", href: "/affiliate-program" },
+      { label: "Customer Rewards", href: "/customer-rewards-program" },
       { label: "Cookie Policy", href: "/cookie-policy" },
-      { label: "Special Offers", href: "/shop" },
       { label: "Privacy Policy", href: "/privacy-policy" },
       { label: "Terms & Conditions", href: "/terms-conditions" },
     ],

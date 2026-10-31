@@ -50,7 +50,7 @@ export default function Header({ cartCount = 0, cartTotal }: HeaderProps) {
               </button>
               <span className="fl-account">
                 <Link href="/account">Account</Link>
-                <Link href="/account">Login</Link>
+                <Link href="/account/login">Login</Link>
                 <Link href="/register">Register</Link>
               </span>
             </div>
@@ -60,7 +60,7 @@ export default function Header({ cartCount = 0, cartTotal }: HeaderProps) {
             </Link>
 
             <div className="fl-header__right">
-              <Link href="/account" className="fl-iconbtn" aria-label="Wishlist">
+              <Link href="/wishlist.html" className="fl-iconbtn" aria-label="Wishlist">
                 <Heart size={17} strokeWidth={1.4} />
               </Link>
               <Link href="/account" className="fl-iconbtn" aria-label="My account">

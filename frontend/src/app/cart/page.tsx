@@ -37,6 +37,7 @@ function CartContent() {
   const {
     cart,
     cartLoading,
+    cartError: providerCartError,
     cartCount,
     updateItem,
     removeItem,
@@ -293,20 +294,22 @@ function CartContent() {
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <TrustBadgeGrid items={cartTrustItems} compact className="mt-8 mb-10" />
-        {cartError && (
-          <p
-            role="alert"
-            className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-          >
-            {cartError}
-          </p>
+        {(cartError || providerCartError) && (
+          <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            <p>{cartError || providerCartError}</p>
+            {providerCartError ? (
+              <button type="button" className="mt-2 underline" onClick={() => {
+                void refreshCartFn().catch(() => {});
+              }}>Retry loading cart</button>
+            ) : null}
+          </div>
         )}
 
         {/* Loading State */}
         {cartLoading && !cart && <CartLoading />}
 
         {/* Empty Cart */}
-        {!cartLoading && (!cart || !cart.items || cart.items.length === 0) && (
+        {!cartLoading && !providerCartError && (!cart || !cart.items || cart.items.length === 0) && (
           <EmptyCart />
         )}
 

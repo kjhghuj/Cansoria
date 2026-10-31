@@ -19,12 +19,18 @@ function AccountContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const justRegistered = searchParams.get("registered") === "true";
+  const requestedTab = searchParams.get("tab");
+  const unsupported = searchParams.get("unsupported");
 
   // Global Auth
   const { user, loading: authLoading, logout } = useAuth();
 
   // UI state
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const initialTab: Tab =
+    requestedTab === "orders" || requestedTab === "addresses" || requestedTab === "coupons"
+      ? requestedTab
+      : "profile";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [logoutError, setLogoutError] = useState("");
 
   const handleLogout = async () => {
@@ -61,6 +67,11 @@ function AccountContent() {
           </p>
         </div>
         {logoutError && <p role="alert" className="mb-4 text-sm text-red-600">{logoutError}</p>}
+        {unsupported === "wishlist" && (
+          <p role="status" className="mb-4 text-sm text-charcoal-light">
+            Wishlist is not available in this account area yet. Your sign-in was preserved.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Sidebar */}

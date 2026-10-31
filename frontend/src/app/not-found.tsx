@@ -11,8 +11,8 @@ export default function NotFound() {
           Page not found
         </h1>
         <p className="text-charcoal-light leading-relaxed mb-8">
-          The page you are looking for does not exist or may have moved. The
-          collections and journal are always available.
+          The page you are looking for does not exist or may have moved. Explore
+          our latest collections or return to the homepage.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
@@ -22,10 +22,10 @@ export default function NotFound() {
             Back to home
           </Link>
           <Link
-            href="/shop"
+            href="/new"
             className="inline-flex items-center justify-center min-h-12 border border-charcoal text-charcoal px-8 py-3 text-sm uppercase tracking-[0.18em] font-medium hover:bg-cream-card transition-colors"
           >
-            Explore watches
+            Explore new arrivals
           </Link>
         </div>
       </div>

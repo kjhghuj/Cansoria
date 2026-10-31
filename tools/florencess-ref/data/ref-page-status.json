@@ -1,0 +1,677 @@
+[
+ {
+  "path": "/",
+  "status": 200,
+  "finalUrl": "/",
+  "title": "FLORENCESS | Affordable Online Shopping for Bags, Shoes &amp; Clothing",
+  "notFound": false,
+  "bytes": 1703907,
+  "h1": "FLORENCESS"
+ },
+ {
+  "path": "/about-us",
+  "status": 200,
+  "finalUrl": "/about-us",
+  "title": "FLORENCESS – Sustainable Fashion & Accessories for the Modern Urban Woman",
+  "notFound": false,
+  "bytes": 1169730,
+  "h1": "About Us"
+ },
+ {
+  "path": "/account-voucher.html",
+  "status": 200,
+  "finalUrl": "/login.html",
+  "title": "Account Login",
+  "notFound": false,
+  "bytes": 1164072,
+  "h1": "Account Login"
+ },
+ {
+  "path": "/address-book.html",
+  "status": 200,
+  "finalUrl": "/login.html",
+  "title": "Account Login",
+  "notFound": false,
+  "bytes": 1164072,
+  "h1": "Account Login"
+ },
+ {
+  "path": "/affiliate-program",
+  "status": 200,
+  "finalUrl": "/affiliate-program",
+  "title": "Affiliate Program | Partner with FLORENCESS",
+  "notFound": false,
+  "bytes": 1168466,
+  "h1": "Affiliate Program"
+ },
+ {
+  "path": "/always-palazzo-jean-85651",
+  "status": 200,
+  "finalUrl": "/always-palazzo-jean-85651",
+  "title": "Always Palazzo Jean",
+  "notFound": false,
+  "bytes": 1465118,
+  "h1": "Always Palazzo Jean"
+ },
+ {
+  "path": "/amore-drift-ruffle-tank-85992",
+  "status": 200,
+  "finalUrl": "/amore-drift-ruffle-tank-85992",
+  "title": "Amore Drift Ruffle Tank",
+  "notFound": false,
+  "bytes": 1471846,
+  "h1": "Amore Drift Ruffle Tank"
+ },
+ {
+  "path": "/axiom-vibe-long-sleeve-top-85860",
+  "status": 200,
+  "finalUrl": "/axiom-vibe-long-sleeve-top-85860",
+  "title": "Axiom Vibe Long Sleeve Top",
+  "notFound": false,
+  "bytes": 1473397,
+  "h1": "Axiom Vibe Long Sleeve Top"
+ },
+ {
+  "path": "/bags-all",
+  "status": 200,
+  "finalUrl": "/bags-all",
+  "title": "Bags",
+  "notFound": false,
+  "bytes": 1551007,
+  "h1": "Bags"
+ },
+ {
+  "path": "/ballet-flats",
+  "status": 200,
+  "finalUrl": "/ballet-flats",
+  "title": "Ballet Flats",
+  "notFound": false,
+  "bytes": 1238040,
+  "h1": "Ballet Flats"
+ },
+ {
+  "path": "/bastion-high-rise-shorts-85747",
+  "status": 200,
+  "finalUrl": "/bastion-high-rise-shorts-85747",
+  "title": "Bastion High Rise Shorts",
+  "notFound": false,
+  "bytes": 1469213,
+  "h1": "Bastion High Rise Shorts"
+ },
+ {
+  "path": "/belleza-v-neck-tee-86346",
+  "status": 200,
+  "finalUrl": "/belleza-v-neck-tee-86346",
+  "title": "Belleza V Neck Tee",
+  "notFound": false,
+  "bytes": 1474059,
+  "h1": "Belleza V Neck Tee"
+ },
+ {
+  "path": "/boots",
+  "status": 200,
+  "finalUrl": "/boots",
+  "title": "Boots",
+  "notFound": false,
+  "bytes": 1570384,
+  "h1": "Boots"
+ },
+ {
+  "path": "/boundless-mid-rise-flare-in-coated-asphalt-85648",
+  "status": 200,
+  "finalUrl": "/boundless-mid-rise-flare-in-coated-asphalt-85648",
+  "title": "Boundless Mid Rise Flare in Coated Asphalt",
+  "notFound": false,
+  "bytes": 1468097,
+  "h1": "Boundless Mid Rise Flare in Coated Asphalt"
+ },
+ {
+  "path": "/careers",
+  "status": 200,
+  "finalUrl": "/careers",
+  "title": "Careers | Join the Team at FLORENCESS",
+  "notFound": false,
+  "bytes": 1167959,
+  "h1": "Careers"
+ },
+ {
+  "path": "/castle-tank-86291",
+  "status": 200,
+  "finalUrl": "/castle-tank-86291",
+  "title": "Castle Tank",
+  "notFound": false,
+  "bytes": 1467025,
+  "h1": "Castle Tank"
+ },
+ {
+  "path": "/clothing",
+  "status": 200,
+  "finalUrl": "/clothing",
+  "title": "Clothing",
+  "notFound": false,
+  "bytes": 1556686,
+  "h1": "Clothing"
+ },
+ {
+  "path": "/cookie-policy",
+  "status": 200,
+  "finalUrl": "/cookie-policy",
+  "title": "Cookie Policy | FLORENCESS",
+  "notFound": false,
+  "bytes": 1166325,
+  "h1": "Cookie Policy"
+ },
+ {
+  "path": "/crimson-allure-dye-high-rise-7-8-legging-86077",
+  "status": 200,
+  "finalUrl": "/crimson-allure-dye-high-rise-7-8-legging-86077",
+  "title": "Crimson Allure Dye High Rise 7/8 Legging",
+  "notFound": false,
+  "bytes": 1462222,
+  "h1": "Crimson Allure Dye High Rise 7/8 Legging"
+ },
+ {
+  "path": "/customer-rewards-program",
+  "status": 200,
+  "finalUrl": "/customer-rewards-program",
+  "title": "Customer Rewards Program | FLORENCESS Loyalty Points",
+  "notFound": false,
+  "bytes": 1168498,
+  "h1": "Customer Rewards Program"
+ },
+ {
+  "path": "/denim",
+  "status": 200,
+  "finalUrl": "/denim",
+  "title": "Denim",
+  "notFound": false,
+  "bytes": 1558049,
+  "h1": "Denim"
+ },
+ {
+  "path": "/deseo-snap-henley-tee-86359",
+  "status": 200,
+  "finalUrl": "/deseo-snap-henley-tee-86359",
+  "title": "Deseo Snap Henley Tee",
+  "notFound": false,
+  "bytes": 1467351,
+  "h1": "Deseo Snap Henley Tee"
+ },
+ {
+  "path": "/dresses",
+  "status": 200,
+  "finalUrl": "/dresses",
+  "title": "Dresses",
+  "notFound": false,
+  "bytes": 1556866,
+  "h1": "Dresses"
+ },
+ {
+  "path": "/eclipse-pulse-knit-tank-85804",
+  "status": 200,
+  "finalUrl": "/eclipse-pulse-knit-tank-85804",
+  "title": "Eclipse Pulse Knit Tank",
+  "notFound": false,
+  "bytes": 1476445,
+  "h1": "Eclipse Pulse Knit Tank"
+ },
+ {
+  "path": "/elite",
+  "status": 200,
+  "finalUrl": "/elite",
+  "title": "Elite",
+  "notFound": false,
+  "bytes": 1462695,
+  "h1": "Elite"
+ },
+ {
+  "path": "/enchant-tone-crop-rib-tank-85967",
+  "status": 200,
+  "finalUrl": "/enchant-tone-crop-rib-tank-85967",
+  "title": "Enchant Tone Crop Rib Tank",
+  "notFound": false,
+  "bytes": 1467677,
+  "h1": "Enchant Tone Crop Rib Tank"
+ },
+ {
+  "path": "/facet-bloom-lace-top-85997",
+  "status": 200,
+  "finalUrl": "/facet-bloom-lace-top-85997",
+  "title": "Facet Bloom Lace Top",
+  "notFound": false,
+  "bytes": 1467090,
+  "h1": "Facet Bloom Lace Top"
+ },
+ {
+  "path": "/fina-vita-twist-crop-top-86268",
+  "status": 200,
+  "finalUrl": "/fina-vita-twist-crop-top-86268",
+  "title": "Fina Vita Twist Crop Top",
+  "notFound": false,
+  "bytes": 1467412,
+  "h1": "Fina Vita Twist Crop Top"
+ },
+ {
+  "path": "/final-few",
+  "status": 200,
+  "finalUrl": "/final-few",
+  "title": "Final Few",
+  "notFound": false,
+  "bytes": 1238009,
+  "h1": "Final Few"
+ },
+ {
+  "path": "/fission-stella-crochet-detail-top-85837",
+  "status": 200,
+  "finalUrl": "/fission-stella-crochet-detail-top-85837",
+  "title": "Fission Stella Crochet Detail Top",
+  "notFound": false,
+  "bytes": 1463461,
+  "h1": "Fission Stella Crochet Detail Top"
+ },
+ {
+  "path": "/fulgor-mini-dress-86131",
+  "status": 200,
+  "finalUrl": "/fulgor-mini-dress-86131",
+  "title": "Fulgor Mini Dress",
+  "notFound": false,
+  "bytes": 1467506,
+  "h1": "Fulgor Mini Dress"
+ },
+ {
+  "path": "/gasa-cielo-stretch-mesh-long-sleeve-top-85839",
+  "status": 200,
+  "finalUrl": "/gasa-cielo-stretch-mesh-long-sleeve-top-85839",
+  "title": "Gasa Cielo Stretch Mesh Long Sleeve Top",
+  "notFound": false,
+  "bytes": 1468361,
+  "h1": "Gasa Cielo Stretch Mesh Long Sleeve Top"
+ },
+ {
+  "path": "/grazia-stile-dead-tee-86297",
+  "status": 200,
+  "finalUrl": "/grazia-stile-dead-tee-86297",
+  "title": "Grazia Stile Dead Tee",
+  "notFound": false,
+  "bytes": 1472227,
+  "h1": "Grazia Stile Dead Tee"
+ },
+ {
+  "path": "/heels",
+  "status": 200,
+  "finalUrl": "/heels",
+  "title": "Heels",
+  "notFound": false,
+  "bytes": 1549095,
+  "h1": "Heels"
+ },
+ {
+  "path": "/immortal-girl-crop-flare-85618",
+  "status": 200,
+  "finalUrl": "/immortal-girl-crop-flare-85618",
+  "title": "Immortal Girl Crop Flare",
+  "notFound": false,
+  "bytes": 1470082,
+  "h1": "Immortal Girl Crop Flare"
+ },
+ {
+  "path": "/index.php?route=checkout/cart",
+  "status": 200,
+  "finalUrl": "/index.php?route=checkout/cart",
+  "title": "Shopping Cart",
+  "notFound": false,
+  "bytes": 1162216,
+  "h1": "Shopping Cart"
+ },
+ {
+  "path": "/joya-wide-leg-jean-85624",
+  "status": 200,
+  "finalUrl": "/joya-wide-leg-jean-85624",
+  "title": "Joya Wide Leg Jean",
+  "notFound": false,
+  "bytes": 1468035,
+  "h1": "Joya Wide Leg Jean"
+ },
+ {
+  "path": "/leather-belt-bags",
+  "status": 200,
+  "finalUrl": "/leather-belt-bags",
+  "title": "Leather Belt Bags",
+  "notFound": false,
+  "bytes": 1306470,
+  "h1": "Leather Belt Bags"
+ },
+ {
+  "path": "/leather-bucket-bags",
+  "status": 200,
+  "finalUrl": "/leather-bucket-bags",
+  "title": "Leather Bucket Bags",
+  "notFound": false,
+  "bytes": 1254683,
+  "h1": "Leather Bucket Bags"
+ },
+ {
+  "path": "/leather-clutches",
+  "status": 200,
+  "finalUrl": "/leather-clutches",
+  "title": "Leather Clutches",
+  "notFound": false,
+  "bytes": 1344397,
+  "h1": "Leather Clutches"
+ },
+ {
+  "path": "/leather-crossbody-bags",
+  "status": 200,
+  "finalUrl": "/leather-crossbody-bags",
+  "title": "Leather Crossbody Bags",
+  "notFound": false,
+  "bytes": 1554192,
+  "h1": "Leather Crossbody Bags"
+ },
+ {
+  "path": "/leather-evening-bags",
+  "status": 200,
+  "finalUrl": "/leather-evening-bags",
+  "title": "Leather Evening Bags",
+  "notFound": false,
+  "bytes": 1351024,
+  "h1": "Leather Evening Bags"
+ },
+ {
+  "path": "/leather-mini-micro-bags",
+  "status": 200,
+  "finalUrl": "/leather-mini-micro-bags",
+  "title": "Leather Mini + Micro Bags",
+  "notFound": false,
+  "bytes": 1326108,
+  "h1": "Leather Mini + Micro Bags"
+ },
+ {
+  "path": "/leather-phone-crossbody",
+  "status": 200,
+  "finalUrl": "/leather-phone-crossbody",
+  "title": "Leather Phone Crossbody",
+  "notFound": false,
+  "bytes": 1339218,
+  "h1": "Leather Phone Crossbody"
+ },
+ {
+  "path": "/leather-shoulder-bags",
+  "status": 200,
+  "finalUrl": "/leather-shoulder-bags",
+  "title": "Leather Shoulder Bags",
+  "notFound": false,
+  "bytes": 1515823,
+  "h1": "Leather Shoulder Bags"
+ },
+ {
+  "path": "/leather-totes",
+  "status": 200,
+  "finalUrl": "/leather-totes",
+  "title": "Leather Totes",
+  "notFound": false,
+  "bytes": 1496986,
+  "h1": "Leather Totes"
+ },
+ {
+  "path": "/loafers",
+  "status": 200,
+  "finalUrl": "/loafers",
+  "title": "Loafers",
+  "notFound": false,
+  "bytes": 1365379,
+  "h1": "Loafers"
+ },
+ {
+  "path": "/lush-rush-come-true-square-neck-velvet-long-sleeve-85857",
+  "status": 200,
+  "finalUrl": "/lush-rush-come-true-square-neck-velvet-long-sleeve-85857",
+  "title": "Lush Rush Come True Square Neck Velvet Long Sleeve",
+  "notFound": false,
+  "bytes": 1471510,
+  "h1": "Lush Rush Come True Square Neck Velvet Long Sleeve"
+ },
+ {
+  "path": "/my-account.html",
+  "status": 200,
+  "finalUrl": "/login.html",
+  "title": "Account Login",
+  "notFound": false,
+  "bytes": 1164072,
+  "h1": "Account Login"
+ },
+ {
+  "path": "/myth-tank-85799",
+  "status": 200,
+  "finalUrl": "/myth-tank-85799",
+  "title": "Myth Tank",
+  "notFound": false,
+  "bytes": 1478476,
+  "h1": "Myth Tank"
+ },
+ {
+  "path": "/new",
+  "status": 200,
+  "finalUrl": "/new",
+  "title": "New",
+  "notFound": false,
+  "bytes": 1560119,
+  "h1": "New"
+ },
+ {
+  "path": "/onda-pinch-high-rise-straight-85654",
+  "status": 200,
+  "finalUrl": "/onda-pinch-high-rise-straight-85654",
+  "title": "Onda Pinch High Rise Straight",
+  "notFound": false,
+  "bytes": 1474848,
+  "h1": "Onda Pinch High Rise Straight"
+ },
+ {
+  "path": "/order-history.html",
+  "status": 200,
+  "finalUrl": "/login.html",
+  "title": "Account Login",
+  "notFound": false,
+  "bytes": 1164072,
+  "h1": "Account Login"
+ },
+ {
+  "path": "/order-tracking",
+  "status": 200,
+  "finalUrl": "/order-tracking",
+  "title": "Order Tracking | FLORENCESS Online Orders",
+  "notFound": false,
+  "bytes": 1167993,
+  "h1": "Order Tracking"
+ },
+ {
+  "path": "/palace-dawn-knit-tank-85811",
+  "status": 200,
+  "finalUrl": "/palace-dawn-knit-tank-85811",
+  "title": "Palace Dawn Knit Tank",
+  "notFound": false,
+  "bytes": 1473135,
+  "h1": "Palace Dawn Knit Tank"
+ },
+ {
+  "path": "/pants-leggings",
+  "status": 200,
+  "finalUrl": "/pants-leggings",
+  "title": "Pants &amp; Leggings",
+  "notFound": false,
+  "bytes": 1556670,
+  "h1": "Pants &amp; Leggings"
+ },
+ {
+  "path": "/payment-options",
+  "status": 200,
+  "finalUrl": "/payment-options",
+  "title": "Payment Options | FLORENCESS Secure Checkout Methods",
+  "notFound": false,
+  "bytes": 1167783,
+  "h1": "Payment Options"
+ },
+ {
+  "path": "/pearl-crochet-back-tank-86343",
+  "status": 200,
+  "finalUrl": "/pearl-crochet-back-tank-86343",
+  "title": "Pearl Crochet Back Tank",
+  "notFound": false,
+  "bytes": 1467311,
+  "h1": "Pearl Crochet Back Tank"
+ },
+ {
+  "path": "/pixel-ruched-side-brushed-rib-v-neck-85856",
+  "status": 200,
+  "finalUrl": "/pixel-ruched-side-brushed-rib-v-neck-85856",
+  "title": "Pixel Ruched Side Brushed Rib V-Neck",
+  "notFound": false,
+  "bytes": 1469170,
+  "h1": "Pixel Ruched Side Brushed Rib V-Neck"
+ },
+ {
+  "path": "/privacy-policy",
+  "status": 200,
+  "finalUrl": "/privacy-policy",
+  "title": "Privacy Policy | FLORENCESS Customer Data Protection",
+  "notFound": false,
+  "bytes": 1167049,
+  "h1": "Privacy Policy"
+ },
+ {
+  "path": "/returns-exchanges",
+  "status": 200,
+  "finalUrl": "/returns-exchanges",
+  "title": "Returns & Exchanges Policy | FLORENCESS",
+  "notFound": false,
+  "bytes": 1172145,
+  "h1": "Returns & Exchanges"
+ },
+ {
+  "path": "/royal-dye-bodysuit-86013",
+  "status": 200,
+  "finalUrl": "/royal-dye-bodysuit-86013",
+  "title": "Royal Dye Bodysuit",
+  "notFound": false,
+  "bytes": 1464613,
+  "h1": "Royal Dye Bodysuit"
+ },
+ {
+  "path": "/rush-l-s-t",
+  "status": 200,
+  "finalUrl": "/rush-l-s-t",
+  "title": "Rush L/S T",
+  "notFound": false,
+  "bytes": 1469714,
+  "h1": "Rush L/S T"
+ },
+ {
+  "path": "/sandals",
+  "status": 200,
+  "finalUrl": "/sandals",
+  "title": "Sandals",
+  "notFound": false,
+  "bytes": 1571444,
+  "h1": "Sandals"
+ },
+ {
+  "path": "/shipping-policy",
+  "status": 200,
+  "finalUrl": "/shipping-policy",
+  "title": "Shipping Policy | FLORENCESS Delivery Information",
+  "notFound": false,
+  "bytes": 1166745,
+  "h1": "Shipping Policy"
+ },
+ {
+  "path": "/shoes",
+  "status": 200,
+  "finalUrl": "/shoes",
+  "title": "Shoes",
+  "notFound": false,
+  "bytes": 1570451,
+  "h1": "Shoes"
+ },
+ {
+  "path": "/smeraldo-rib-asymmetric-top-85972",
+  "status": 200,
+  "finalUrl": "/smeraldo-rib-asymmetric-top-85972",
+  "title": "Smeraldo Rib Asymmetric Top",
+  "notFound": false,
+  "bytes": 1473489,
+  "h1": "Smeraldo Rib Asymmetric Top"
+ },
+ {
+  "path": "/spirit-one-shoulder-top-85906",
+  "status": 200,
+  "finalUrl": "/spirit-one-shoulder-top-85906",
+  "title": "Spirit One Shoulder Top",
+  "notFound": false,
+  "bytes": 1497022,
+  "h1": "Spirit One Shoulder Top"
+ },
+ {
+  "path": "/sweatshirts-sweatpants",
+  "status": 200,
+  "finalUrl": "/sweatshirts-sweatpants",
+  "title": "Sweatshirts &amp; Sweatpants",
+  "notFound": false,
+  "bytes": 1561883,
+  "h1": "Sweatshirts &amp; Sweatpants"
+ },
+ {
+  "path": "/tanks-tees",
+  "status": 200,
+  "finalUrl": "/tanks-tees",
+  "title": "Tanks &amp; Tees",
+  "notFound": false,
+  "bytes": 1558846,
+  "h1": "Tanks &amp; Tees"
+ },
+ {
+  "path": "/terms-conditions",
+  "status": 200,
+  "finalUrl": "/terms-conditions",
+  "title": "Terms & Conditions | FLORENCESS",
+  "notFound": false,
+  "bytes": 1167514,
+  "h1": "Terms & Conditions"
+ },
+ {
+  "path": "/tops",
+  "status": 200,
+  "finalUrl": "/tops",
+  "title": "Tops",
+  "notFound": false,
+  "bytes": 1557167,
+  "h1": "Tops"
+ },
+ {
+  "path": "/vague-tee-86287",
+  "status": 200,
+  "finalUrl": "/vague-tee-86287",
+  "title": "Vague Tee",
+  "notFound": false,
+  "bytes": 1464542,
+  "h1": "Vague Tee"
+ },
+ {
+  "path": "/velluto-classique-ripped-85768",
+  "status": 200,
+  "finalUrl": "/velluto-classique-ripped-85768",
+  "title": "Velluto Classique Ripped",
+  "notFound": false,
+  "bytes": 1466984,
+  "h1": "Velluto Classique Ripped"
+ },
+ {
+  "path": "/wishlist.html",
+  "status": 200,
+  "finalUrl": "/login.html",
+  "title": "Account Login",
+  "notFound": false,
+  "bytes": 1164072,
+  "h1": "Account Login"
+ }
+]

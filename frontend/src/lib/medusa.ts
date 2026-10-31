@@ -258,14 +258,13 @@ export async function getCart(cartId: string) {
 
     return cart;
   } catch (error: unknown) {
-    // If cart doesn't exist (404) or is invalid (400), return null instead of throwing
+    // Only a definite missing/invalid cart may clear its persisted reference.
+    // Authentication failures can be transient and must remain retryable errors.
     const status = getErrorStatus(error);
     const message = getErrorMessage(error);
     if (
-      status === 404 || status === 401 || status === 403 ||
-      status === 400 ||
-      message.includes("not found") ||
-      message.includes("Bad Request")
+      status === 404 || status === 400 ||
+      (status === undefined && (message.includes("not found") || message.includes("Bad Request")))
     ) {
 
       return null;

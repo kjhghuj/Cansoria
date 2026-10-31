@@ -16,7 +16,7 @@ describe("watch storefront sitemap routes", () => {
     jest.mocked(getProducts).mockResolvedValue({ products: [{ handle: "meridian-automatic", updated_at: "2026-01-01" }] } as never);
     jest.mocked(resolveJournalArticles).mockResolvedValue({ articles: [{ slug: "buying-guide", date: "2026-01-01" }], source: "static" } as never);
     const routes = await sitemap();
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com";
     const urls = routes.map((route) => route.url);
     expect(urls).toEqual(expect.arrayContaining([
       baseUrl,
@@ -26,6 +26,13 @@ describe("watch storefront sitemap routes", () => {
       baseUrl + "/our-studio",
     ]));
     expect(urls).toContain(baseUrl + "/shop");
+    expect(urls).toContain(baseUrl + "/bags-all");
+    expect(urls).toContain(baseUrl + "/careers");
+    expect(urls).toContain(baseUrl + "/accordo-hobo-45773");
+    expect(urls).toContain(baseUrl + "/manufacturer-108");
+    expect(urls).not.toContain(baseUrl + "/brand-adidas");
+    expect(new Set(urls).size).toBe(urls.length);
+    expect(urls.some((url) => /\/login|\/cart|\/checkout|\/search(?:\?|$)/.test(url))).toBe(false);
     expect(urls.some((url) => /category=|#styles|#collections|\/upload-photo/.test(url))).toBe(false);
     expect(getCategories).not.toHaveBeenCalled();
     expect(getProducts).toHaveBeenCalledWith("reg_test", 1000);
@@ -37,7 +44,7 @@ describe("watch storefront sitemap routes", () => {
     jest.mocked(resolveJournalArticles).mockResolvedValue({ articles: [] } as never);
     const before = new Date();
     const routes = await sitemap();
-    const home = routes.find((route) => route.url.endsWith("/") || route.url === (process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com"));
+    const home = routes.find((route) => route.url === (process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com"));
     const buildTime = new Date();
     // The static lastmod must be a real fixed date in the past, not "now".
     const lastModified = home?.lastModified as Date;

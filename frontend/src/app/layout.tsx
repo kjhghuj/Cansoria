@@ -7,6 +7,7 @@ import "./studio.css";
 import "./footer.css";
 import "./florencess-fonts.css";
 import "./florencess.css";
+import "./florencess-catalog.css";
 import { Providers } from "@/lib/providers";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import "@fontsource/dm-sans/400.css";

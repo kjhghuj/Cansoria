@@ -1,0 +1,6 @@
+{
+ "generatedAt": "2026-10-31T00:00:00.000Z",
+ "source": "medusa",
+ "note": "No catalogue product is mapped to a Medusa variant yet. Populate products[] with productId/medusaProductId/variants[{id, selection}] from the import report; until then product pages render the explicit unmapped purchase state.",
+ "products": []
+}

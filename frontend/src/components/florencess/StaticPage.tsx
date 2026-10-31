@@ -43,6 +43,28 @@ export default function StaticPage({ page }: { page: FlStaticPage }) {
               );
             }
 
+            if (section.kind === "heading") {
+              return (
+                <h2 className="fl-page__section-heading" key={key}>
+                  {section.text}
+                </h2>
+              );
+            }
+
+            if (section.kind === "divider") {
+              return (
+                <hr className="fl-page__divider" key={key} aria-label={section.text} />
+              );
+            }
+
+            if (section.kind === "bullet") {
+              return (
+                <p className="fl-page__bullet" key={key}>
+                  {section.text}
+                </p>
+              );
+            }
+
             return <Block key={key}>{section.text}</Block>;
           })}
         </div>

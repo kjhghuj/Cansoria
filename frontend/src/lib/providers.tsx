@@ -84,6 +84,7 @@ interface AuthContextType {
 interface CartContextType {
   cart: StoreCart | null;
   cartLoading: boolean;
+  cartError: string | null;
   cartCount: number;
   addItem: (
     variantId: string,
@@ -152,6 +153,7 @@ export function Providers({ children }: ProvidersProps) {
     setCartState(value);
   }, []);
   const [cartLoading, setCartLoading] = useState(true);
+  const [cartError, setCartError] = useState<string | null>(null);
   const mutationPending = useRef(false);
   const cartRevision = useRef(0);
   const sessionGeneration = useRef(0);
@@ -236,13 +238,14 @@ export function Providers({ children }: ProvidersProps) {
     async function initCart() {
       if (authLoading || regionLoading) return;
       if (!region) {
-        setCart(null);
+        setCartError("The store region is unavailable. Your cart has been preserved; please retry shortly.");
         setCartLoading(false);
         return;
       }
 
       try {
         setCartLoading(true);
+        setCartError(null);
         const cartIdToFetch = readStorage(CART_ID_KEY);
         let currentCart: StoreCart | null = null;
 
@@ -310,7 +313,7 @@ export function Providers({ children }: ProvidersProps) {
           setCart(currentCart);
       } catch {
         if (!cancelled && generation === sessionGeneration.current && revision === cartRevision.current)
-          setCart(null);
+          setCartError("Unable to load your cart. Your existing cart reference is preserved; please retry.");
       } finally {
         if (!cancelled && generation === sessionGeneration.current && revision === cartRevision.current)
           setCartLoading(false);
@@ -371,11 +374,16 @@ export function Providers({ children }: ProvidersProps) {
   // Cart Handlers (Wrapped to ensure check)
   const cartId = cart?.id;
   const refreshCart = useCallback(async () => {
-    if (!cartId) return;
+    const id = cartId || readStorage(CART_ID_KEY);
+    if (!id) {
+      setCartError(region ? null : "The store region is unavailable. Please retry shortly.");
+      return;
+    }
     const generation = sessionGeneration.current;
     const revision = cartRevision.current;
     try {
-      const updatedCart = await getCart(cartId);
+      setCartLoading(true);
+      const updatedCart = await getCart(id);
       if (
         generation !== sessionGeneration.current ||
         revision !== cartRevision.current
@@ -386,15 +394,22 @@ export function Providers({ children }: ProvidersProps) {
       if (!updatedCart || updatedCart.completed_at) {
         removeStorage(CART_ID_KEY);
         setCart(null);
+        setCartError(null);
 
       } else {
         // Valid active cart
         setCart(updatedCart);
+        setCartError(null);
       }
     } catch (error) {
+      if (generation === sessionGeneration.current && revision === cartRevision.current)
+        setCartError("Unable to refresh your cart. Your existing cart reference is preserved; please retry.");
       throw error;
+    } finally {
+      if (generation === sessionGeneration.current && revision === cartRevision.current)
+        setCartLoading(false);
     }
-  }, [cartId, setCart]);
+  }, [cartId, region, setCart]);
 
   const runCartMutation = useCallback(
     async <T,>(operation: () => Promise<T>): Promise<T> => {
@@ -559,7 +574,9 @@ export function Providers({ children }: ProvidersProps) {
       return runCartMutation(async () => {
         const updatedCart = await removePromoCode(cartId, code);
         commitCart(updatedCart, generation);
-        return true;
+        return updatedCart !== null && !updatedCart.promotions?.some(
+          (promotion) => promotion.code?.toUpperCase() === code.toUpperCase(),
+        );
       });
     },
     [cartId, runCartMutation, commitCart],
@@ -653,6 +670,7 @@ export function Providers({ children }: ProvidersProps) {
             value={{
               cart,
               cartLoading,
+              cartError,
               cartCount,
               addItem,
               updateItem,

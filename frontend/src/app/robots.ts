@@ -1,13 +1,13 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://cansoria.com";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com";
 
     return {
         rules: {
             userAgent: "*",
             allow: "/",
-            disallow: ["/checkout", "/account", "/cart", "/order", "/api", "/forgot-password", "/reset-password"],
+            disallow: ["/checkout", "/account", "/cart", "/order", "/api", "/forgot-password", "/reset-password", "/login", "/register", "/search"],
         },
         sitemap: `${baseUrl}/sitemap.xml`,
     };

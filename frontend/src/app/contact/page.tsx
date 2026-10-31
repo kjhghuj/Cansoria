@@ -1,47 +1,73 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import ContactForm from "@/components/ContactForm";
-import { StudioPage } from "@/components/StudioPage";
-import { STUDIO } from "@/lib/studio-content";
-import { COMPANY_INFO } from "@/lib/constants";
+import { FL_CONTACT } from "@/lib/florencess-content";
+
 export const metadata: Metadata = {
-  title: "Contact the Studio | Cansoria",
-  description: "Get help with your watch, engraving or order.",
+  title: "Contact Us | FLORENCESS",
+  description: "Our location and telephone numbers at FLORENCESS.",
+  alternates: { canonical: "/contact" },
 };
+
+/**
+ * The reference contact page publishes a location and two telephone numbers and
+ * carries no contact form, so none is rendered here. The order-help routes that
+ * do exist are linked instead.
+ */
 export default function ContactPage() {
   return (
-    <StudioPage
-      eyebrow="Here to help"
-      title="Let’s talk about your watch."
-      description="A question about your reference, a special gift or the planned service? Share your ideas with us."
-    >
-      <div className="studio-split">
-        <section className="studio-copy">
-          <h2>A little guidance goes a long way.</h2>
-          <p>{STUDIO.readiness}</p>
-          <p>
-            Email{" "}
-            <a href={`mailto:${COMPANY_INFO.supportEmail}`}>
-              {COMPANY_INFO.supportEmail}
-            </a>{" "}
-            or use the form. For an existing order, include your order number in
-            your message.
-          </p>
-          <p>
-            <Link href="/faq">Browse frequently asked questions →</Link>
-          </p>
-          <p>
-            <Link href="/order/lookup">Look up your order →</Link>
-          </p>
-          <p className="text-sm">
-            Your contact details are used to respond to your inquiry. Read our{" "}
-            <Link href="/privacy">privacy policy</Link>.
-          </p>
-        </section>
-        <section className="studio-card">
-          <ContactForm />
-        </section>
+    <>
+      <div className="fl-listing__head">
+        <h1 className="fl-listing__title">Contact Us</h1>
       </div>
-    </StudioPage>
+
+      <div className="fl-container">
+        <ol className="fl-breadcrumb">
+          <li>
+            <Link href="/">Home</Link>
+          </li>
+          <li>Contact Us</li>
+        </ol>
+      </div>
+
+      <div className="fl-container">
+        <div className="fl-info">
+          <div className="fl-info__row">
+            <span className="fl-info__label">Our Location</span>
+            <span className="fl-info__value">{FL_CONTACT.address}</span>
+          </div>
+
+          <div className="fl-info__row">
+            <span className="fl-info__label">Telephone</span>
+            <span className="fl-info__value">
+              <a className="fl-info__link" href={`tel:${FL_CONTACT.phone.replace(/[^+0-9]/g, "")}`}>
+                {FL_CONTACT.phone}
+              </a>
+            </span>
+          </div>
+
+          <div className="fl-info__row">
+            <span className="fl-info__label">Customer Care</span>
+            <span className="fl-info__value">
+              <a className="fl-info__link" href={`tel:${FL_CONTACT.carePhone.replace(/[^+0-9]/g, "")}`}>
+                {FL_CONTACT.carePhone}
+              </a>
+            </span>
+          </div>
+
+          <div className="fl-info__row">
+            <span className="fl-info__label">Order Help</span>
+            <span className="fl-info__value">
+              <Link className="fl-info__link" href="/order-tracking">
+                Track an order
+              </Link>{" "}
+              ·{" "}
+              <Link className="fl-info__link" href="/faq">
+                Read the FAQ
+              </Link>
+            </span>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

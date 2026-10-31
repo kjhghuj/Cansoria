@@ -1,10 +1,7 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import FAQPage from "@/app/faq/page";
-import { STUDIO_FAQ } from "../studio-content";
+import { FL_FAQ_GROUPS } from "../florencess-content";
 
-jest.mock("../medusa", () => ({
-  getStoreOrdersOpen: jest.fn(async () => false),
-}));
 jest.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-nonce": "unit-test-nonce" }),
 }));
@@ -27,27 +24,17 @@ function collectJsonLd(node: ReactNode): Record<string, unknown>[] {
 }
 
 describe("FAQ page structured data", () => {
-  it("emits a FAQPage schema whose questions mirror the rendered page", async () => {
+  it("emits one FAQPage question per rendered accordion group", async () => {
     const page = await FAQPage();
-    const faqSchema = collectJsonLd(page).find(
-      (entry) => entry["@type"] === "FAQPage",
-    ) as
-      | {
-          mainEntity: {
-            name: string;
-            acceptedAnswer: { text: string };
-          }[];
-        }
+    const schema = collectJsonLd(page).find((entry) => entry["@type"] === "FAQPage") as
+      | { mainEntity: { name: string; acceptedAnswer: { text: string } }[] }
       | undefined;
-    expect(faqSchema).toBeDefined();
-    // The first schema question is the first rendered STUDIO_FAQ entry.
-    expect(faqSchema?.mainEntity[0].name).toBe(STUDIO_FAQ[0].title);
-    expect(faqSchema?.mainEntity[0].acceptedAnswer.text).toBe(
-      STUDIO_FAQ[0].text,
-    );
-    // Page renders STUDIO_FAQ + buying questions + the delivery question.
-    expect(faqSchema?.mainEntity.length).toBeGreaterThanOrEqual(10);
-    for (const question of faqSchema?.mainEntity ?? []) {
+
+    expect(schema).toBeDefined();
+    expect(schema?.mainEntity).toHaveLength(FL_FAQ_GROUPS.length);
+    expect(schema?.mainEntity[0].name).toBe(FL_FAQ_GROUPS[0].question);
+    expect(schema?.mainEntity[0].acceptedAnswer.text).toBe(FL_FAQ_GROUPS[0].blocks.join(" "));
+    for (const question of schema?.mainEntity ?? []) {
       expect(question.name).toBeTruthy();
       expect(question.acceptedAnswer.text).toBeTruthy();
     }

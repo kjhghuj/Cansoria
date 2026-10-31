@@ -1,0 +1,122 @@
+[
+ {
+  "path": "/contact-us",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/contact",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/faq",
+  "status": 200,
+  "live": true,
+  "title": "Frequently Asked Questions"
+ },
+ {
+  "path": "/blog",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/brands",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/special-offers",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/index.php?route=information/contact",
+  "status": 200,
+  "live": true,
+  "title": "Contact Us"
+ },
+ {
+  "path": "/index.php?route=product/search",
+  "status": 200,
+  "live": true,
+  "title": "Search"
+ },
+ {
+  "path": "/index.php?route=product/special",
+  "status": 200,
+  "live": true,
+  "title": "Special Offers"
+ },
+ {
+  "path": "/index.php?route=product/manufacturer",
+  "status": 200,
+  "live": true,
+  "title": "Find Your Favorite Brand"
+ },
+ {
+  "path": "/index.php?route=account/login",
+  "status": 200,
+  "live": true,
+  "title": "Account Login"
+ },
+ {
+  "path": "/index.php?route=account/wishlist",
+  "status": 200,
+  "live": true,
+  "title": "Account Login"
+ },
+ {
+  "path": "/index.php?route=checkout/checkout",
+  "status": 200,
+  "live": true,
+  "title": "Shopping Cart"
+ },
+ {
+  "path": "/index.php?route=information/information&information_id=4",
+  "status": 404,
+  "live": false,
+  "title": "Information Page Not Found!"
+ },
+ {
+  "path": "/sale",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/men",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/women",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/gift-vouchers",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/stores",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ },
+ {
+  "path": "/sitemap",
+  "status": 404,
+  "live": false,
+  "title": "The page you requested cannot be found!"
+ }
+]

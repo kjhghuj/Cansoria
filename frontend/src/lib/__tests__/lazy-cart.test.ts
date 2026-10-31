@@ -9,7 +9,7 @@ jest.mock("../medusa", () => ({
   addToCart: jest.fn(), updateCartOwnership: jest.fn(), updateCustomerMetadata: jest.fn(),
   login: jest.fn(), register: jest.fn(), logout: jest.fn(),
 }));
-type CartContext = { cart: StoreCart | null; cartLoading: boolean; ensureCart: () => Promise<StoreCart>; addItem: (id: string) => Promise<void>; refreshCart: () => Promise<void> };
+type CartContext = { cart: StoreCart | null; cartLoading: boolean; cartError: string | null; ensureCart: () => Promise<StoreCart>; addItem: (id: string) => Promise<void>; refreshCart: () => Promise<void> };
 type AuthContext = { logout: () => Promise<void>; login: (email: string, password: string) => Promise<void> };
 const cart = { id: "cart_new", items: [], region_id: "reg_test" } as unknown as StoreCart;
 const storage = new Map<string, string>();
@@ -62,6 +62,22 @@ describe("actual provider lazy cart lifecycle", () => {
     jest.mocked(medusa.getCart).mockResolvedValue({ ...cart, id: "cart_existing" });
     const harness = mount(); expect(contexts(await harness.flush()).cart.cart?.id).toBe("cart_existing");
     expect(medusa.createCart).not.toHaveBeenCalled(); harness.unmount();
+  });
+  it("retains the persisted cart on a transient restore failure and signals retry", async () => {
+    storage.set("cansoria_cart_id", "cart_existing");
+    jest.mocked(medusa.getCart).mockRejectedValueOnce(new Error("backend unavailable"));
+    const harness = mount();
+    let context = contexts(await harness.flush()).cart;
+    expect(context.cart).toBeNull();
+    expect(context.cartLoading).toBe(false);
+    expect(context.cartError).toMatch(/preserved/);
+    expect(storage.get("cansoria_cart_id")).toBe("cart_existing");
+    jest.mocked(medusa.getCart).mockResolvedValue({ ...cart, id: "cart_existing" });
+    await context.refreshCart();
+    context = contexts(await harness.flush()).cart;
+    expect(context.cart?.id).toBe("cart_existing");
+    expect(context.cartError).toBeNull();
+    harness.unmount();
   });
   it("clears an expired cart without replacing it until intent", async () => {
     storage.set("cansoria_cart_id", "cart_old"); jest.mocked(medusa.getCart).mockResolvedValue(null);
