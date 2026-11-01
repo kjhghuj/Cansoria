@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Menu, Search, User, X } from "lucide-react";
 import { FL_BRAND, FL_NAV } from "@/lib/florencess-data";
+import MegaMenu from "./MegaMenu";
 import MiniCart from "./MiniCart";
 
 export default function Header() {
@@ -85,23 +86,27 @@ export default function Header() {
         <nav className="fl-nav" aria-label="Main">
           <div className="fl-container">
             <ul className="fl-nav__list">
-              {FL_NAV.map((group) => (
-                <li className="fl-nav__item" key={group.label}>
-                  <Link className="fl-nav__link" href={group.href}>
-                    {group.label}
-                  </Link>
-                  {group.children ? (
-                    <div className="fl-nav__panel">
-                      <span className="fl-nav__panel-title">{group.label}</span>
-                      {group.children.map((child) => (
-                        <Link key={child.label} href={child.href}>
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  ) : null}
-                </li>
-              ))}
+              {FL_NAV.map((group) =>
+                group.columns ? (
+                  <MegaMenu group={group} key={group.label} />
+                ) : (
+                  <li className="fl-nav__item" key={group.label}>
+                    <Link className="fl-nav__link" href={group.href}>
+                      {group.label}
+                    </Link>
+                    {group.children ? (
+                      <div className="fl-nav__panel">
+                        <span className="fl-nav__panel-title">{group.label}</span>
+                        {group.children.map((child) => (
+                          <Link key={child.label} href={child.href}>
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         </nav>
@@ -132,7 +137,24 @@ export default function Header() {
             <Link href={group.href} onClick={() => setDrawerOpen(false)}>
               {group.label}
             </Link>
-            {group.children ? (
+            {group.columns ? (
+              <div className="fl-drawer__sub">
+                {group.columns.map((column) => (
+                  <div className="fl-drawer__column" key={`m-${group.label}-${column.title}`}>
+                    <span className="fl-drawer__column-title">{column.title}</span>
+                    {column.links.map((link) => (
+                      <Link
+                        key={`m-${group.label}-${column.title}-${link.label}`}
+                        href={link.href}
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : group.children ? (
               <div className="fl-drawer__sub">
                 {group.children.map((child) => (
                   <Link

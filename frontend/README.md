@@ -49,3 +49,12 @@ imported reference catalogue:
 - Products need prices for the store's regions, and managed variants need stock
   at a stock location linked to the sales channel; variants without stock are
   shown as sold out and cannot be added to the cart.
+
+## Editing the navigation and mega menus
+
+The header navigation (including the BAGS / SHOES / CLOTHING mega-menu columns
+and promo tiles) is static configuration in `src/lib/florencess-data.ts`
+(`FL_NAV`). It is not generated from Medusa categories: edit that file to add,
+remove or relink menu entries. Every href must resolve to a served page —
+`src/lib/__tests__/florencess-nav.test.ts` enforces this. The promo images
+currently reuse the imported category art; replace them with your own imagery.

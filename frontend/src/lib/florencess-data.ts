@@ -15,11 +15,101 @@ export const FL_TOPBAR_ITEMS = [
   "3–5 Days Delivery of USPS",
 ];
 
+export interface FlNavColumn {
+  title: string;
+  links: { label: string; href: string }[];
+}
+
+export interface FlNavPromo {
+  image: string;
+  alt: string;
+  title: string;
+  href: string;
+}
+
 export interface FlNavGroup {
   label: string;
   href: string;
   children?: { label: string; href: string }[];
+  /** When present the desktop navigation renders this group as a mega menu. */
+  columns?: FlNavColumn[];
+  promo?: FlNavPromo;
 }
+
+/**
+ * Mega-menu columns for the three shop groups. Column titles are our own; the
+ * links reuse the storefront's own category and listing pages. The promo images
+ * currently borrow the local category art — 店主替换为自有图片 (store owner:
+ * replace with your own imagery).
+ */
+const BAG_COLUMNS: FlNavColumn[] = [
+  {
+    title: "By Style",
+    links: [
+      { label: "Crossbody Bags", href: "/leather-crossbody-bags" },
+      { label: "Totes", href: "/leather-totes" },
+      { label: "Shoulder Bags", href: "/leather-shoulder-bags" },
+      { label: "Belt Bags", href: "/leather-belt-bags" },
+      { label: "Bucket Bags", href: "/leather-bucket-bags" },
+      { label: "Clutches", href: "/leather-clutches" },
+      { label: "Evening Bags", href: "/leather-evening-bags" },
+      { label: "Mini Bags", href: "/leather-mini-micro-bags" },
+      { label: "Phone Crossbody", href: "/leather-phone-crossbody" },
+    ],
+  },
+  {
+    title: "Discover",
+    links: [
+      { label: "New Arrivals", href: "/new" },
+      { label: "Sale Styles", href: "/special" },
+      { label: "All Bags", href: "/bags-all" },
+    ],
+  },
+];
+
+const SHOE_COLUMNS: FlNavColumn[] = [
+  {
+    title: "By Style",
+    links: [
+      { label: "Ballet Flats", href: "/ballet-flats" },
+      { label: "Sandals", href: "/sandals" },
+      { label: "Loafers", href: "/loafers" },
+      { label: "Heels", href: "/heels" },
+      { label: "Boots", href: "/boots" },
+      { label: "Final Few", href: "/final-few" },
+    ],
+  },
+  {
+    title: "Discover",
+    links: [
+      { label: "New Arrivals", href: "/new" },
+      { label: "Sale Styles", href: "/special" },
+      { label: "All Shoes", href: "/shoes" },
+    ],
+  },
+];
+
+const CLOTHING_COLUMNS: FlNavColumn[] = [
+  {
+    title: "By Type",
+    links: [
+      { label: "Denim", href: "/denim" },
+      { label: "Tops", href: "/tops" },
+      { label: "Pants & Leggings", href: "/pants-leggings" },
+      { label: "Dresses", href: "/dresses" },
+      { label: "Sweatshirts & Sweatpants", href: "/sweatshirts-sweatpants" },
+      { label: "Tanks & Tees", href: "/tanks-tees" },
+    ],
+  },
+  {
+    title: "Discover",
+    links: [
+      { label: "New Arrivals", href: "/new" },
+      { label: "Sale Styles", href: "/special" },
+      { label: "All Clothing", href: "/clothing" },
+    ],
+  },
+];
 
 export const FL_NAV: FlNavGroup[] = [
   { label: "NEW", href: "/new" },
@@ -37,6 +127,14 @@ export const FL_NAV: FlNavGroup[] = [
       { label: "Mini Bags", href: "/leather-mini-micro-bags" },
       { label: "Phone Crossbody", href: "/leather-phone-crossbody" },
     ],
+    columns: BAG_COLUMNS,
+    // 店主替换为自有图片 (store owner: replace with your own imagery).
+    promo: {
+      image: "/florencess/img/cat-1.webp",
+      alt: "Crossbody bag campaign image",
+      title: "Carry-All Edit",
+      href: "/leather-crossbody-bags",
+    },
   },
   {
     label: "SHOES",
@@ -49,6 +147,14 @@ export const FL_NAV: FlNavGroup[] = [
       { label: "Boots", href: "/boots" },
       { label: "Final Few", href: "/final-few" },
     ],
+    columns: SHOE_COLUMNS,
+    // 店主替换为自有图片 (store owner: replace with your own imagery).
+    promo: {
+      image: "/florencess/img/cat-8.webp",
+      alt: "Shoes campaign image",
+      title: "Step Into New",
+      href: "/shoes",
+    },
   },
   {
     label: "CLOTHING",
@@ -61,6 +167,14 @@ export const FL_NAV: FlNavGroup[] = [
       { label: "Sweatshirts & Sweatpants", href: "/sweatshirts-sweatpants" },
       { label: "Tanks & Tees", href: "/tanks-tees" },
     ],
+    columns: CLOTHING_COLUMNS,
+    // 店主替换为自有图片 (store owner: replace with your own imagery).
+    promo: {
+      image: "/florencess/img/cat-7.webp",
+      alt: "Dresses campaign image",
+      title: "Dress The Season",
+      href: "/dresses",
+    },
   },
   { label: "SALE", href: "/special" },
 ];
