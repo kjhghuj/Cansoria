@@ -14,6 +14,7 @@ import {
   createUserAccountWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { readSeedAdminConfig } from "./lorencess-seed-config";
 
 /**
  * Development seed for the LORENCESS storefront (frontend/src/lib/florencess-*).
@@ -23,12 +24,13 @@ import {
  * matches the storefront navigation, and one published `test-bag` product with
  * two colour variants so `/test-bag` and `/bags-all` resolve through Medusa.
  *
- * Idempotent: re-running skips anything that already exists. Run with
- * `npm run dev` up, then `npx medusa exec ./src/scripts/lorencess-dev-seed.ts`.
- * Change the admin credentials before exposing this machine publicly.
+ * Idempotent: re-running skips anything that already exists. The admin
+ * credentials come from LORENCESS_SEED_ADMIN_EMAIL / _PASSWORD (see
+ * lorencess-seed-config.ts); the seed refuses to run in production. Run with
+ * `npm run dev` up, then:
+ *   NODE_ENV=development npx medusa exec ./src/scripts/lorencess-dev-seed.ts
  */
-const ADMIN_EMAIL = "admin@lorencess.dev";
-const ADMIN_PASSWORD = "lorencess-dev-admin";
+const { email: ADMIN_EMAIL, password: ADMIN_PASSWORD } = readSeedAdminConfig();
 const NA_COUNTRIES = ["us", "ca"];
 const EU_COUNTRIES = ["de", "fr", "nl"];
 

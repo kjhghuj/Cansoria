@@ -64,3 +64,21 @@ npm.cmd run test:unit
 ## Frontend Contract
 
 The Cansoria storefront uses products, categories, carts, engraving, shipping options, payment collections, customer accounts, secure order lookup, and newsletter subscription. Maintain the shared integration contract in [docs/FRONTEND_CART_API.md](docs/FRONTEND_CART_API.md); access and deployment requirements are in [SECURITY.md](SECURITY.md).
+
+## LORENCESS dev seed
+
+`src/scripts/lorencess-dev-seed.ts` creates the minimal local data the
+LORENCESS storefront expects (admin user, USD/EUR regions, `bags-all`
+category, published `test-bag` product, stock, `orders_open`). It is
+idempotent and refuses to run when `NODE_ENV=production`.
+
+The admin credentials are read from the environment and never logged:
+
+```bash
+# .env
+LORENCESS_SEED_ADMIN_EMAIL=you@example.dev
+LORENCESS_SEED_ADMIN_PASSWORD=choose-at-least-12-characters
+
+# with npm run dev already listening on 9030
+NODE_ENV=development npx medusa exec ./src/scripts/lorencess-dev-seed.ts
+```
