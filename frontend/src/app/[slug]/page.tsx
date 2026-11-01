@@ -166,38 +166,42 @@ async function resolveMedusaOutcome(
 export default async function DynamicFlPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const local = resolveFlSlug(slug);
-  const region = await getRequestRegion();
 
-  if (local?.kind === "category") {
-    const resolved = await searchParams;
-    const { products, degraded } = await mergedCategoryProducts(local.category, region);
-    const listParams = parseFlListParams(resolved);
-    const page = paginateFl(sortFlProducts(products, listParams.sort), listParams.page, listParams.limit);
-    if (page.page !== listParams.page) {
-      redirect(flListHref(`/${local.category.slug}`, { ...listParams, page: page.page }));
+  // Local-only renders never touch Medusa: articles, brands and local product
+  // pages must stay fast even when the backend hangs. Only the category merge
+  // and the Medusa fallback need a currency region.
+  if (local) {
+    if (local.kind === "category") {
+      const region = await getRequestRegion();
+      const resolved = await searchParams;
+      const { products, degraded } = await mergedCategoryProducts(local.category, region);
+      const listParams = parseFlListParams(resolved);
+      const page = paginateFl(sortFlProducts(products, listParams.sort), listParams.page, listParams.limit);
+      if (page.page !== listParams.page) {
+        redirect(flListHref(`/${local.category.slug}`, { ...listParams, page: page.page }));
+      }
+      return (
+        <CategoryView
+          category={local.category}
+          products={products}
+          searchParams={resolved}
+          degraded={degraded}
+        />
+      );
     }
-    return (
-      <CategoryView
-        category={local.category}
-        products={products}
-        searchParams={resolved}
-        degraded={degraded}
-      />
-    );
-  }
 
-  if (local?.kind === "product") {
-    return <ProductView product={local.product} category={local.category} />;
-  }
+    if (local.kind === "product") {
+      return <ProductView product={local.product} category={local.category} />;
+    }
 
-  if (local?.kind === "article") {
-    return <StaticPage page={FL_ARTICLES[local.slug]} />;
-  }
+    if (local.kind === "article") {
+      return <StaticPage page={FL_ARTICLES[local.slug]} />;
+    }
 
-  if (local?.kind === "brand") {
     return <BrandView brand={local.brand} />;
   }
 
+  const region = await getRequestRegion();
   const outcome = await resolveMedusaOutcome(slug, region);
 
   if (outcome.kind === "unavailable") {

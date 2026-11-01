@@ -14,6 +14,7 @@ import {
   getProductByHandle,
   sdk,
 } from "./medusa";
+import { REGION_LOOKUP_TIMEOUT_MS, withMedusaTimeout } from "./with-timeout";
 import type { StoreProduct } from "./types";
 import type { FlImage, FlOption, FlProduct } from "./florencess-catalog";
 import type { FlVariant } from "./florencess-variants";
@@ -181,7 +182,11 @@ export async function getMedusaProductBySlug(
   slug: string,
   regionId?: string,
 ): Promise<MedusaProductDetail | null> {
-  const product = await getProductByHandle(slug, regionId);
+  const product = await withMedusaTimeout(
+    getProductByHandle(slug, regionId),
+    REGION_LOOKUP_TIMEOUT_MS,
+    "product lookup",
+  );
   if (!product) return null;
   return {
     product: mapMedusaProduct(product, medusaProductCurrency(product)),
@@ -193,10 +198,14 @@ export async function getMedusaCategoryBySlug(
   slug: string,
 ): Promise<MedusaCategoryRef | null> {
   try {
-    const { product_categories } = await sdk.store.category.list({
-      handle: slug,
-      fields: CATEGORY_FIELDS,
-    });
+    const { product_categories } = await withMedusaTimeout(
+      sdk.store.category.list({
+        handle: slug,
+        fields: CATEGORY_FIELDS,
+      }),
+      REGION_LOOKUP_TIMEOUT_MS,
+      "category lookup",
+    );
     return product_categories?.[0] ?? null;
   } catch (error) {
     console.error("[medusa-catalog] category lookup failed", { slug });
@@ -214,14 +223,18 @@ export async function listMedusaCategoryProducts(
   const collected: StoreProduct[] = [];
   try {
     for (let page = 0; page < LIST_MAX_PAGES; page += 1) {
-      const { products } = await sdk.store.product.list({
-        category_id: [categoryId],
-        region_id: regionId,
-        limit: LIST_PAGE_SIZE,
-        offset: page * LIST_PAGE_SIZE,
-        fields:
-          "id,title,handle,description,thumbnail,*variants.calculated_price,*variants.inventory_quantity,*variants.manage_inventory,*variants.sku,*variants.options,*options,*images,*metadata",
-      });
+      const { products } = await withMedusaTimeout(
+        sdk.store.product.list({
+          category_id: [categoryId],
+          region_id: regionId,
+          limit: LIST_PAGE_SIZE,
+          offset: page * LIST_PAGE_SIZE,
+          fields:
+            "id,title,handle,description,thumbnail,*variants.calculated_price,*variants.inventory_quantity,*variants.manage_inventory,*variants.sku,*variants.options,*options,*images,*metadata",
+        }),
+        REGION_LOOKUP_TIMEOUT_MS,
+        "category listing",
+      );
       collected.push(...(products ?? []));
       if (!products || products.length < LIST_PAGE_SIZE) return collected;
     }
