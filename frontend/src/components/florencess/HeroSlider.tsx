@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FL_HERO_SLIDES } from "@/lib/florencess-data";
+import { SITE_DESCRIPTION } from "@/lib/brand";
 
 /**
  * Reference hero: a two-slide master slider that cross-fades on its own, with
@@ -23,7 +24,7 @@ export default function HeroSlider() {
   return (
     <section className="fl-hero" aria-label="Featured collections">
       <h1 className="fl-sr-only">
-        FLORENCESS — Affordable Online Shopping for Bags, Shoes &amp; Clothing
+        {SITE_DESCRIPTION}
       </h1>
 
       <div className="fl-hero__stage">

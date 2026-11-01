@@ -6,10 +6,11 @@ import ListingToolbar from "@/components/florencess/ListingToolbar";
 import Pagination from "@/components/florencess/Pagination";
 import { flDiscountedProducts } from "@/lib/florencess-catalog";
 import { flListHref, paginateFl, parseFlListParams, sortFlProducts } from "@/lib/florencess-listing";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Special Offers | FLORENCESS",
-  description: "Every discounted piece currently listed by FLORENCESS.",
+  title: pageTitle("Special Offers"),
+  description: `Every discounted piece currently listed by ${SITE_NAME}.`,
   alternates: { canonical: "/special" },
 };
 

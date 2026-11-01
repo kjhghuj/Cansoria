@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { FL_BRAND, FL_FOOTER_COLUMNS, FL_LOCALES, FL_SOCIALS } from "@/lib/florencess-data";
+import { SITE_COMPANY_LINE } from "@/lib/brand";
 
 /**
  * Footer stack mirrors the reference theme's rows:
@@ -71,9 +72,7 @@ export default function SiteFooter() {
           </span>
         </div>
 
-        <div className="fl-footer__company">
-          Tianjin Xigucheng Educational Technology Co., Ltd.
-        </div>
+        {SITE_COMPANY_LINE ? <div className="fl-footer__company">{SITE_COMPANY_LINE}</div> : null}
       </div>
     </footer>
   );

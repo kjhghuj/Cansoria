@@ -3,11 +3,12 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { FL_FAQ_GROUPS } from "@/lib/florencess-content";
 import { serializeJsonLd } from "@/lib/security-json";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "FAQ | FLORENCESS",
+  title: pageTitle("FAQ"),
   description:
-    "Answers about shipping, returns, payment, sizing and orders at FLORENCESS.",
+    `Answers about shipping, returns, payment, sizing and orders at ${SITE_NAME}.`,
   alternates: { canonical: "/faq" },
 };
 

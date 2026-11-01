@@ -13,7 +13,7 @@ interface LayoutWrapperProps {
 }
 
 /**
- * FLORENCESS storefront shell: marquee → sticky header/nav → page → footer.
+ * LORENCESS storefront shell: marquee → sticky header/nav → page → footer.
  * The shell is intentionally theme-agnostic so inner pages keep working.
  */
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {

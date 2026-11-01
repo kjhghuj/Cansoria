@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FL_BRAND_GROUPS, FL_BRAND_LETTERS, FL_BRAND_TOTAL } from "@/lib/florencess-content";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Brands | FLORENCESS",
-  description: `Browse all ${FL_BRAND_TOTAL} brands carried by FLORENCESS.`,
+  title: pageTitle("Brands"),
+  description: `Browse all ${FL_BRAND_TOTAL} brands carried by ${SITE_NAME}.`,
   alternates: { canonical: "/brands" },
 };
 

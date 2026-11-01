@@ -79,21 +79,19 @@ describe("FLORENCESS home replication", () => {
     expect(html.match(/fl-tile--wide/g)?.length ?? 0).toBe(3);
     expect(html).toContain("JOIN THE SOCIAL CIRCLE");
     expect(html).toContain("over 1 million fans on instagram");
-    expect(html).toContain("THE FLORENCESS NEWSLETTER");
+    expect(html).toContain("THE LORENCESS NEWSLETTER");
     expect(html).toContain("10% OFF WELCOME BONUS");
     // social and newsletter share one row, not two stacked blocks
     expect(html.match(/fl-sn__half/g)?.length ?? 0).toBe(2);
     expect(html).not.toContain('class="fl-news"');
   });
 
-  it("exposes homepage metadata matching the reference storefront", () => {
-    expect(metadata.title).toBe(
-      "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
-    );
+  it("exposes homepage metadata under the LORENCESS name", () => {
+    expect(metadata.title).toBe("LORENCESS");
     expect(metadata.alternates?.canonical).toBe("/");
     expect(metadata.openGraph).toMatchObject({
       url: "/",
-      images: [{ url: "/florencess/img/hero-936.webp", alt: "FLORENCESS warehouse sale" }],
+      images: [{ url: "/florencess/img/hero-936.webp", alt: "LORENCESS" }],
     });
   });
 

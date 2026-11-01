@@ -4,7 +4,9 @@
  * the live theme so the layout can be verified without hitting the origin.
  */
 
-export const FL_BRAND = "FLORENCESS";
+import { SITE_NAME } from "./brand";
+
+export const FL_BRAND = SITE_NAME;
 
 export const FL_TOPBAR_ITEMS = [
   "Orders $40+ Ship Free",
@@ -198,13 +200,13 @@ export const FL_FOOTER_COLUMNS = [
 ];
 
 export const FL_LOCALES = [
-  { flag: "馃嚭馃嚫", country: "United States", currency: "USD ($)" },
-  { flag: "馃嚞馃嚙", country: "United Kingdom", currency: "GBP (拢)" },
-  { flag: "馃嚜馃嚭", country: "European Union", currency: "EUR (鈧?" },
-  { flag: "馃嚛馃嚜", country: "Germany", currency: "EUR (鈧?" },
-  { flag: "馃嚝馃嚪", country: "France", currency: "EUR (鈧?" },
-  { flag: "馃嚚馃嚘", country: "Canada", currency: "CAD ($)" },
-  { flag: "馃嚘馃嚭", country: "Australia", currency: "AUD ($)" },
+  { flag: "\u{1F1FA}\u{1F1F8}", country: "United States", currency: "USD ($)" },
+  { flag: "\u{1F1EC}\u{1F1E7}", country: "United Kingdom", currency: "GBP (\u00A3)" },
+  { flag: "\u{1F1EA}\u{1F1FA}", country: "European Union", currency: "EUR (\u20AC)" },
+  { flag: "\u{1F1E9}\u{1F1EA}", country: "Germany", currency: "EUR (\u20AC)" },
+  { flag: "\u{1F1EB}\u{1F1F7}", country: "France", currency: "EUR (\u20AC)" },
+  { flag: "\u{1F1E8}\u{1F1E6}", country: "Canada", currency: "CAD ($)" },
+  { flag: "\u{1F1E6}\u{1F1FA}", country: "Australia", currency: "AUD ($)" },
 ];
 
 export const FL_RECENT_PURCHASES = [

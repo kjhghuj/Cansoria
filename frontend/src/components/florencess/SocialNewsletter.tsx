@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { FL_SOCIALS } from "@/lib/florencess-data";
+import { FL_BRAND, FL_SOCIALS } from "@/lib/florencess-data";
 
 const BG = "/florencess/img/wide-1.webp";
 
@@ -39,7 +39,7 @@ export default function SocialNewsletter() {
         <img className="fl-sn__bg" src={BG} alt="" aria-hidden="true" loading="lazy" />
         <div className="fl-sn__copy">
           <p className="fl-sn__script">inside news &amp; instant privileges</p>
-          <h2 className="fl-sn__title">THE FLORENCESS NEWSLETTER</h2>
+          <h2 className="fl-sn__title">THE {FL_BRAND} NEWSLETTER</h2>
           <p className="fl-sn__line">
             {done
               ? "THANK YOU — YOUR 10% WELCOME CODE IS ON ITS WAY"

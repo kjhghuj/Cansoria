@@ -1,20 +1,21 @@
 import { StaticPage } from "@/components/florencess";
 import { FL_STATIC_PAGES } from "@/lib/florencess-pages";
 import type { Metadata } from "next";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 const page = FL_STATIC_PAGES["about-us"];
 
 export const metadata: Metadata = {
-  title: "About Us | FLORENCESS",
+  title: pageTitle("About Us"),
   description:
-    "FLORENCESS is a mindful fashion label creating apparel, bags and footwear for the modern city woman — thoughtfully made, responsibly sourced.",
+    `About ${SITE_NAME}: who we are and how to reach us.`,
   alternates: { canonical: "/about-us" },
   openGraph: {
-    title: "About Us | FLORENCESS",
+    title: pageTitle("About Us"),
     description:
-      "FLORENCESS is a mindful fashion label creating apparel, bags and footwear for the modern city woman — thoughtfully made, responsibly sourced.",
+      `About ${SITE_NAME}: who we are and how to reach us.`,
     url: "/about-us",
-    images: [{ url: "/florencess/img/hero-936.webp", alt: "FLORENCESS" }],
+    images: [{ url: "/florencess/img/hero-936.webp", alt: SITE_NAME }],
     type: "article",
   },
 };

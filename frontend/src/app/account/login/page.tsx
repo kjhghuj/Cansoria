@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import FlLoginForm from "@/components/florencess/FlLoginForm";
+import { pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Account Login | FLORENCESS",
+  title: pageTitle("Account Login"),
   alternates: { canonical: "/account/login" },
   robots: { index: false, follow: false },
 };

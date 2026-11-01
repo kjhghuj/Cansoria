@@ -1,17 +1,18 @@
 ﻿import { FlorencessHome } from "@/components/florencess";
 import type { Metadata } from "next";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+  title: SITE_NAME,
   description:
-    "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+    SITE_DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+    title: SITE_NAME,
     description:
-      "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+      SITE_DESCRIPTION,
     url: "/",
-    images: [{ url: "/florencess/img/hero-936.webp", alt: "FLORENCESS warehouse sale" }],
+    images: [{ url: "/florencess/img/hero-936.webp", alt: SITE_NAME }],
     type: "website",
   },
 };

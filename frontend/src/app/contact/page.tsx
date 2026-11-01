@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FL_CONTACT } from "@/lib/florencess-content";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Contact Us | FLORENCESS",
-  description: "Our location and telephone numbers at FLORENCESS.",
+  title: pageTitle("Contact Us"),
+  description: `Our location and telephone numbers at ${SITE_NAME}.`,
   alternates: { canonical: "/contact" },
 };
 
