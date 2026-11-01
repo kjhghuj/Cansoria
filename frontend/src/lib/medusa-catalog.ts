@@ -17,8 +17,10 @@ import {
 import { REGION_LOOKUP_TIMEOUT_MS, withMedusaTimeout } from "./with-timeout";
 import type { StoreProduct } from "./types";
 import type { FlImage, FlOption, FlProduct } from "./florencess-catalog";
+import { getFlCategory, getFlProduct } from "./florencess-catalog";
 import type { FlVariant } from "./florencess-variants";
-import { resolveFlSlug, type FlResolvedRoute } from "./florencess-routes";
+import { resolveFlSlug, FL_RESERVED_ROUTES, type FlResolvedRoute } from "./florencess-routes";
+import { FL_ARTICLE_SLUGS, getFlBrand } from "./florencess-content";
 
 const CATEGORY_FIELDS = "id,name,handle,description,parent_category_id";
 const LIST_PAGE_SIZE = 100;
@@ -235,7 +237,16 @@ export async function listMedusaCategoryProducts(
         REGION_LOOKUP_TIMEOUT_MS,
         "category listing",
       );
-      collected.push(...(products ?? []));
+      // A handle shadowed by a static route or local catalogue entry can
+      // never be opened as this product; keep it out of the merged list so
+      // no card links to a different product's page.
+      for (const product of products ?? []) {
+        if (isReservedSlug(product.handle ?? "")) {
+          console.error("[medusa-catalog] handle shadowed", { handle: product.handle });
+          continue;
+        }
+        collected.push(product);
+      }
       if (!products || products.length < LIST_PAGE_SIZE) return collected;
     }
     console.error("[medusa-catalog] category listing truncated", { categoryId });
@@ -246,6 +257,21 @@ export async function listMedusaCategoryProducts(
       ? error
       : new MedusaUnavailableError();
   }
+}
+
+/**
+ * True when /:slug already belongs to a static route or the local catalogue
+ * (which always wins resolution), so a Medusa product or category with this
+ * handle would be unreachable. Used to keep such handles out of merged lists.
+ */
+export function isReservedSlug(slug: string): boolean {
+  return (
+    (FL_RESERVED_ROUTES as readonly string[]).includes(slug) ||
+    getFlCategory(slug) !== undefined ||
+    getFlProduct(slug) !== undefined ||
+    FL_ARTICLE_SLUGS.includes(slug) ||
+    getFlBrand(slug) !== undefined
+  );
 }
 
 export type StorefrontSlug =

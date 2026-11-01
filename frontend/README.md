@@ -58,3 +58,13 @@ and promo tiles) is static configuration in `src/lib/florencess-data.ts`
 remove or relink menu entries. Every href must resolve to a served page —
 `src/lib/__tests__/florencess-nav.test.ts` enforces this. The promo images
 currently reuse the imported category art; replace them with your own imagery.
+
+### Handle collisions
+
+A product or category handle must not duplicate any page this storefront
+already serves, or that Medusa entry can never be opened (the local page always
+wins `/handle`). Reserved names include the static routes in
+`src/lib/florencess-routes.ts` (`FL_RESERVED_ROUTES`: cart, checkout, search,
+account, login, register, wishlist, the policy pages, …) plus every local
+category, product, article and brand slug. Shadowed handles are skipped from
+merged category listings and logged as `[medusa-catalog] handle shadowed`.
