@@ -16,9 +16,9 @@ export type WishlistItem = {
   /** Product URL slug — the stable identity of a wish. */
   slug: string;
   title: string;
-  /** Only same-origin paths or absolute https URLs are accepted. */
+  /** Same-origin path, https URL, loopback http URL, or "" when imageless. */
   image: string;
-  /** Display price captured at add time, shown as a snapshot only. */
+  /** Display price captured at add time, shown as a snapshot only; may be "". */
   price: string;
   /** ISO 8601 timestamp. */
   addedAt: string;
@@ -32,8 +32,31 @@ function finiteString(value: unknown, max: number): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= max;
 }
 
+function boundedString(value: unknown, max: number): value is string {
+  return typeof value === "string" && value.length <= max;
+}
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+/**
+ * Image policy, enforced by parsing rather than prefix-matching:
+ * same-origin paths (/…, never protocol-relative //…), https URLs, and http
+ * URLs on loopback hosts only (local dev serves Medusa images from
+ * http://localhost:9030). javascript:, data:, remote http and unparsable
+ * values are rejected. "" means "no image" and is allowed.
+ */
 function validImage(value: unknown): value is string {
-  return finiteString(value, IMAGE_MAX) && (value.startsWith("/") || value.startsWith("https://"));
+  if (!boundedString(value, IMAGE_MAX)) return false;
+  if (value === "") return true;
+  if (value.startsWith("/")) return !value.startsWith("//");
+  try {
+    const url = new URL(value);
+    if (url.protocol === "https:") return true;
+    if (url.protocol === "http:") return LOOPBACK_HOSTS.has(url.hostname);
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function validAddedAt(value: unknown): value is string {
@@ -49,7 +72,7 @@ function parseItem(raw: unknown): WishlistItem | null {
   if (!finiteString(slug, 200) || !SLUG_PATTERN.test(slug)) return null;
   if (!finiteString(title, TITLE_MAX)) return null;
   if (!validImage(image)) return null;
-  if (!finiteString(price, PRICE_MAX)) return null;
+  if (!boundedString(price, PRICE_MAX)) return null;
   if (!validAddedAt(addedAt)) return null;
   return { slug, title, image, price, addedAt };
 }

@@ -200,7 +200,7 @@ export default function QuickViewModal({
                 <WishlistButton
                   slug={payload.slug}
                   title={payload.title}
-                  image={payload.images[0]?.src ?? "/"}
+                  image={payload.images[0]?.src ?? ""}
                   price={payload.price}
                 />
                 <Link className="fl-quickview__details" href={`/${payload.slug}`}>

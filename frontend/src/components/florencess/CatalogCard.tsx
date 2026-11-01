@@ -51,7 +51,7 @@ export default function CatalogCard({ product }: { product: FlProduct }) {
         <WishlistButton
           slug={product.slug}
           title={product.title}
-          image={primary?.src ?? "/"}
+          image={primary?.src ?? ""}
           price={product.price}
         />
       </div>

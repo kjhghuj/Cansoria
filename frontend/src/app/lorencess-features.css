@@ -517,6 +517,37 @@ button.fl-minicart__cta:disabled {
   color: #fff;
 }
 
+.fl-wish__wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.fl-wish__status {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  white-space: nowrap;
+  background: #2b2b2b;
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 6px 10px;
+  z-index: 4;
+}
+
+.fl-wishlist__noimage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: repeating-linear-gradient(
+    45deg,
+    #f4f4f2,
+    #f4f4f2 10px,
+    #ececea 10px,
+    #ececea 20px
+  );
+}
+
 /* Inline variant on the PDP price row. */
 .fl-pdp__price .fl-wish {
   position: static;

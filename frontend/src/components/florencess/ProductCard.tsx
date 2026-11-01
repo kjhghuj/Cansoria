@@ -37,7 +37,7 @@ export default function ProductCard({ product }: { product: FlorencessProduct })
         <WishlistButton
           slug={product.href.replace(/^\//, "")}
           title={product.name}
-          image={product.image || "/"}
+          image={product.image || ""}
           price={product.price}
         />
       </div>

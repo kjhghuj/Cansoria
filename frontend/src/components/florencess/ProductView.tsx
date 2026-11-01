@@ -62,7 +62,7 @@ export default function ProductView({ product, category, variants }: Props) {
               <WishlistButton
                 slug={product.slug}
                 title={product.title}
-                image={product.localImages[0]?.src ?? "/"}
+                image={product.localImages[0]?.src ?? ""}
                 price={product.price}
               />
             </div>

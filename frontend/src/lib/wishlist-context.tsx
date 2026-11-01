@@ -28,7 +28,8 @@ type WishlistContextType = {
   items: WishlistItem[];
   count: number;
   has: (slug: string) => boolean;
-  toggle: (item: Omit<WishlistItem, "addedAt">) => void;
+  /** Toggle a wish; returns false when the item was rejected (never added). */
+  toggle: (item: Omit<WishlistItem, "addedAt">) => boolean;
   remove: (slug: string) => void;
   /** Set when the last account save failed; cleared on the next attempt. */
   saveError: boolean;
@@ -145,11 +146,16 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggle = useCallback(
-    (item: Omit<WishlistItem, "addedAt">) => {
+    (item: Omit<WishlistItem, "addedAt">): boolean => {
       const full: WishlistItem = { ...item, addedAt: new Date().toISOString() };
-      apply(
-        hasItem(items, full.slug) ? removeItem(items, full.slug) : addItem(items, full),
-      );
+      if (hasItem(items, full.slug)) {
+        apply(removeItem(items, full.slug));
+        return true;
+      }
+      const next = addItem(items, full);
+      const saved = hasItem(next, full.slug);
+      if (saved) apply(next);
+      return saved;
     },
     [items, apply],
   );
@@ -188,13 +194,13 @@ function safeParse(raw: string | null): unknown {
 export function useWishlist(): WishlistContextType {
   const context = useContext(WishlistContext);
   // Cards rendered outside the full app shell (tests, legacy pages) must not
-  // crash: the wishlist simply reads empty and toggles into the void.
+  // crash: the wishlist simply reads empty and toggles report rejection.
   if (context === undefined) {
     return {
       items: [],
       count: 0,
       has: () => false,
-      toggle: () => {},
+      toggle: () => false,
       remove: () => {},
       saveError: false,
     };

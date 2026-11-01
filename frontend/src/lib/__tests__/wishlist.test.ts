@@ -122,6 +122,45 @@ describe("parseWishlist", () => {
     expect(parsed).toEqual([]);
   });
 
+  it("accepts local-backend image URLs on loopback hosts only", () => {
+    const parsed = parseWishlist([
+      item("dev-img", { image: "http://localhost:9030/static/a.jpg" }),
+      item("dev-ip", { image: "http://127.0.0.1/static/b.png" }),
+      item("remote-http", { image: "http://example.com/a.jpg" }),
+      item("protocol-relative", { image: "//evil.com/a.jpg" }),
+      item("data-uri", { image: "data:image/png;base64,xx" }),
+    ]);
+    expect(parsed.map((entry) => entry.slug)).toEqual(["dev-img", "dev-ip"]);
+  });
+
+  it("accepts https and site-absolute image paths", () => {
+    const parsed = parseWishlist([
+      item("https-img", { image: "https://example.com/a.jpg" }),
+      item("site-path", { image: "/florencess/img/a.webp" }),
+    ]);
+    expect(parsed.map((entry) => entry.slug)).toEqual(["https-img", "site-path"]);
+  });
+
+  it("accepts entries without an image or a price", () => {
+    const parsed = parseWishlist([
+      item("no-image", { image: "" }),
+      item("no-price", { price: "" }),
+    ]);
+    expect(parsed.map((entry) => entry.slug)).toEqual(["no-image", "no-price"]);
+  });
+
+  it("parses legacy saved entries whose image was '/' without error", () => {
+    const parsed = parseWishlist([item("legacy", { image: "/" })]);
+    expect(parsed.map((entry) => entry.slug)).toEqual(["legacy"]);
+  });
+
+  it("reports rejected items instead of silently ignoring them", () => {
+    const list = [item("kept")];
+    const rejected = addItem(list, item("dropped", { image: "javascript:alert(1)" }));
+    expect(rejected).toBe(list);
+    expect(rejected.map((entry) => entry.slug)).toEqual(["kept"]);
+  });
+
   it("exposes the storage key", () => {
     expect(WISHLIST_KEY).toBe("lorencess_wishlist");
   });

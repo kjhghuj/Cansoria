@@ -46,23 +46,29 @@ export default function WishlistView() {
               {items.map((item) => (
                 <article className="fl-catalog-card" key={item.slug}>
                   <Link className="fl-catalog-card__media" href={`/${item.slug}`} aria-label={item.title}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className="fl-catalog-card__img"
-                      src={item.image}
-                      alt={item.title}
-                      loading="lazy"
-                      width={600}
-                      height={600}
-                    />
+                    {item.image ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        className="fl-catalog-card__img"
+                        src={item.image}
+                        alt={item.title}
+                        loading="lazy"
+                        width={600}
+                        height={600}
+                      />
+                    ) : (
+                      <span className="fl-wishlist__noimage" aria-hidden="true" />
+                    )}
                   </Link>
                   <div className="fl-catalog-card__body">
                     <Link className="fl-catalog-card__name" href={`/${item.slug}`}>
                       {item.title}
                     </Link>
-                    <div className="fl-catalog-card__price">
-                      <span>{item.price}</span>
-                    </div>
+                    {item.price ? (
+                      <div className="fl-catalog-card__price">
+                        <span>{item.price}</span>
+                      </div>
+                    ) : null}
                     <button
                       type="button"
                       className="fl-wishlist__remove"
