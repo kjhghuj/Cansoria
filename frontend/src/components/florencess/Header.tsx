@@ -2,15 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, Menu, Search, ShoppingBag, User, X } from "lucide-react";
+import { Heart, Menu, Search, User, X } from "lucide-react";
 import { FL_BRAND, FL_NAV } from "@/lib/florencess-data";
+import MiniCart from "./MiniCart";
 
-interface HeaderProps {
-  cartCount?: number;
-  cartTotal?: string;
-}
-
-export default function Header({ cartCount = 0, cartTotal }: HeaderProps) {
+export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -66,11 +62,7 @@ export default function Header({ cartCount = 0, cartTotal }: HeaderProps) {
               <Link href="/account" className="fl-iconbtn" aria-label="My account">
                 <User size={17} strokeWidth={1.4} />
               </Link>
-              <Link href="/cart" className="fl-iconbtn" aria-label="Shopping bag">
-                <ShoppingBag size={17} strokeWidth={1.4} />
-                <span className="fl-iconbtn__count">({cartCount})</span>
-                {cartTotal ? <span className="fl-iconbtn__count">{cartTotal}</span> : null}
-              </Link>
+              <MiniCart />
             </div>
           </div>
         </div>

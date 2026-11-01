@@ -10,6 +10,7 @@ import {
   resolveFlVariant,
   resolveVariantFrom,
 } from "@/lib/florencess-variants";
+import { useMiniCart } from "./MiniCartContext";
 
 /**
  * Option selectors, quantity stepper and the purchase action.
@@ -34,6 +35,7 @@ export default function ProductBuy({
   const { addItem } = useCart();
   const { region, regionLoading } = useRegion();
   const { ordersOpen, storeStatusLoading } = useStoreStatus();
+  const { openMiniCart } = useMiniCart();
   const hasInjectedVariants = variants !== undefined;
   const mapped = hasInjectedVariants ? variants.length > 0 : flProductHasVariants(product);
   const [selection, setSelection] = useState<Record<string, string>>(() =>
@@ -136,6 +138,7 @@ export default function ProductBuy({
             try {
               await addItem(variant.id, quantity);
               setAdded(true);
+              openMiniCart();
             } catch {
               setPurchaseError("Adding this item failed. Your cart was not updated; please retry.");
             } finally {
