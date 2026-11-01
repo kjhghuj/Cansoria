@@ -59,7 +59,7 @@ export default function CatalogCard({ product }: { product: FlProduct }) {
           <p className="fl-catalog-card__desc">{product.description}</p>
         ) : null}
         <div className="fl-catalog-card__price">
-          <span>{product.price}</span>
+          <span>{product.price || "Price unavailable"}</span>
           {discounted && product.oldPrice ? (
             <span className="fl-catalog-card__price-old">{product.oldPrice}</span>
           ) : null}

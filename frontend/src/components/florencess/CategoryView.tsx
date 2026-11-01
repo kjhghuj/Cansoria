@@ -6,12 +6,15 @@ import { type FlCategory, type FlProduct } from "@/lib/florencess-catalog";
 import { paginateFl, parseFlListParams, sortFlProducts } from "@/lib/florencess-listing";
 
 type Props = {
-  category: FlCategory;
+  /** Only the identity fields are rendered; callers may synthesise Medusa categories. */
+  category: Pick<FlCategory, "slug" | "title">;
   products: FlProduct[];
   searchParams: Record<string, string | string[] | undefined>;
+  /** Shown when Medusa products could not be merged into a local category. */
+  degraded?: boolean;
 };
 
-export default function CategoryView({ category, products, searchParams }: Props) {
+export default function CategoryView({ category, products, searchParams, degraded }: Props) {
   const params = parseFlListParams(searchParams);
   const sorted = sortFlProducts(products, params.sort);
   const page = paginateFl(sorted, params.page, params.limit);
@@ -33,6 +36,11 @@ export default function CategoryView({ category, products, searchParams }: Props
       </div>
 
       <div className="fl-container fl-listing">
+        {degraded ? (
+          <p role="status" className="fl-catalog-notice">
+            Some products could not be loaded.
+          </p>
+        ) : null}
         {page.total > 0 ? (
           <>
             <ListingToolbar basePath={basePath} params={params} />

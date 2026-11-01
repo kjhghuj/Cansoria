@@ -8,17 +8,19 @@ import "./footer.css";
 import "./florencess-fonts.css";
 import "./florencess.css";
 import "./florencess-catalog.css";
+import "./lorencess-features.css";
 import { Providers } from "@/lib/providers";
+import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/brand";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 
 export const metadata: Metadata = {
-  title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+  title: SITE_NAME,
   description:
-    "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+    SITE_DESCRIPTION,
   keywords: [
-    "FLORENCESS",
+    SITE_NAME,
     "online fashion store",
     "bags",
     "shoes",
@@ -31,14 +33,12 @@ export const metadata: Metadata = {
     "fashion deals",
   ],
   openGraph: {
-    title: "FLORENCESS | Affordable Online Shopping for Bags, Shoes & Clothing",
+    title: SITE_NAME,
     description:
-      "Shop the latest fashion trends at FLORENCESS! Explore stylish bags, shoes, and clothing at great prices. Fast shipping & easy returns.",
+      SITE_DESCRIPTION,
     type: "website",
   },
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com",
-  ),
+  metadataBase: new URL(siteUrl()),
 };
 
 export default async function RootLayout({
@@ -68,17 +68,8 @@ export default async function RootLayout({
                 __html: serializeJsonLd({
                   "@context": "https://schema.org",
                   "@type": "Organization",
-                  name: "FLORENCESS",
-                  url:
-                    process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com",
-                  logo: `${process.env.NEXT_PUBLIC_BASE_URL || "https://entntnt.com"}/brand/cansoria-wordmark.svg`,
-                  sameAs: [
-                    "https://facebook.com/florencess",
-                    "https://instagram.com/florencess",
-                    "https://twitter.com/florencess",
-                    "https://tiktok.com/@florencess",
-                    "https://youtube.com/@florencess",
-                  ],
+                  name: SITE_NAME,
+                  url: siteUrl(),
                 }),
               }}
             />

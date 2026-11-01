@@ -54,6 +54,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.9,
   }));
 
+  // 2b. Storefront routes for the same Medusa products (/[slug]); capped at
+  // 1,000 and skipped on outage. Handles that collide with a local catalogue
+  // slug are dropped — the local entry already owns that URL.
+  const localSlugs = new Set(FL_CATALOG.products.map((product) => product.slug));
+  const medusaStorefrontRoutes = products
+    .filter((product) => product.handle && !localSlugs.has(product.handle))
+    .slice(0, 1000)
+    .map((product) => ({
+      url: `${baseUrl}/${product.handle}`,
+      lastModified: new Date(product.updated_at || new Date()),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+
   // 3. Journal Articles — the same final content set the journal pages show,
   // so static-mode articles are listed and healthy-CMS withdrawals disappear.
   const { articles } = await resolveJournalArticles();
@@ -67,6 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes,
     ...productRoutes,
+    ...medusaStorefrontRoutes,
     ...articleRoutes,
     ...flCatalogueRoutes(baseUrl),
   ];

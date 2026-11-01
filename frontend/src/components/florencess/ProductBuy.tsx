@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useCart, useRegion, useStoreStatus } from "@/lib/providers";
 import type { FlProduct } from "@/lib/florencess-catalog";
-import { defaultFlSelection, flProductHasVariants, resolveFlVariant } from "@/lib/florencess-variants";
+import type { FlVariant } from "@/lib/florencess-variants";
+import {
+  defaultFlSelection,
+  flProductHasVariants,
+  resolveFlVariant,
+  resolveVariantFrom,
+} from "@/lib/florencess-variants";
 
 /**
  * Option selectors, quantity stepper and the purchase action.
@@ -14,12 +20,22 @@ import { defaultFlSelection, flProductHasVariants, resolveFlVariant } from "@/li
  * button is disabled and a notice explains the state. This is the deliberate
  * unmapped state required while the catalogue has no imported variants — the
  * slug is never used as a variant id and no stock is implied.
+ *
+ * `variants` injects a Medusa-sourced variant list (see medusa-catalog.ts);
+ * without it the local mapping table is used, unchanged.
  */
-export default function ProductBuy({ product }: { product: FlProduct }) {
+export default function ProductBuy({
+  product,
+  variants,
+}: {
+  product: FlProduct;
+  variants?: FlVariant[];
+}) {
   const { addItem } = useCart();
   const { region, regionLoading } = useRegion();
   const { ordersOpen, storeStatusLoading } = useStoreStatus();
-  const mapped = flProductHasVariants(product);
+  const hasInjectedVariants = variants !== undefined;
+  const mapped = hasInjectedVariants ? variants.length > 0 : flProductHasVariants(product);
   const [selection, setSelection] = useState<Record<string, string>>(() =>
     mapped ? defaultFlSelection(product) : {},
   );
@@ -27,12 +43,18 @@ export default function ProductBuy({ product }: { product: FlProduct }) {
   const [pending, setPending] = useState(false);
   const [purchaseError, setPurchaseError] = useState("");
   const [added, setAdded] = useState(false);
-  const variant = mapped ? resolveFlVariant(product, selection) : null;
+  const variant = !mapped
+    ? null
+    : hasInjectedVariants
+      ? resolveVariantFrom(variants, product.options, selection)
+      : resolveFlVariant(product, selection);
   const complete = product.options.every((option) => selection[option.name]);
 
   const purchaseReady = mapped && !regionLoading && !!region && !storeStatusLoading && ordersOpen;
   const notice = !mapped
-    ? "This piece is shown for reference only: online purchase is not enabled for it yet."
+    ? hasInjectedVariants
+      ? "This piece is currently sold out."
+      : "This piece is shown for reference only: online purchase is not enabled for it yet."
     : regionLoading || storeStatusLoading
       ? "Checking online purchase availability."
       : !region || !ordersOpen
@@ -121,7 +143,13 @@ export default function ProductBuy({ product }: { product: FlProduct }) {
             }
           }}
         >
-          {pending ? "Adding…" : purchaseReady && variant ? "Add to Cart" : "Not Available Online"}
+          {pending
+            ? "Adding…"
+            : purchaseReady && variant
+              ? "Add to Cart"
+              : hasInjectedVariants && !mapped
+                ? "Sold Out"
+                : "Not Available Online"}
         </button>
       </div>
 

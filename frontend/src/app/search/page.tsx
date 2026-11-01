@@ -4,12 +4,15 @@ import { redirect } from "next/navigation";
 import CatalogCard from "@/components/florencess/CatalogCard";
 import ListingToolbar from "@/components/florencess/ListingToolbar";
 import Pagination from "@/components/florencess/Pagination";
-import { FL_CATALOG, flSearchProducts } from "@/lib/florencess-catalog";
+import { FL_CATALOG, flSearchProducts, type FlProduct } from "@/lib/florencess-catalog";
 import { flListHref, paginateFl, parseFlListParams, sortFlProducts } from "@/lib/florencess-listing";
+import { searchProducts, getRegion, MedusaUnavailableError } from "@/lib/medusa";
+import { mapMedusaProduct, medusaProductCurrency } from "@/lib/medusa-catalog";
+import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "Search | FLORENCESS",
-  description: "Search the FLORENCESS catalogue.",
+  title: pageTitle("Search"),
+  description: `Search the ${SITE_NAME} catalogue.`,
   alternates: { canonical: "/search" },
   robots: { index: false, follow: true },
 };
@@ -21,6 +24,40 @@ type Props = {
 const one = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value ?? "";
 
+/**
+ * Medusa matches first, then the local catalogue, deduplicated by slug. A
+ * Medusa failure degrades to local-only results with a notice.
+ */
+async function mergedSearchResults(
+  query: string,
+  category: string | undefined,
+  includeDescription: boolean,
+): Promise<{ matches: FlProduct[]; degraded: boolean }> {
+  const localMatches = query
+    ? flSearchProducts(query, { category, includeDescription })
+    : [];
+  try {
+    const region = await getRegion();
+    const products = query ? await searchProducts(query, region?.id) : [];
+    const medusaMatches = products.map((product) =>
+      mapMedusaProduct(product, medusaProductCurrency(product)),
+    );
+    const seen = new Set<string>();
+    return {
+      matches: [...medusaMatches, ...localMatches].filter((product) => {
+        if (seen.has(product.slug)) return false;
+        seen.add(product.slug);
+        return true;
+      }),
+      degraded: false,
+    };
+  } catch (error) {
+    if (!(error instanceof MedusaUnavailableError)) throw error;
+    console.error("[medusa-catalog] degraded search listing", { query });
+    return { matches: localMatches, degraded: true };
+  }
+}
+
 export default async function SearchPage({ searchParams }: Props) {
   const resolved = await searchParams;
   const query = one(resolved.q).trim();
@@ -28,9 +65,11 @@ export default async function SearchPage({ searchParams }: Props) {
   const includeDescription = one(resolved.description) === "1";
   const params = parseFlListParams(resolved);
 
-  const matches = query
-    ? flSearchProducts(query, { category: category || undefined, includeDescription })
-    : [];
+  const { matches, degraded } = await mergedSearchResults(
+    query,
+    category || undefined,
+    includeDescription,
+  );
   const page = paginateFl(sortFlProducts(matches, params.sort), params.page, params.limit);
   const preserved = {
     q: query || undefined,
@@ -105,6 +144,11 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
 
       <div className="fl-container fl-listing">
+        {degraded ? (
+          <p role="status" className="fl-catalog-notice">
+            Some products could not be loaded.
+          </p>
+        ) : null}
         {!query ? (
           <div className="fl-empty">
             <p>Enter a keyword to search the catalogue.</p>

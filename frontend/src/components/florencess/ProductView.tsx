@@ -8,13 +8,16 @@ import {
   flRelatedProducts,
   flHasVerifiedDiscount,
 } from "@/lib/florencess-catalog";
+import type { FlVariant } from "@/lib/florencess-variants";
 
 type Props = {
   product: FlProduct;
   category?: FlCategory;
+  /** Medusa-sourced purchasable variants; omit to use the local mapping table. */
+  variants?: FlVariant[];
 };
 
-export default function ProductView({ product, category }: Props) {
+export default function ProductView({ product, category, variants }: Props) {
   const related = flRelatedProducts(product, 8);
   const galleryImages = product.localImages.filter(
     (image, index, images) => images.findIndex((candidate) => candidate.src === image.src) === index,
@@ -44,11 +47,11 @@ export default function ProductView({ product, category }: Props) {
             <div className="fl-pdp__meta">
               <span>Model: {product.model}</span>
               {product.brand ? <span>{product.brand}</span> : null}
-              <span>Online availability: pending store verification</span>
+              {variants !== undefined ? <span>{product.availability === "SoldOut" ? "Sold out" : "In stock"}</span> : <span>Online availability: pending store verification</span>}
             </div>
 
             <div className="fl-pdp__price">
-              <span>{product.price}</span>
+              <span>{product.price || "Price unavailable"}</span>
               {flHasVerifiedDiscount(product) && product.oldPrice ? (
                 <span className="fl-pdp__price-old">{product.oldPrice}</span>
               ) : null}
@@ -61,7 +64,7 @@ export default function ProductView({ product, category }: Props) {
               <p className="fl-pdp__desc">{product.description}</p>
             ) : null}
 
-            <ProductBuy product={product} />
+            <ProductBuy product={product} variants={variants} />
 
             <ul className="fl-pdp__facts">
               <li>Model {product.model}</li>

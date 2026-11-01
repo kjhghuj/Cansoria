@@ -10,7 +10,6 @@
  */
 import mappingJson from "@/data/florencess-variant-map.json";
 import type { FlProduct } from "./florencess-catalog";
-
 export type FlVariant = {
   /** Real Medusa variant id. */
   id: string;
@@ -51,14 +50,22 @@ export function defaultFlSelection(product: FlProduct): Record<string, string> {
   return selection;
 }
 
-export function resolveFlVariant(
-  product: FlProduct,
+/**
+ * Resolve a concrete variant from an explicit variant list.
+ *
+ * Pure so Medusa-sourced variant lists (see medusa-catalog.ts) resolve through
+ * the same rules as the local mapping table: a variant matches only when every
+ * option of the product is selected with a non-empty value that equals the
+ * variant's own selection. Ids that are not real Medusa variant ids are never
+ * matched, and extra keys in the visitor's selection are ignored.
+ */
+export function resolveVariantFrom(
+  variants: FlVariant[],
+  options: FlProduct["options"],
   selection: Record<string, string>,
 ): FlVariant | null {
-  const mapping = mappingByProductId.get(product.id);
-  if (!mapping) return null;
-  const optionNames = product.options.map((option) => option.name);
-  const match = mapping.variants.find((variant) =>
+  const optionNames = options.map((option) => option.name);
+  const match = variants.find((variant) =>
     variant.id.startsWith("variant_") &&
     Object.keys(variant.selection).length === optionNames.length &&
     optionNames.every(
@@ -69,6 +76,15 @@ export function resolveFlVariant(
     ),
   );
   return match ?? null;
+}
+
+export function resolveFlVariant(
+  product: FlProduct,
+  selection: Record<string, string>,
+): FlVariant | null {
+  const mapping = mappingByProductId.get(product.id);
+  if (!mapping) return null;
+  return resolveVariantFrom(mapping.variants, product.options, selection);
 }
 
 /** True when at least one concrete variant exists for the product. */

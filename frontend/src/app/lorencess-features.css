@@ -1,0 +1,23 @@
+/*
+ * LORENCESS feature styles (mini cart, mega menu, currency switcher, wishlist,
+ * quick view, scroll-to-top). New selectors live here rather than growing
+ * florencess.css; shared design tokens come from florencess-catalog.css.
+ */
+
+/* Degraded catalogue notice — Medusa products could not be merged in. */
+.fl-catalog-notice {
+  margin: 0 0 18px;
+  padding: 10px 14px;
+  border: 1px solid #e5d9a8;
+  background: #fdf8e7;
+  color: #6b5a1f;
+  font-size: 13px;
+}
+
+.fl-empty__title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fl-ink);
+}
