@@ -51,6 +51,21 @@ describe("public catalog Graph projections", () => {
     const result = await prepareListQuery({ fields }, { restricted: STORE_RESTRICTED_FIELDS })
     expect(result.remoteQueryConfig.fields).toEqual(["id"])
   })
+  it("never lets direct +cart or *customer expansions through the forced projection", async () => {
+    for (const fields of ["+cart,*customer", "+customer", "+orders", "*customer,variants"]) {
+      const req = { originalUrl: "/store/products", method: "GET", query: { fields } } as any
+      forceCatalogFields(req, {} as any, jest.fn())
+      const result = await prepareListQuery(
+        { fields: req.query.fields, limit: 20, offset: 0 },
+        { restricted: STORE_RESTRICTED_FIELDS },
+      )
+      for (const field of result.remoteQueryConfig.fields) {
+        expect(
+          field.split(".").some(segment => ["cart", "carts", "cart_items", "customer", "customers", "orders"].includes(segment)),
+        ).toBe(false)
+      }
+    }
+  })
   it("preserves public product images, metadata and calculated prices", async () => {
     const req = { originalUrl: "/store/products", allowed: [], query: { fields: "variants.inventory_quantity,+variants.calculated_price,cart_items.cart.email" } } as any
     forceCatalogFields(req, {} as any, jest.fn())
