@@ -20,6 +20,7 @@ import {
   type WishlistItem,
 } from "./wishlist";
 import { useAuth } from "./providers";
+import { createDebouncedSaver, type DebouncedSaver } from "./debounced-save";
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -62,17 +63,37 @@ function clearStorage(): void {
 /**
  * Wishlist state. Guests persist to localStorage (kept in sync across tabs
  * via the storage event); signed-in visitors merge their guest list into
- * customer metadata once per login, then write changes back debounced —
- * always carrying the existing metadata keys (see buildWishlistMetadata).
- * Signing out clears the list so one account never sees another's wishes.
+ * customer metadata once per login, then write changes back through a
+ * debounced saver whose pending value is only consumed when the write starts
+ * — a pending change can no longer be dropped by a re-render or unmount.
+ * Signing out discards pending saves so one account never receives another's
+ * wishes.
  */
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading, saveCustomerMetadata } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [saveError, setSaveError] = useState(false);
   const syncedUserId = useRef<string | null>(null);
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSave = useRef<WishlistItem[] | null>(null);
+  const saver = useRef<DebouncedSaver<WishlistItem[]> | null>(null);
+
+  // Debounced metadata writer for signed-in visitors; flushed on unmount so a
+  // pending change goes out instead of being cancelled.
+  useEffect(() => {
+    saver.current = createDebouncedSaver(async (snapshot) => {
+      try {
+        await saveCustomerMetadata({ wishlist: snapshot });
+        setSaveError(false);
+      } catch (error) {
+        setSaveError(true);
+        // The saver keeps the value pending for the next change to retry.
+        throw error;
+      }
+    }, SAVE_DEBOUNCE_MS);
+    return () => {
+      saver.current?.flush();
+      saver.current = null;
+    };
+  }, [saveCustomerMetadata]);
 
   // Load for the current visitor exactly once per account session.
   useEffect(() => {
@@ -92,9 +113,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       }
       return;
     }
-    // Signed out (or signed out mid-session): never leak the previous list.
+    // Signed out (or signed out mid-session): never leak the previous list,
+    // and drop any unsaved change so it cannot reach the next account.
     if (syncedUserId.current !== null) {
       syncedUserId.current = null;
+      saver.current?.discard();
       setItems([]);
       return;
     }
@@ -112,33 +135,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Debounced metadata write-back for signed-in visitors.
-  useEffect(() => {
-    if (pendingSave.current === null) return;
-    const snapshot = pendingSave.current;
-    pendingSave.current = null;
-    const timer = setTimeout(async () => {
-      try {
-        await saveCustomerMetadata({ wishlist: snapshot });
-        setSaveError(false);
-      } catch {
-        setSaveError(true);
-        // Retry with the next change; the UI keeps the newer state.
-        pendingSave.current = snapshot;
-      }
-    }, SAVE_DEBOUNCE_MS);
-    saveTimer.current = timer;
-    return () => clearTimeout(timer);
-  }, [items, saveCustomerMetadata]);
-
-  useEffect(() => () => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-  }, []);
-
   const apply = useCallback((next: WishlistItem[]) => {
     setItems(next);
     if (syncedUserId.current) {
-      pendingSave.current = next;
+      saver.current?.schedule(next);
     } else {
       writeStorage(next);
     }
