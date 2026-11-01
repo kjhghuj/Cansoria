@@ -12,12 +12,10 @@ describe("FL compatibility redirects", () => {
     expect(response.headers.get("location")).toBe("https://example.test/about-us");
   });
 
-  it("maps account aliases to login with an internal return target", () => {
+  it("maps the legacy wishlist alias permanently to the public wishlist page", () => {
     const response = call("/wishlist.html");
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(
-      "https://example.test/account/login?returnTo=%2Faccount%3Funsupported%3Dwishlist",
-    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("https://example.test/wishlist");
   });
 
   it("does not redirect unknown HTML suffixes or prototype-named ids", () => {
@@ -42,12 +40,10 @@ describe("FL compatibility redirects", () => {
     expect(call("/index.php?route=product/category&path=99999999").headers.get("location")).toBeNull();
   });
 
-  it("maps legacy wishlist via a restricted internal return target", () => {
+  it("maps the legacy wishlist route permanently to the wishlist page", () => {
     const result = call("/index.php?route=account/wishlist");
-    expect(result.status).toBe(302);
-    expect(result.headers.get("location")).toBe(
-      "https://example.test/account/login?returnTo=%2Faccount%3Funsupported%3Dwishlist",
-    );
+    expect(result.status).toBe(308);
+    expect(result.headers.get("location")).toBe("https://example.test/wishlist");
   });
 
   it("routes legacy login to the account login surface", () => {

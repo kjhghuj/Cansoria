@@ -1,12 +1,11 @@
 import Link from "next/link";
 import type { FlorencessProduct } from "@/lib/florencess-products";
+import WishlistButton from "./WishlistButton";
 
 /**
  * Product tile as rendered by the reference storefront's homepage shelves:
  * image (with a second image swapped in on hover), name and the price pair.
- * The reference keeps the discount label, "Ex Tax" line, quickview overlay
- * and cart buttons in the DOM but collapsed to 0x0, so none of them are
- * rendered visibly here.
+ * The wish toggle is a small client island layered over the media.
  */
 export default function ProductCard({ product }: { product: FlorencessProduct }) {
   return (
@@ -34,6 +33,14 @@ export default function ProductCard({ product }: { product: FlorencessProduct })
           </>
         ) : null}
       </Link>
+      <div className="fl-card__overlay">
+        <WishlistButton
+          slug={product.href.replace(/^\//, "")}
+          title={product.name}
+          image={product.image || "/"}
+          price={product.price}
+        />
+      </div>
 
       <div className="fl-card__body">
         <Link className="fl-card__name" href={product.href}>

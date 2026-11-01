@@ -50,6 +50,7 @@ export const FL_RESERVED_ROUTES = [
   "special",
   "terms",
   "terms-conditions",
+  "wishlist",
 ] as const;
 
 const reserved = new Set<string>(FL_RESERVED_ROUTES);

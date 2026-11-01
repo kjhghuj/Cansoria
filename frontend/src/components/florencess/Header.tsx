@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Menu, Search, User, X } from "lucide-react";
 import { FL_BRAND, FL_NAV } from "@/lib/florencess-data";
+import { useWishlist } from "@/lib/wishlist-context";
 import CurrencySwitcher from "./CurrencySwitcher";
 import MegaMenu from "./MegaMenu";
 import MiniCart from "./MiniCart";
 
 export default function Header() {
+  const { count: wishCount } = useWishlist();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -59,8 +61,9 @@ export default function Header() {
 
             <div className="fl-header__right">
               <CurrencySwitcher />
-              <Link href="/wishlist.html" className="fl-iconbtn" aria-label="Wishlist">
+              <Link href="/wishlist" className="fl-iconbtn" aria-label="Wishlist">
                 <Heart size={17} strokeWidth={1.4} />
+                {wishCount > 0 ? <span className="fl-iconbtn__count">({wishCount})</span> : null}
               </Link>
               <Link href="/account" className="fl-iconbtn" aria-label="My account">
                 <User size={17} strokeWidth={1.4} />

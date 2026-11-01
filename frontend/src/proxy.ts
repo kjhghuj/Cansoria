@@ -17,6 +17,7 @@ const staticHtmlAliases = new Set([
   "about-us", "shipping-policy", "terms-conditions", "privacy-policy", "cookie-policy",
   "careers", "affiliate-program", "customer-rewards-program", "payment-options",
   "returns-exchanges", "order-tracking", "faq", "contact", "brands", "special", "search",
+  "wishlist",
 ]);
 
 /**
@@ -43,13 +44,13 @@ function legacyRedirect(request: NextRequest): NextResponse | null {
   // Account aliases: anonymous visitors enter the existing login surface while
   // retaining a strictly internal destination. These are checked before the
   // generic .html rule so legacy account pages do not fall through to /[slug].
+  // /wishlist.html is NOT here: it 308s to the public /wishlist page.
   const accountAlias: Record<string, string> = {
     "/login.html": "/account/login",
     "/my-account.html": "/account/login",
     "/address-book.html": "/account/login",
     "/account-voucher.html": "/account/login",
     "/order-history.html": "/account/login",
-    "/wishlist.html": "/account/login",
   };
   if (accountAlias[pathname]) {
     const target = new URL(request.nextUrl);
@@ -62,9 +63,7 @@ function legacyRedirect(request: NextRequest): NextResponse | null {
           ? "/account?tab=coupons"
           : pathname === "/order-history.html"
             ? "/account?tab=orders"
-            : pathname === "/wishlist.html"
-              ? "/account?unsupported=wishlist"
-              : "/account";
+            : "/account";
     target.searchParams.set("returnTo", returnTo);
     return NextResponse.redirect(target, 302);
   }
@@ -83,10 +82,9 @@ function legacyRedirect(request: NextRequest): NextResponse | null {
   const route = searchParams.get("route");
   if (route === "account/wishlist") {
     const target = new URL(request.nextUrl);
-    target.pathname = "/account/login";
+    target.pathname = "/wishlist";
     target.search = "";
-    target.searchParams.set("returnTo", "/account?unsupported=wishlist");
-    return NextResponse.redirect(target, 302);
+    return NextResponse.redirect(target, 308);
   }
   if (!route) {
     const home = new URL(request.nextUrl);

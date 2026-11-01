@@ -9,6 +9,7 @@ import {
   flHasVerifiedDiscount,
 } from "@/lib/florencess-catalog";
 import type { FlVariant } from "@/lib/florencess-variants";
+import WishlistButton from "./WishlistButton";
 
 type Props = {
   product: FlProduct;
@@ -58,6 +59,12 @@ export default function ProductView({ product, category, variants }: Props) {
               {flHasVerifiedDiscount(product) && product.discount ? (
                 <span className="fl-pdp__discount">{product.discount}</span>
               ) : null}
+              <WishlistButton
+                slug={product.slug}
+                title={product.title}
+                image={product.localImages[0]?.src ?? "/"}
+                price={product.price}
+              />
             </div>
 
             {product.description ? (

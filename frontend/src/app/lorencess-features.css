@@ -487,3 +487,191 @@ button.fl-minicart__cta:disabled {
     transition: none;
   }
 }
+
+/* -------------------------------------------------------------- wishlist */
+
+/* Heart toggle floating on card media; the card is the positioning context. */
+.fl-catalog-card__overlay,
+.fl-card__overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+}
+
+.fl-wish {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--fl-line);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--fl-ink);
+  cursor: pointer;
+}
+
+.fl-wish:hover,
+.fl-wish.is-active {
+  background: var(--fl-ink);
+  color: #fff;
+}
+
+/* Inline variant on the PDP price row. */
+.fl-pdp__price .fl-wish {
+  position: static;
+  width: 34px;
+  height: 34px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.fl-wishlist__note {
+  margin: 0 0 16px;
+  color: var(--fl-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.fl-wishlist__remove {
+  border: 1px solid var(--fl-line);
+  background: none;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 10px;
+  align-self: center;
+}
+
+/* ------------------------------------------------------------ quick view */
+
+/* Card trigger: hover reveals it on pointer devices; focus keeps it visible;
+   coarse-pointer (touch) layouts hide it — phones use the detail page. */
+.fl-quickview__btn {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%) translateY(6px);
+  z-index: 3;
+  border: 0;
+  background: rgba(20, 20, 20, 0.88);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+.fl-catalog-card:hover .fl-quickview__btn,
+.fl-catalog-card:focus-within .fl-quickview__btn {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.fl-quickview__btn:focus-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  outline: 2px solid var(--fl-ink);
+  outline-offset: 2px;
+}
+
+@media (hover: none), (max-width: 900px) {
+  .fl-quickview__btn {
+    display: none;
+  }
+}
+
+.fl-quickview__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 140;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.fl-quickview {
+  position: relative;
+  background: #fff;
+  width: min(960px, 100%);
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  padding: 26px;
+}
+
+.fl-quickview__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--fl-ink);
+  z-index: 2;
+}
+
+.fl-quickview__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.fl-quickview__title {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.fl-quickview__desc {
+  color: var(--fl-muted);
+  font-size: 13px;
+  margin: 10px 0 14px;
+}
+
+.fl-quickview__state {
+  text-align: center;
+  padding: 40px 12px;
+  color: var(--fl-muted);
+}
+
+.fl-quickview__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.fl-quickview__row .fl-wish {
+  position: static;
+}
+
+.fl-quickview__details {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fl-ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .fl-quickview__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-quickview__btn {
+    transition: none;
+  }
+}

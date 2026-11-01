@@ -28,9 +28,12 @@ import { useMiniCart } from "./MiniCartContext";
 export default function ProductBuy({
   product,
   variants,
+  onAdded,
 }: {
   product: FlProduct;
   variants?: FlVariant[];
+  /** Notified after a successful add (e.g. quick view closes into the mini cart). */
+  onAdded?: () => void;
 }) {
   const { addItem } = useCart();
   const { region, regionLoading } = useRegion();
@@ -139,6 +142,7 @@ export default function ProductBuy({
               await addItem(variant.id, quantity);
               setAdded(true);
               openMiniCart();
+              onAdded?.();
             } catch {
               setPurchaseError("Adding this item failed. Your cart was not updated; please retry.");
             } finally {

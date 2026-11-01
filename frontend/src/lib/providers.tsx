@@ -37,6 +37,7 @@ import {
   pickRegion,
 } from "./lorencess-region";
 import { applyBestCoupon } from "./best-coupon";
+import { WishlistProvider } from "./wishlist-context";
 
 const CART_ID_KEY = "cansoria_cart_id";
 const AUTH_TOKEN_KEY = "medusa_auth_token";
@@ -767,27 +768,29 @@ export function Providers({ children }: ProvidersProps) {
             logout: handleLogout,
           }}
         >
-          <CartContext.Provider
-            value={{
-              cart,
-              cartLoading,
-              cartError,
-              cartCount,
-              addItem,
-              updateItem,
-              removeItem,
-              refreshCart,
-              ensureCart,
-              applyPromoCode: applyPromoCodeHandler,
-              removePromoCode: removePromoCodeHandler,
-              applyBetterCoupon: applyBetterCouponHandler,
-              applySavedCoupons,
-              createAndSelectStripePaymentSession:
-                createAndSelectStripePaymentSessionHandler,
-            }}
-          >
-            {children}
-          </CartContext.Provider>
+          <WishlistProvider>
+            <CartContext.Provider
+              value={{
+                cart,
+                cartLoading,
+                cartError,
+                cartCount,
+                addItem,
+                updateItem,
+                removeItem,
+                refreshCart,
+                ensureCart,
+                applyPromoCode: applyPromoCodeHandler,
+                removePromoCode: removePromoCodeHandler,
+                applyBetterCoupon: applyBetterCouponHandler,
+                applySavedCoupons,
+                createAndSelectStripePaymentSession:
+                  createAndSelectStripePaymentSessionHandler,
+              }}
+            >
+              {children}
+            </CartContext.Provider>
+          </WishlistProvider>
         </AuthContext.Provider>
       </StoreStatusContext.Provider>
     </RegionContext.Provider>

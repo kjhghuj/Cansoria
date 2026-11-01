@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { flHasVerifiedDiscount, type FlProduct } from "@/lib/florencess-catalog";
+import QuickViewButton from "./QuickViewButton";
+import WishlistButton from "./WishlistButton";
 
 /**
  * Listing tile: square media with a hover second image, discount label,
- * centred name and price pair. The reference also renders a description line
- * and cart buttons; the description is included, the buttons are not, because
- * no catalogue product has a Medusa variant mapping yet (see
- * florencess-variants.ts) and a non-functional cart button would fake stock.
+ * centred name and price pair. The wish toggle and quick-view trigger are
+ * client islands layered over the media (never nested inside the card link).
  */
 export default function CatalogCard({ product }: { product: FlProduct }) {
   const [primary, secondary] = product.localImages;
@@ -47,6 +47,15 @@ export default function CatalogCard({ product }: { product: FlProduct }) {
           </>
         ) : null}
       </Link>
+      <div className="fl-catalog-card__overlay">
+        <WishlistButton
+          slug={product.slug}
+          title={product.title}
+          image={primary?.src ?? "/"}
+          price={product.price}
+        />
+      </div>
+      <QuickViewButton slug={product.slug} />
 
       <div className="fl-catalog-card__body">
         {product.brand && product.brand !== product.title ? (
