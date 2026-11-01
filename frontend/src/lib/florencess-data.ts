@@ -313,16 +313,6 @@ export const FL_FOOTER_COLUMNS = [
   },
 ];
 
-export const FL_LOCALES = [
-  { flag: "\u{1F1FA}\u{1F1F8}", country: "United States", currency: "USD ($)" },
-  { flag: "\u{1F1EC}\u{1F1E7}", country: "United Kingdom", currency: "GBP (\u00A3)" },
-  { flag: "\u{1F1EA}\u{1F1FA}", country: "European Union", currency: "EUR (\u20AC)" },
-  { flag: "\u{1F1E9}\u{1F1EA}", country: "Germany", currency: "EUR (\u20AC)" },
-  { flag: "\u{1F1EB}\u{1F1F7}", country: "France", currency: "EUR (\u20AC)" },
-  { flag: "\u{1F1E8}\u{1F1E6}", country: "Canada", currency: "CAD ($)" },
-  { flag: "\u{1F1E6}\u{1F1FA}", country: "Australia", currency: "AUD ($)" },
-];
-
 export const FL_RECENT_PURCHASES = [
   { name: "Sarah Martinez", country: "United States", product: "Tulipe Rush Crossbody", time: "Oct 29, 10:55" },
   { name: "Emily Carter", country: "United Kingdom", product: "Apex Stella Dress", time: "Oct 29, 10:41" },

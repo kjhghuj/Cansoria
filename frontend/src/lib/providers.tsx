@@ -9,6 +9,7 @@ import {
   useRef,
   ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import {
   createCart,
   getCart,
@@ -16,6 +17,8 @@ import {
   updateCartItem,
   removeFromCart,
   getRegion,
+  listRegions,
+  updateCartRegion,
   applyPromoCode,
   removePromoCode,
   createAndSelectStripePaymentSession,
@@ -27,6 +30,12 @@ import {
   logout,
 } from "@/lib/medusa";
 import { StoreCart, StoreRegion } from "@/lib/types";
+import {
+  REGION_COOKIE,
+  REGION_COOKIE_MAX_AGE,
+  isValidRegionId,
+  pickRegion,
+} from "./lorencess-region";
 import { applyBestCoupon } from "./best-coupon";
 
 const CART_ID_KEY = "cansoria_cart_id";
@@ -54,6 +63,21 @@ function removeStorage(key: string): void {
   } catch {
     // Removal is cosmetic; state below must still commit.
   }
+}
+
+// The region choice lives in a cookie so server components can render prices
+// in the same currency the visitor picked (see request-region.ts).
+function readRegionCookie(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const match = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${REGION_COOKIE}=`));
+  return match ? decodeURIComponent(match.slice(REGION_COOKIE.length + 1)) : undefined;
+}
+
+function writeRegionCookie(regionId: string): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${REGION_COOKIE}=${encodeURIComponent(regionId)}; path=/; max-age=${REGION_COOKIE_MAX_AGE}; samesite=lax`;
 }
 
 interface ProvidersProps {
@@ -107,6 +131,13 @@ interface CartContextType {
 interface RegionContextType {
   region: StoreRegion | null;
   regionLoading: boolean;
+  /** Every region the store actually configures; empty hides the switcher. */
+  regions: StoreRegion[];
+  regionSwitching: boolean;
+  regionNotice: string | null;
+  clearRegionNotice: () => void;
+  /** Switch currency by switching region; moves the active cart along. */
+  selectRegion: (regionId: string) => Promise<void>;
 }
 
 interface StoreStatusContextType {
@@ -160,25 +191,43 @@ export function Providers({ children }: ProvidersProps) {
 
   // Region State
   const [region, setRegion] = useState<StoreRegion | null>(null);
+  const [regions, setRegions] = useState<StoreRegion[]>([]);
   const [regionLoading, setRegionLoading] = useState(true);
+  const [regionSwitching, setRegionSwitching] = useState(false);
+  const [regionNotice, setRegionNotice] = useState<string | null>(null);
+  const router = useRouter();
 
   // Store commerce-readiness State (orders open/closed)
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [storeStatusLoading, setStoreStatusLoading] = useState(true);
   const [newsletterEnabled, setNewsletterEnabled] = useState(false);
 
-  // Initialize Region
+  // Initialize Region: a validated cookie choice wins, else the store default.
   useEffect(() => {
+    let cancelled = false;
     async function initRegion() {
       try {
-        const fetchedRegion = await getRegion();
-        setRegion(fetchedRegion);
+        const all = await listRegions();
+        if (cancelled) return;
+        setRegions(all);
+        const fromCookie = pickRegion(readRegionCookie(), all, null);
+        const fallback = fromCookie ?? (await getRegion()) ?? all[0] ?? null;
+        if (!cancelled) setRegion(fallback);
       } catch {
+        try {
+          const fallback = await getRegion();
+          if (!cancelled && fallback) setRegion(fallback);
+        } catch {
+          // Region unavailable: cart init surfaces the error state.
+        }
       } finally {
-        setRegionLoading(false);
+        if (!cancelled) setRegionLoading(false);
       }
     }
     initRegion();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Initialize store status; a missing or failed response leaves orders closed.
@@ -649,11 +698,63 @@ export function Providers({ children }: ProvidersProps) {
     [cart, runCartMutation, commitCart, refreshCart],
   );
 
+  // Switch currency by switching region. A live cart moves with the visitor:
+  // the backend may drop lines the new region cannot sell, which surfaces as a
+  // notice. A failed move keeps the original region, cart and cookie intact.
+  const selectRegion = useCallback(
+    async (regionId: string) => {
+      if (!isValidRegionId(regionId)) return;
+      const target = regions.find((entry) => entry.id === regionId);
+      if (!target || target.id === region?.id) return;
+      const generation = sessionGeneration.current;
+      setRegionSwitching(true);
+      try {
+        await runCartMutation(async () => {
+          const active = cartRef.current;
+          let removedNotice: string | null = null;
+          if (active && !active.completed_at) {
+            const before = active.items?.length ?? 0;
+            const updated = await updateCartRegion(active.id, regionId);
+            if (generation !== sessionGeneration.current) return;
+            setCart(updated);
+            if ((updated.items?.length ?? 0) < before) {
+              removedNotice = "Some items are not available in this region and were removed.";
+            }
+          }
+          writeRegionCookie(regionId);
+          setRegion(target);
+          setRegionNotice(removedNotice);
+          // Server components re-render prices for the new region cookie.
+          router.refresh();
+        });
+      } catch {
+        if (generation === sessionGeneration.current) {
+          setRegionNotice("This currency could not be selected. Please try again.");
+        }
+      } finally {
+        setRegionSwitching(false);
+      }
+    },
+    [regions, region?.id, runCartMutation, setCart, router],
+  );
+
+  const clearRegionNotice = useCallback(() => setRegionNotice(null), []);
+
   const cartCount =
     cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   return (
-    <RegionContext.Provider value={{ region, regionLoading }}>
+    <RegionContext.Provider
+      value={{
+        region,
+        regionLoading,
+        regions,
+        regionSwitching,
+        regionNotice,
+        clearRegionNotice,
+        selectRegion,
+      }}
+    >
       <StoreStatusContext.Provider
         value={{ ordersOpen, storeStatusLoading, newsletterEnabled }}
       >

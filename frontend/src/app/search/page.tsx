@@ -6,7 +6,8 @@ import ListingToolbar from "@/components/florencess/ListingToolbar";
 import Pagination from "@/components/florencess/Pagination";
 import { FL_CATALOG, flSearchProducts, type FlProduct } from "@/lib/florencess-catalog";
 import { flListHref, paginateFl, parseFlListParams, sortFlProducts } from "@/lib/florencess-listing";
-import { searchProducts, getRegion, MedusaUnavailableError } from "@/lib/medusa";
+import { searchProducts, MedusaUnavailableError } from "@/lib/medusa";
+import { getRequestRegion } from "@/lib/request-region";
 import { mapMedusaProduct, medusaProductCurrency } from "@/lib/medusa-catalog";
 import { SITE_NAME, pageTitle } from "@/lib/brand";
 
@@ -37,7 +38,7 @@ async function mergedSearchResults(
     ? flSearchProducts(query, { category, includeDescription })
     : [];
   try {
-    const region = await getRegion();
+    const region = await getRequestRegion();
     const products = query ? await searchProducts(query, region?.id) : [];
     const medusaMatches = products.map((product) =>
       mapMedusaProduct(product, medusaProductCurrency(product)),

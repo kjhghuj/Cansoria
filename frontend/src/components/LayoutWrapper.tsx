@@ -3,6 +3,7 @@
 import Header from "./florencess/Header";
 import { MiniCartProvider } from "./florencess/MiniCartContext";
 import RecentPurchase from "./florencess/RecentPurchase";
+import ScrollTopButton from "./florencess/ScrollTopButton";
 import SiteFooter from "./florencess/SiteFooter";
 import TopMarquee from "./florencess/TopMarquee";
 
@@ -26,6 +27,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
         <main className="flex-grow">{children}</main>
         <SiteFooter />
         <RecentPurchase />
+        <ScrollTopButton />
       </MiniCartProvider>
     </div>
   );

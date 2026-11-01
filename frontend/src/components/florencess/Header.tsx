@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Menu, Search, User, X } from "lucide-react";
 import { FL_BRAND, FL_NAV } from "@/lib/florencess-data";
+import CurrencySwitcher from "./CurrencySwitcher";
 import MegaMenu from "./MegaMenu";
 import MiniCart from "./MiniCart";
 
@@ -57,6 +58,7 @@ export default function Header() {
             </Link>
 
             <div className="fl-header__right">
+              <CurrencySwitcher />
               <Link href="/wishlist.html" className="fl-iconbtn" aria-label="Wishlist">
                 <Heart size={17} strokeWidth={1.4} />
               </Link>
@@ -175,7 +177,7 @@ export default function Header() {
           </Link>
         </div>
         <div className="fl-drawer__group">
-          <span>USD $</span>
+          <CurrencySwitcher surface="drawer" />
         </div>
       </aside>
 

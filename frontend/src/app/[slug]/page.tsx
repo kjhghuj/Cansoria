@@ -16,7 +16,8 @@ import {
   mapMedusaProduct,
   resolveStorefrontSlug,
 } from "@/lib/medusa-catalog";
-import { MedusaUnavailableError, getRegion } from "@/lib/medusa";
+import { MedusaUnavailableError } from "@/lib/medusa";
+import { getRequestRegion } from "@/lib/request-region";
 import type { StoreRegion } from "@/lib/types";
 import { SITE_NAME, pageTitle } from "@/lib/brand";
 
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Local catalogue miss: same resolution order as the page body. A backend
   // outage yields empty metadata (the body renders the unavailable state).
   try {
-    const region = await getRegion();
+    const region = await getRequestRegion();
     const detail = await getMedusaProductBySlug(slug, region?.id);
     if (detail) {
       return {
@@ -126,10 +127,46 @@ async function mergedCategoryProducts(
   }
 }
 
+/** Data outcome of the Medusa fallback resolution (rendering happens outside). */
+type MedusaOutcome =
+  | { kind: "product"; product: FlProduct; variants: import("@/lib/florencess-variants").FlVariant[] }
+  | { kind: "category"; category: NonNullable<Awaited<ReturnType<typeof getMedusaCategoryBySlug>>>; products: FlProduct[] }
+  | { kind: "miss" }
+  | { kind: "unavailable" };
+
+async function resolveMedusaOutcome(
+  slug: string,
+  region: StoreRegion | null,
+): Promise<MedusaOutcome> {
+  try {
+    const resolved = await resolveStorefrontSlug(slug, region?.id);
+    if (resolved?.kind === "medusa-product") {
+      return {
+        kind: "product",
+        product: resolved.product,
+        variants: resolved.variants,
+      };
+    }
+    if (resolved?.kind === "medusa-category") {
+      const raw = await listMedusaCategoryProducts(resolved.category.id, region?.id);
+      const currency = region?.currency_code ?? "usd";
+      return {
+        kind: "category",
+        category: resolved.category,
+        products: raw.map((product) => mapMedusaProduct(product, currency)),
+      };
+    }
+    return { kind: "miss" };
+  } catch (error) {
+    if (!(error instanceof MedusaUnavailableError)) throw error;
+    return { kind: "unavailable" };
+  }
+}
+
 export default async function DynamicFlPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const local = resolveFlSlug(slug);
-  const region = await getRegion();
+  const region = await getRequestRegion();
 
   if (local?.kind === "category") {
     const resolved = await searchParams;
@@ -161,42 +198,36 @@ export default async function DynamicFlPage({ params, searchParams }: PageProps)
     return <BrandView brand={local.brand} />;
   }
 
-  try {
-    const resolved = await resolveStorefrontSlug(slug, region?.id);
+  const outcome = await resolveMedusaOutcome(slug, region);
 
-    if (resolved?.kind === "medusa-product") {
-      return (
-        <ProductView product={resolved.product} variants={resolved.variants} />
-      );
-    }
-
-    if (resolved?.kind === "medusa-category") {
-      const raw = await listMedusaCategoryProducts(resolved.category.id, region?.id);
-      const currency = region?.currency_code ?? "usd";
-      const products = raw.map((product) => mapMedusaProduct(product, currency));
-      const search = await searchParams;
-      const listParams = parseFlListParams(search);
-      const page = paginateFl(
-        sortFlProducts(products, listParams.sort),
-        listParams.page,
-        listParams.limit,
-      );
-      if (page.page !== listParams.page) {
-        redirect(
-          flListHref(`/${resolved.category.handle}`, { ...listParams, page: page.page }),
-        );
-      }
-      return (
-        <CategoryView
-          category={{ slug: resolved.category.handle, title: resolved.category.name }}
-          products={products}
-          searchParams={search}
-        />
-      );
-    }
-  } catch (error) {
-    if (!(error instanceof MedusaUnavailableError)) throw error;
+  if (outcome.kind === "unavailable") {
     return <CatalogUnavailable slug={slug} />;
+  }
+
+  if (outcome.kind === "product") {
+    return <ProductView product={outcome.product} variants={outcome.variants} />;
+  }
+
+  if (outcome.kind === "category") {
+    const search = await searchParams;
+    const listParams = parseFlListParams(search);
+    const page = paginateFl(
+      sortFlProducts(outcome.products, listParams.sort),
+      listParams.page,
+      listParams.limit,
+    );
+    if (page.page !== listParams.page) {
+      redirect(
+        flListHref(`/${outcome.category.handle}`, { ...listParams, page: page.page }),
+      );
+    }
+    return (
+      <CategoryView
+        category={{ slug: outcome.category.handle, title: outcome.category.name }}
+        products={outcome.products}
+        searchParams={search}
+      />
+    );
   }
 
   notFound();

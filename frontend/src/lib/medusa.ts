@@ -83,6 +83,25 @@ export async function getRegion(countryCode: string = DEFAULT_COUNTRY_CODE) {
   }
 }
 
+/**
+ * All store regions. Unlike getRegion this throws MedusaUnavailableError so
+ * the currency switcher can hide itself instead of offering stale options.
+ */
+export async function listRegions() {
+  try {
+    const { regions } = await sdk.store.region.list();
+    return regions ?? [];
+  } catch {
+    throw new MedusaUnavailableError();
+  }
+}
+
+/** Move an existing cart to another region (currency switch with a live cart). */
+export async function updateCartRegion(cartId: string, regionId: string) {
+  const { cart } = await sdk.store.cart.update(cartId, { region_id: regionId });
+  return cart;
+}
+
 // Products
 
 /**

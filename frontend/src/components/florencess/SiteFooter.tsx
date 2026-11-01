@@ -1,20 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { FL_BRAND, FL_FOOTER_COLUMNS, FL_LOCALES, FL_SOCIALS } from "@/lib/florencess-data";
+import { FL_BRAND, FL_FOOTER_COLUMNS, FL_SOCIALS } from "@/lib/florencess-data";
 import { SITE_COMPANY_LINE } from "@/lib/brand";
+import CurrencySwitcher from "./CurrencySwitcher";
 
 /**
  * Footer stack mirrors the reference theme's rows:
- * link columns, the country/currency selector, an empty 25px spacer, the
- * copyright line and the company line. The reference keeps no separate policy
- * menu row — those links live inside the columns.
+ * link columns, the currency selector, an empty 25px spacer, the copyright
+ * line and the company line. The reference keeps no separate policy menu row —
+ * those links live inside the columns.
  */
 export default function SiteFooter() {
-  const [locale, setLocale] = useState(0);
-  const current = FL_LOCALES[locale];
-
   return (
     <footer className="fl-footer">
       <div className="fl-container">
@@ -34,26 +31,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="fl-footer__locale">
-          <span className="fl-footer__flag">{current.flag}</span>
-          <select
-            aria-label="Ship to country"
-            value={locale}
-            onChange={(e) => setLocale(Number(e.target.value))}
-            style={{
-              border: 0,
-              background: "transparent",
-              font: "inherit",
-              fontSize: 12,
-              letterSpacing: "0.06em",
-              cursor: "pointer",
-            }}
-          >
-            {FL_LOCALES.map((l, i) => (
-              <option value={i} key={l.country}>
-                {l.country} — {l.currency}
-              </option>
-            ))}
-          </select>
+          <CurrencySwitcher surface="footer" />
           <span aria-hidden="true">▼</span>
         </div>
 

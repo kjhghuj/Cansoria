@@ -394,3 +394,96 @@ button.fl-minicart__cta:disabled {
     transition: none;
   }
 }
+
+/* ------------------------------------------------------- currency switcher */
+
+.fl-currency {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fl-currency--footer,
+.fl-currency--drawer {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.fl-currency__field {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fl-currency__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.fl-currency select {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.fl-currency select:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.fl-currency__notice {
+  font-size: 11px;
+  color: #6b5a1f;
+  max-width: 220px;
+}
+
+.fl-currency--drawer .fl-currency__notice {
+  max-width: none;
+}
+
+/* ---------------------------------------------------------- scroll to top */
+
+/* Bottom-right; the social-proof toast occupies the bottom-left corner and a
+   future chat widget would sit higher, so no overlap at this anchor. */
+.fl-scrolltop {
+  position: fixed;
+  right: 22px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--fl-line);
+  background: #fff;
+  color: var(--fl-ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.fl-scrolltop.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.fl-scrolltop:hover {
+  background: var(--fl-ink);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-scrolltop {
+    transition: none;
+  }
+}

@@ -4,10 +4,14 @@ import * as medusa from "../medusa";
 import type { StoreCart } from "../types";
 
 jest.mock("react", () => ({ ...jest.requireActual("react"), ...jest.requireActual("./hook-fixture").hookMocks }));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: jest.fn(), push: jest.fn(), replace: jest.fn(), back: jest.fn(), forward: jest.fn(), prefetch: jest.fn() }),
+}));
 jest.mock("../medusa", () => ({
   getRegion: jest.fn(), getCustomer: jest.fn(), getCart: jest.fn(), createCart: jest.fn(),
   addToCart: jest.fn(), updateCartOwnership: jest.fn(), updateCustomerMetadata: jest.fn(),
   login: jest.fn(), register: jest.fn(), logout: jest.fn(),
+  listRegions: jest.fn(async () => []), updateCartRegion: jest.fn(),
 }));
 type CartContext = { cart: StoreCart | null; cartLoading: boolean; cartError: string | null; ensureCart: () => Promise<StoreCart>; addItem: (id: string) => Promise<void>; refreshCart: () => Promise<void> };
 type AuthContext = { logout: () => Promise<void>; login: (email: string, password: string) => Promise<void> };

@@ -13,6 +13,13 @@ describe('storefront proxy boundary', () => {
     expect(isStorePathAllowed(['store', 'customers', 'me', 'addresses', 'addr_123'], 'DELETE')).toBe(true);
     expect(isStorePathAllowed(['store', 'orders', 'access'], 'POST')).toBe(true);
   });
+  it('allows the cart region update the currency switcher performs', () => {
+    expect(isStorePathAllowed(['store', 'carts', 'cart_123'], 'POST')).toBe(true);
+    expect(isStorePathAllowed(['store', 'carts', 'cart_123'], 'GET')).toBe(true);
+    expect(isStorePathAllowed(['store', 'carts', 'cart_123', 'region'], 'POST')).toBe(false);
+    expect(isStoreQueryAllowed(['store', 'carts', 'cart_123'], '?fields=items')).toBe(true);
+    expect(isStoreQueryAllowed(['store', 'carts', 'cart_123'], '?expand=region')).toBe(false);
+  });
   it('rejects cross-origin and missing-origin writes', () => {
     expect(isSameOriginWrite(new Request('https://shop.test/api/auth/logout', { method: 'POST', headers: { Origin: 'https://evil.test' } }))).toBe(false);
     expect(isSameOriginWrite(new Request('https://shop.test/api/auth/logout', { method: 'POST' }))).toBe(false);
