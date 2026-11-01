@@ -41,10 +41,6 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
   const resource = pathname.match(/^\/store\/([^/]+)/i)?.[1].toLowerCase()
   const defaults = resource === "customers" && req.method === "GET" && /\/addresses(?:\/|$)/i.test(pathname) ? defaultStoreCustomerAddressFields : resource && policies[resource]
   if (!defaults) return next()
-  // Medusa 2.21 uses an explicit Store allowlist. Only this public catalog
-  // field is missing from its native policy; client fields never extend it.
-  if (resource === "products") req.allowed = Array.from(new Set([...(req.allowed || []), "variants.metadata"]))
-  if (resource === "orders") req.allowed = Array.from(new Set([...(req.allowed || []), ...SAFE_ORDER_FIELDS.filter(field => field.startsWith("items."))]))
   if ((resource === "products" || resource === "product-variants") && typeof _res.json === "function") {
     const original = _res.json
     _res.json = function (body: any) { projectCatalogMetadata(body); return original.call(this, body) } as any
@@ -60,6 +56,14 @@ export function forceCatalogFields(req: MedusaRequest, _res: MedusaResponse, nex
   if (resource === "products" && requestedFields.includes("variants.inventory_quantity")) fields.push("variants.inventory_quantity")
   if (resource === "products" && requestedFields.some(field => /^variants\.calculated_price(?:\.\*|\.[a-z_]+)?$/.test(field))) fields.push("variants.calculated_price.*")
   if (resource === "product-variants" && requestedFields.some(field => /^calculated_price(?:\.\*|\.[a-z_]+)?$/.test(field))) fields.push("calculated_price.*")
+  // The native store query configs ship without an `allowed` list, so any
+  // `req.allowed` addition alone becomes the whole allowlist and every standard
+  // field is rejected with invalid_data. Seed the allowlist with exactly the
+  // fields forced above, in both raw and star-normalised spellings; the forced
+  // projection stays the single source of truth, so nothing else is exposed.
+  const forcedAllow = fields.flatMap(field => [field, field.replace(/^[*]/, "").replace(/\.\*$/, "")])
+  if (resource === "products") req.allowed = Array.from(new Set([...(req.allowed || []), "variants.metadata", ...forcedAllow]))
+  if (resource === "orders") req.allowed = Array.from(new Set([...(req.allowed || []), ...SAFE_ORDER_FIELDS.filter(field => field.startsWith("items.")), ...forcedAllow]))
   req.query = { ...req.query, fields: fields.join(",") } as any
   if (req.queryConfig) req.queryConfig.fields = fields.map(field => field.startsWith("*") ? `${field.slice(1)}.*` : field)
   return next()
@@ -82,6 +86,7 @@ export const PUBLIC_PRODUCT_METADATA_KEYS = [
   "movement",
   "water_resistance",
   "warranty",
+  "brand",
 ]
 export const PUBLIC_VARIANT_METADATA_KEYS = ["images"]
 export const PUBLIC_STORE_METADATA_KEYS = ["announcement_bar", "orders_open"]

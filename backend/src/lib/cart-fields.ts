@@ -9,9 +9,15 @@ export const SAFE_CART_FIELDS = [...defaultStoreCartFields.filter(field => !/^(c
 export const SAFE_ORDER_FIELDS = ["id", "display_id", "email", "status", "created_at", "total", "subtotal", "shipping_total", "currency_code", "items.id", "items.title", "items.quantity", "items.unit_price", "items.total", "items.variant_id", "items.product_id", "items.thumbnail", "items.variant_title", "items.product_title", "items.metadata"]
 
 export function applyCartFields(req: MedusaRequest, completing = false) {
-  // Keep native variant media in the cart without allowing reverse links.
-  if (!completing) req.allowed = Array.from(new Set([...(req.allowed || []), "items.variant.images", "items.variant.thumbnail"]))
   const fields = completing ? SAFE_ORDER_FIELDS : SAFE_CART_FIELDS
+  // Native store query configs ship without an `allowed` list, so an
+  // `req.allowed` addition alone becomes the whole allowlist and every standard
+  // cart/order field is rejected with invalid_data. Seed the allowlist with
+  // exactly the forced fields, in raw and star-normalised spellings; the
+  // forced projection stays the single source of truth, so nothing else is
+  // exposed and native variant media stays reachable without reverse links.
+  const forcedAllow = fields.flatMap(field => [field, field.replace(/^[*]/, "").replace(/\.\*$/, "")])
+  if (!completing) req.allowed = Array.from(new Set([...(req.allowed || []), "items.variant.images", "items.variant.thumbnail", ...forcedAllow]))
   req.query = { ...req.query, fields: fields.join(",") } as any
   if (req.queryConfig) req.queryConfig.fields = fields.map(field => field.startsWith("*") ? `${field.slice(1)}.*` : field)
 }

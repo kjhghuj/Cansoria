@@ -1,7 +1,7 @@
 import { decorateCartTotals } from "@medusajs/utils"
 import { Order } from "@medusajs/order/dist/models/order"
 import { formatOrder } from "@medusajs/order/dist/utils/transform-order"
-import orderPlacedHandler from "../order-placed"
+import orderPlacedHandler from "../../subscribers/order-placed"
 
 describe("order notification amount payload", () => {
   it("queries and forwards the independent tax, discount, credit and pre-tax components", async () => {

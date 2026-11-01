@@ -1,4 +1,4 @@
-import passwordResetHandler from "../password-reset"
+import passwordResetHandler from "../../subscribers/password-reset"
 
 function container(customer: unknown, customersList = true) {
   const createNotifications = jest.fn().mockResolvedValue({ id: "noti_sent", status: "success" })
