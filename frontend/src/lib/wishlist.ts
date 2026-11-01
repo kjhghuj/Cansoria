@@ -103,14 +103,3 @@ export function mergeLists(guest: WishlistItem[], account: WishlistItem[]): Wish
   }
   return merged;
 }
-
-/**
- * Customer metadata is replaced wholesale by the backend, so every write must
- * carry the existing keys (notably active_cart_id) and swap only `wishlist`.
- */
-export function buildWishlistMetadata(
-  existing: Record<string, unknown> | null | undefined,
-  items: WishlistItem[],
-): Record<string, unknown> {
-  return { ...(existing ?? {}), wishlist: items };
-}

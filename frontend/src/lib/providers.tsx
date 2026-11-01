@@ -36,6 +36,7 @@ import {
   isValidRegionId,
   pickRegion,
 } from "./lorencess-region";
+import { createCustomerMetadataWriter } from "./customer-metadata-writer";
 import { applyBestCoupon } from "./best-coupon";
 import { WishlistProvider } from "./wishlist-context";
 
@@ -104,6 +105,14 @@ interface AuthContextType {
     lastName: string,
   ) => Promise<void>;
   logout: () => Promise<void>;
+  /**
+   * Serialized customer-metadata write. Medusa merges metadata key-by-key, so
+   * pass only the key(s) you own (e.g. { active_cart_id }); the returned
+   * customer carries the freshly merged metadata and `user` is refreshed.
+   */
+  saveCustomerMetadata: (
+    patch: Record<string, unknown>,
+  ) => Promise<{ metadata?: Record<string, unknown> }>;
 }
 
 interface CartContextType {
@@ -202,6 +211,24 @@ export function Providers({ children }: ProvidersProps) {
   const [ordersOpen, setOrdersOpen] = useState(false);
   const [storeStatusLoading, setStoreStatusLoading] = useState(true);
   const [newsletterEnabled, setNewsletterEnabled] = useState(false);
+
+  // Serialized metadata writer: cart and wishlist writes land in order, each
+  // on top of the backend's key-merge (never on a stale client copy).
+  const metadataWriter = useRef(
+    createCustomerMetadataWriter((patch) => updateCustomerMetadata(patch)),
+  );
+  const saveCustomerMetadata = useCallback(
+    (patch: Record<string, unknown>) => {
+      const generation = sessionGeneration.current;
+      return metadataWriter.current(patch).then((customer) => {
+        if (generation === sessionGeneration.current && customer) {
+          setUser(customer as unknown as User);
+        }
+        return customer;
+      });
+    },
+    [],
+  );
 
   // Initialize Region: a validated cookie choice wins, else the store default.
   useEffect(() => {
@@ -328,11 +355,8 @@ export function Providers({ children }: ProvidersProps) {
               // Assign to user
               await updateCartOwnership(localCart.id);
               if (cancelled || generation !== sessionGeneration.current) return;
-              // Save to metadata
-              await updateCustomerMetadata({
-                ...user.metadata,
-                active_cart_id: localCart.id,
-              });
+              // Save to metadata (serialized; other keys merge server-side)
+              await saveCustomerMetadata({ active_cart_id: localCart.id });
               currentCart = localCart;
             }
           }
@@ -348,10 +372,7 @@ export function Providers({ children }: ProvidersProps) {
             if (user) {
               await updateCartOwnership(localCart.id);
               if (cancelled || generation !== sessionGeneration.current) return;
-              await updateCustomerMetadata({
-                ...user.metadata,
-                active_cart_id: localCart.id,
-              });
+              await saveCustomerMetadata({ active_cart_id: localCart.id });
             }
           } else {
             removeStorage(CART_ID_KEY);
@@ -374,7 +395,7 @@ export function Providers({ children }: ProvidersProps) {
     return () => {
       cancelled = true;
     };
-  }, [region, regionLoading, authLoading, user, setCart]); // Re-run when user changes (login/logout)
+  }, [region, regionLoading, authLoading, user, setCart, saveCustomerMetadata]); // Re-run when user changes (login/logout)
 
   // Auth Handlers
   const handleLogin = async (email: string, pass: string) => {
@@ -516,11 +537,11 @@ export function Providers({ children }: ProvidersProps) {
       setCart(active);
     }
     if (user && user.metadata?.active_cart_id !== active.id) {
-      await updateCustomerMetadata({ ...user.metadata, active_cart_id: active.id });
+      await saveCustomerMetadata({ active_cart_id: active.id });
       assertActive();
     }
     return active;
-  }, [authLoading, regionLoading, region, user, setCart]);
+  }, [authLoading, regionLoading, region, user, setCart, saveCustomerMetadata]);
 
   const ensureCart = useCallback(() => {
     const generation = sessionGeneration.current;
@@ -766,6 +787,7 @@ export function Providers({ children }: ProvidersProps) {
             login: handleLogin,
             register: handleRegister,
             logout: handleLogout,
+            saveCustomerMetadata,
           }}
         >
           <WishlistProvider>

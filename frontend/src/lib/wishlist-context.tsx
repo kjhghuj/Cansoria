@@ -13,14 +13,12 @@ import {
 import {
   WISHLIST_KEY,
   addItem,
-  buildWishlistMetadata,
   hasItem,
   mergeLists,
   parseWishlist,
   removeItem,
   type WishlistItem,
 } from "./wishlist";
-import { updateCustomerMetadata } from "./medusa";
 import { useAuth } from "./providers";
 
 const SAVE_DEBOUNCE_MS = 500;
@@ -69,7 +67,7 @@ function clearStorage(): void {
  * Signing out clears the list so one account never sees another's wishes.
  */
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, saveCustomerMetadata } = useAuth();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [saveError, setSaveError] = useState(false);
   const syncedUserId = useRef<string | null>(null);
@@ -88,7 +86,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       setItems(merged);
       clearStorage();
       if (guest.length) {
-        updateCustomerMetadata(buildWishlistMetadata(user.metadata, merged)).catch(() => {
+        saveCustomerMetadata({ wishlist: merged }).catch(() => {
           setSaveError(true);
         });
       }
@@ -101,7 +99,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       return;
     }
     setItems(parseWishlist(safeParse(readStorage())));
-  }, [authLoading, user]);
+  }, [authLoading, user, saveCustomerMetadata]);
 
   // Cross-tab sync for guests.
   useEffect(() => {
@@ -121,9 +119,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     pendingSave.current = null;
     const timer = setTimeout(async () => {
       try {
-        await updateCustomerMetadata(
-          buildWishlistMetadata(user?.metadata, snapshot),
-        );
+        await saveCustomerMetadata({ wishlist: snapshot });
         setSaveError(false);
       } catch {
         setSaveError(true);
@@ -133,7 +129,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }, SAVE_DEBOUNCE_MS);
     saveTimer.current = timer;
     return () => clearTimeout(timer);
-  }, [items, user?.metadata]);
+  }, [items, saveCustomerMetadata]);
 
   useEffect(() => () => {
     if (saveTimer.current) clearTimeout(saveTimer.current);

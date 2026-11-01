@@ -3,7 +3,6 @@ import {
   WISHLIST_KEY,
   WISHLIST_LIMIT,
   addItem,
-  buildWishlistMetadata,
   hasItem,
   mergeLists,
   parseWishlist,
@@ -125,20 +124,5 @@ describe("parseWishlist", () => {
 
   it("exposes the storage key", () => {
     expect(WISHLIST_KEY).toBe("lorencess_wishlist");
-  });
-});
-
-describe("buildWishlistMetadata", () => {
-  it("replaces only the wishlist key and preserves other metadata keys", () => {
-    const metadata = { active_cart_id: "cart_123", theme: "dark", wishlist: [{ slug: "old" }] };
-    const next = buildWishlistMetadata(metadata, [item("new")]);
-    expect(next.active_cart_id).toBe("cart_123");
-    expect(next.theme).toBe("dark");
-    expect(Array.isArray(next.wishlist) && (next.wishlist[0] as WishlistItem).slug).toBe("new");
-  });
-
-  it("works without existing metadata", () => {
-    const next = buildWishlistMetadata(undefined, []);
-    expect(next.wishlist).toEqual([]);
   });
 });
