@@ -6,9 +6,9 @@ import ListingToolbar from "@/components/florencess/ListingToolbar";
 import Pagination from "@/components/florencess/Pagination";
 import { FL_CATALOG, flSearchProducts, type FlProduct } from "@/lib/florencess-catalog";
 import { flListHref, paginateFl, parseFlListParams, sortFlProducts } from "@/lib/florencess-listing";
-import { searchProducts, MedusaUnavailableError } from "@/lib/medusa";
+import { MedusaUnavailableError } from "@/lib/medusa";
 import { getRequestRegion } from "@/lib/request-region";
-import { mapMedusaProduct, medusaProductCurrency } from "@/lib/medusa-catalog";
+import { mergeSearchResults, searchMedusaProducts } from "@/lib/medusa-catalog";
 import { SITE_NAME, pageTitle } from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -38,18 +38,10 @@ async function mergedSearchResults(
     ? flSearchProducts(query, { category, includeDescription })
     : [];
   try {
-    const region = await getRequestRegion();
-    const products = query ? await searchProducts(query, region?.id) : [];
-    const medusaMatches = products.map((product) =>
-      mapMedusaProduct(product, medusaProductCurrency(product)),
-    );
-    const seen = new Set<string>();
+    const region = query ? await getRequestRegion() : null;
+    const medusaMatches = await searchMedusaProducts(query, region?.id);
     return {
-      matches: [...medusaMatches, ...localMatches].filter((product) => {
-        if (seen.has(product.slug)) return false;
-        seen.add(product.slug);
-        return true;
-      }),
+      matches: mergeSearchResults(medusaMatches, localMatches),
       degraded: false,
     };
   } catch (error) {

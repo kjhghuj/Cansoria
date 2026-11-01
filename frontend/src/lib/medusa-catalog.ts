@@ -13,6 +13,7 @@ import {
   formatPrice,
   getProductByHandle,
   sdk,
+  searchProducts,
 } from "./medusa";
 import { REGION_LOOKUP_TIMEOUT_MS, withMedusaTimeout } from "./with-timeout";
 import type { StoreProduct } from "./types";
@@ -324,4 +325,45 @@ export async function resolveStorefrontSlug(
   if (medusaCategory) return { kind: "medusa-category", category: medusaCategory };
 
   return null;
+}
+
+type MedusaSearchFetch = (query: string, regionId?: string) => Promise<StoreProduct[]>;
+
+/**
+ * Keyword search against Medusa, deadline-bounded like every other catalogue
+ * lookup and with shadowed handles removed: a product whose handle belongs to
+ * a local page would open that page instead, so it is never listed.
+ */
+export async function searchMedusaProducts(
+  query: string,
+  regionId: string | undefined,
+  fetch: MedusaSearchFetch = searchProducts,
+): Promise<FlProduct[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+  const products = await withMedusaTimeout(
+    fetch(trimmed, regionId),
+    REGION_LOOKUP_TIMEOUT_MS,
+    "product search",
+  );
+  return products
+    .filter((product) => {
+      const handle = product.handle ?? "";
+      if (!handle || isReservedSlug(handle)) {
+        if (handle) console.error("[medusa-catalog] handle shadowed", { handle });
+        return false;
+      }
+      return true;
+    })
+    .map((product) => mapMedusaProduct(product, medusaProductCurrency(product)));
+}
+
+/** Medusa matches first, then local ones; the first product per slug wins. */
+export function mergeSearchResults(medusa: FlProduct[], local: FlProduct[]): FlProduct[] {
+  const seen = new Set<string>();
+  return [...medusa, ...local].filter((product) => {
+    if (seen.has(product.slug)) return false;
+    seen.add(product.slug);
+    return true;
+  });
 }
