@@ -23,7 +23,6 @@ import {
  *   DRY=1 NODE_ENV=development npx medusa exec ./src/scripts/florencess-price-fix.ts
  */
 
-const EUR_RATE = 0.92;
 const CONCURRENCY = 10;
 const SKU_PREFIX = "FL-";
 
@@ -94,11 +93,12 @@ export default async function fixFlorencessPrices({ container }: ExecArgs) {
       unknownSku += 1;
       continue;
     }
-    const eur = Math.round(usd * EUR_RATE * 100) / 100;
 
     const prices = (variant.price_set as { id: string; prices: PriceRow[] }).prices.map((price) => {
       const code = price.currency_code.toLowerCase();
-      const amount = code === "usd" ? usd : code === "eur" ? eur : price.amount;
+      // USD is the only priced currency; anything else keeps its current value
+      // so the script never deletes a row it does not own.
+      const amount = code === "usd" ? usd : price.amount;
       return { id: price.id, currency_code: price.currency_code, amount };
     });
 

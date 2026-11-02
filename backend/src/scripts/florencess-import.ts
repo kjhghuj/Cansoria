@@ -44,7 +44,6 @@ type FlCategory = { slug: string; title: string; productIds: string[] };
 type FlCatalog = { products: FlProduct[]; categories: FlCategory[] };
 
 const BATCH_SIZE = 20;
-const EUR_RATE = 0.92;
 
 function catalogPath(): string {
   return path.resolve(process.cwd(), "../frontend/src/data/florencess-catalog.json");
@@ -80,7 +79,6 @@ function cartesian(options: FlOption[]): Record<string, string>[] {
 
 function buildProduct(product: FlProduct, shippingProfileId: string, channelId: string, categoryIds: string[]) {
   const usd = parseAmount(product.price);
-  const eur = Math.max(0.01, Math.round(usd * EUR_RATE * 100) / 100);
   // Medusa rejects a product whose variants declare no option, so optionless
   // catalogue entries get a single synthetic "Style" option. The variant map
   // written below still records an empty selection for them, which is what the
@@ -112,10 +110,8 @@ function buildProduct(product: FlProduct, shippingProfileId: string, channelId: 
       manage_inventory: false,
       allow_backorder: false,
       options: selection,
-      prices: [
-        { currency_code: "usd", amount: usd },
-        { currency_code: "eur", amount: eur },
-      ],
+      // USD only: the store runs a single market (see florencess-usd-only.ts).
+      prices: [{ currency_code: "usd", amount: usd }],
     })),
     metadata: {
       brand: product.brand,
