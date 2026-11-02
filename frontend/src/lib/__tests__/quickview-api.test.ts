@@ -31,7 +31,11 @@ describe("quickview endpoint", () => {
     expect(Array.isArray(payload.images)).toBe(true);
     expect(payload.images.length).toBeLessThanOrEqual(6);
     expect(payload.description.length).toBeLessThanOrEqual(300);
-    expect(payload.purchasable).toBe(false);
+    // Catalogue products are purchasable now that the import maps every entry
+    // to real Medusa variants; before it, the same assertion held `false`
+    // because the variant map was empty and the PDP fell back to a
+    // "reference only" state.
+    expect(payload.purchasable).toBe(true);
   });
 
   it("rejects malformed slugs with 400", async () => {
